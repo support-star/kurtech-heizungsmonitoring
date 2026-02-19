@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, createContext, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, ZoomIn, ZoomOut, RotateCcw, Droplets } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw, Droplets, Pencil, Copy, Check, MousePointer, Trash2 } from 'lucide-react';
 import type { HeatingData } from '@/types/heating';
 
 /* ═══════════════════════════════════════════════════════════
@@ -65,6 +65,38 @@ function Defs() {
       `}</style>
     </defs>
   );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   EDIT MODE – Drag & Drop für alle Elemente
+   ═══════════════════════════════════════════════════════════ */
+interface EditCtx {
+  active: boolean;
+  selected: string | null;
+  select: (id: string) => void;
+  offsets: Record<string, { dx: number; dy: number }>;
+  startDrag: (id: string, e: React.PointerEvent) => void;
+}
+const EditContext = createContext<EditCtx>({
+  active: false, selected: null, select: () => {}, offsets: {}, startDrag: () => {},
+});
+
+/** Editable wrapper – umhüllt jede Komponente. Normal: passthrough. Edit: draggable. */
+function E({ id, children }: { id: string; children: React.ReactNode }) {
+  const { active, selected, select, offsets, startDrag } = useContext(EditContext);
+  const o = offsets[id];
+  const isSel = selected === id;
+  return <g
+    transform={o ? `translate(${o.dx},${o.dy})` : undefined}
+    style={{ cursor: active ? 'move' : undefined }}
+    onPointerDown={active ? (e) => { e.stopPropagation(); select(id); startDrag(id, e); } : undefined}
+  >
+    {active && isSel && <>
+      {/* Selection highlight ring */}
+      <circle cx="0" cy="0" r="16" fill="#fbbf24" fillOpacity="0.06" stroke="#fbbf24" strokeWidth="0.8" strokeDasharray="3,2" />
+    </>}
+    {children}
+  </g>;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -340,6 +372,82 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
   const didPan = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // ── Edit Mode ──
+  const [editMode, setEditMode] = useState(false);
+  const [editSel, setEditSel] = useState<string | null>(null);
+  const [offsets, setOffsets] = useState<Record<string, { dx: number; dy: number }>>({});
+  const [dragInfo, setDragInfo] = useState<{ id: string; startX: number; startY: number; oDx: number; oDy: number } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [svgMouse, setSvgMouse] = useState({ x: 0, y: 0 });
+
+  const startDrag = useCallback((id: string, e: React.PointerEvent) => {
+    const o = offsets[id] || { dx: 0, dy: 0 };
+    setDragInfo({ id, startX: e.clientX, startY: e.clientY, oDx: o.dx, oDy: o.dy });
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+  }, [offsets]);
+
+  const onEditPointerMove = useCallback((e: React.PointerEvent) => {
+    // Track SVG mouse position
+    const container = containerRef.current;
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      const svgX = Math.round((e.clientX - rect.left - pan.x) / zoom * (1560 / container.clientWidth) );
+      const svgY = Math.round((e.clientY - rect.top - pan.y) / zoom * (640 / (container.clientWidth * 640 / 1560)));
+      setSvgMouse({ x: svgX, y: svgY });
+    }
+    if (!dragInfo) return;
+    const container2 = containerRef.current;
+    if (!container2) return;
+    // Convert pixel delta to SVG units
+    const svgScale = 1560 / (container2.clientWidth * zoom);
+    const dx = Math.round((e.clientX - dragInfo.startX) * svgScale);
+    const dy = Math.round((e.clientY - dragInfo.startY) * svgScale);
+    setOffsets(prev => ({
+      ...prev,
+      [dragInfo.id]: { dx: dragInfo.oDx + dx, dy: dragInfo.oDy + dy },
+    }));
+  }, [dragInfo, zoom, pan]);
+
+  const onEditPointerUp = useCallback(() => setDragInfo(null), []);
+
+  // Arrow keys in edit mode
+  useEffect(() => {
+    if (!editMode || !editSel) return;
+    const handler = (e: KeyboardEvent) => {
+      const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Delete', 'Escape'];
+      if (!keys.includes(e.key)) return;
+      e.preventDefault();
+      if (e.key === 'Escape') { setEditSel(null); return; }
+      if (e.key === 'Delete') {
+        setOffsets(p => { const n = { ...p }; delete n[editSel]; return n; });
+        return;
+      }
+      const step = e.shiftKey ? 5 : 1;
+      setOffsets(p => {
+        const c = p[editSel] || { dx: 0, dy: 0 };
+        return { ...p, [editSel]: {
+          dx: c.dx + (e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0),
+          dy: c.dy + (e.key === 'ArrowDown' ? step : e.key === 'ArrowUp' ? -step : 0),
+        }};
+      });
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [editMode, editSel]);
+
+  const changedItems = Object.entries(offsets).filter(([, v]) => v.dx !== 0 || v.dy !== 0);
+
+  const exportChanges = () => {
+    const txt = changedItems.map(([id, v]) => `${id}: dx=${v.dx}, dy=${v.dy}`).join('\n');
+    navigator.clipboard.writeText(txt);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const editCtx: EditCtx = {
+    active: editMode, selected: editSel, select: setEditSel, offsets, startDrag,
+  };
+
   const zoomIn = () => setZoom(z => Math.min(5, z * 1.3));
   const zoomOut = () => setZoom(z => Math.max(0.5, z / 1.3));
   const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
@@ -424,6 +532,10 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Button variant="ghost" size="sm" onClick={zoomIn} className="text-slate-400 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
           <Button variant="ghost" size="sm" onClick={resetView} className="text-slate-400 h-7 w-7 p-0"><RotateCcw className="w-3.5 h-3.5" /></Button>
         </div>
+        <Button variant="outline" size="sm" onClick={() => { setEditMode(!editMode); setEditSel(null); }}
+          className={`border-[#1e2736] text-xs ${editMode ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'text-slate-400'}`}>
+          <Pencil className="w-3.5 h-3.5 mr-1" />{editMode ? 'Edit AN' : 'Edit'}
+        </Button>
       </div>
     </div>
 
@@ -442,17 +554,40 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
       <span className="text-slate-500">Außen <span className="text-teal-400 font-semibold">{aus}°C</span></span>
     </div>
 
+    {/* Edit-Mode Bar */}
+    {editMode && <div className="flex flex-wrap items-center gap-3 px-3 py-2 bg-amber-500/10 rounded-lg border border-amber-500/30 text-xs">
+      <span className="text-amber-400 font-bold">✏️ EDIT</span>
+      <span className="text-amber-400/60 text-[10px]">Ziehen = Verschieben · Pfeiltasten ±1 (Shift ±5) · ESC = Abwählen</span>
+      <div className="flex-1" />
+      <span className="text-slate-500 font-mono text-[10px]">
+        <MousePointer className="w-3 h-3 inline" /> {svgMouse.x}, {svgMouse.y}
+      </span>
+      {editSel && <span className="text-emerald-400 font-mono text-[10px]">
+        ▸ {editSel} {offsets[editSel] && `(Δ${offsets[editSel].dx}, Δ${offsets[editSel].dy})`}
+      </span>}
+      {changedItems.length > 0 && <>
+        <span className="text-amber-400 font-mono">{changedItems.length}×</span>
+        <Button variant="ghost" size="sm" onClick={exportChanges} className="h-6 px-2 text-[10px] text-amber-400">
+          {copied ? <><Check className="w-3 h-3 mr-1" />Kopiert!</> : <><Copy className="w-3 h-3 mr-1" />Export</>}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => { setOffsets({}); setEditSel(null); }} className="h-6 px-2 text-[10px] text-red-400">
+          <Trash2 className="w-3 h-3 mr-1" />Reset
+        </Button>
+      </>}
+    </div>}
+
     {/* ═════════════ SVG ═════════════ */}
+    <EditContext.Provider value={editCtx}>
     <div ref={containerRef}
-      className="relative rounded-xl border border-[#1e2736] select-none overflow-hidden"
-      style={{ background: C.bg, touchAction: 'none', cursor: isPanning ? 'grabbing' : zoom > 1 ? 'grab' : 'default' }}
-      onClick={() => { if (!didPan.current) setSel(null); }}
+      className={`relative rounded-xl select-none overflow-hidden border ${editMode ? 'border-amber-500/40' : 'border-[#1e2736]'}`}
+      style={{ background: C.bg, touchAction: 'none', cursor: editMode ? (dragInfo ? 'grabbing' : 'crosshair') : isPanning ? 'grabbing' : zoom > 1 ? 'grab' : 'default' }}
+      onClick={() => { if (!editMode && !didPan.current) setSel(null); }}
       onWheel={onWheel}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerLeave={onPointerUp}
-      onDoubleClick={resetView}>
+      onPointerDown={editMode ? undefined : onPointerDown}
+      onPointerMove={editMode ? onEditPointerMove : onPointerMove}
+      onPointerUp={editMode ? onEditPointerUp : onPointerUp}
+      onPointerLeave={editMode ? onEditPointerUp : onPointerUp}
+      onDoubleClick={editMode ? undefined : resetView}>
       {zoom > 1.05 && <div className="absolute top-2 left-2 z-10 text-[10px] text-slate-500 bg-[#0a0e14]/80 px-2 py-1 rounded font-mono pointer-events-none">
         {Math.round(zoom * 100)}% – Doppelklick = Reset
       </div>}
@@ -483,16 +618,16 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* ════════════════════════════════════════
                ABLUFT-WP AUF DACH (oben Mitte)
                ════════════════════════════════════════ */}
-          <Box x={390} y={55} w={130} h={45} title="Abluft-WP" sub="auf Dach · Rohrbegl." active={!!on} color={C.warmPipe}
-            onClick={() => s({ id: 'ABWP', name: 'Abluft-Wärmepumpe', desc: 'Auf Dach mit Rohrbegleitheizung', status: on ? 'running' : 'standby', temp: '40°C', tempRet: '35°C' })} />
+          <E id="BOX_ABWP"><Box x={390} y={55} w={130} h={45} title="Abluft-WP" sub="auf Dach · Rohrbegl." active={!!on} color={C.warmPipe}
+            onClick={() => s({ id: 'ABWP', name: 'Abluft-Wärmepumpe', desc: 'Auf Dach mit Rohrbegleitheizung', status: on ? 'running' : 'standby', temp: '40°C', tempRet: '35°C' })} /></E>
           {/* Rohrbegleitheizung-Zickzack */}
           <path d="M528,68 L536,60 L544,68 L552,60 L560,68" fill="none" stroke="#fb923c" strokeWidth="0.6" strokeDasharray="2,1" opacity="0.5" />
           {/* "in: Lüftung 400V" */}
           <text x={455} y={108} textAnchor="middle" fill={C.dim} fontSize="3">in: Lüftung 400V</text>
 
           {/* PVT-Solar (oben links) */}
-          <Box x={155} y={55} w={105} h={45} title="PVT-Solar" sub="6,2 kW th." active={!!on} color={C.warmPipe}
-            onClick={() => s({ id: 'PVT', name: 'PVT-Solarkollektoren', desc: 'Auf Dach, 6,2 kW thermisch', status: 'running', temp: `${aus}°C`, power: '6,2 kW' })} />
+          <E id="BOX_PVT"><Box x={155} y={55} w={105} h={45} title="PVT-Solar" sub="6,2 kW th." active={!!on} color={C.warmPipe}
+            onClick={() => s({ id: 'PVT', name: 'PVT-Solarkollektoren', desc: 'Auf Dach, 6,2 kW thermisch', status: 'running', temp: `${aus}°C`, power: '6,2 kW' })} /></E>
           <circle cx="208" cy={46} r="7" fill="none" stroke="#fbbf24" strokeWidth="0.7" opacity="0.35" />
           <circle cx="208" cy={46} r="2.5" fill="#fbbf24" opacity="0.35" />
           {/* PVT Detail-Label */}
@@ -503,8 +638,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </g>
 
           {/* Erdwärmefeld (links) */}
-          <Box x={20} y={VL - 20} w={95} h={42} title="Erdwärme" sub="FVU Nahwärme" active={!!on} color={C.geoPipe}
-            onClick={() => s({ id: 'ERD', name: 'Erdwärmefeld', desc: 'Zuleitung FVU Nahwärme', status: on ? 'running' : 'standby', flow: '42,1 m³/h', dn: 'DN 80' })} />
+          <E id="BOX_ERD"><Box x={20} y={VL - 20} w={95} h={42} title="Erdwärme" sub="FVU Nahwärme" active={!!on} color={C.geoPipe}
+            onClick={() => s({ id: 'ERD', name: 'Erdwärmefeld', desc: 'Zuleitung FVU Nahwärme', status: on ? 'running' : 'standby', flow: '42,1 m³/h', dn: 'DN 80' })} /></E>
           {/* Erdwärme-Sonden Zigzag (unterirdisch) */}
           <g opacity="0.35">
             <path d={`M30,${VL + 25} L38,${VL + 35} L46,${VL + 25} L54,${VL + 35} L62,${VL + 25}`} fill="none" stroke={C.geoPipe} strokeWidth="0.7" />
@@ -522,17 +657,17 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* Abluft-WP → runter → Puffer PVT (durch WP-Einhausung) */}
           <Pipe d={`M455,100 L455,140 L250,140 L250,${VL - 45}`} c={C.warmPipe} glow={C.warmGlow} />
-          <Pump x={455} y={125} id="P02" on={!!on}
-            onClick={() => s({ id: 'P02', name: 'Pumpe P02', desc: 'Umwälzpumpe Abluft-WP', status: on ? 'running' : 'off', flow: '15,2 m³/h', dn: 'DN 65' })} />
-          <PT x={470} y={100} v="35°C" c={C.warmPipe} />
-          <PT x={525} y={100} v="40°C" c={C.hotPipe} />
+          <E id="P02"><Pump x={455} y={125} id="P02" on={!!on}
+            onClick={() => s({ id: 'P02', name: 'Pumpe P02', desc: 'Umwälzpumpe Abluft-WP', status: on ? 'running' : 'off', flow: '15,2 m³/h', dn: 'DN 65' })} /></E>
+          <E id="PT1"><PT x={470} y={100} v="35°C" c={C.warmPipe} /></E>
+          <E id="PT2"><PT x={525} y={100} v="40°C" c={C.hotPipe} /></E>
 
           {/* Erdwärme → Absperrventil → P01 → Schmutzfänger → Absperrventil → WT (VL) */}
           <Pipe d={`M115,${VL} L128,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
           <V x={133} y={VL} />
           <Pipe d={`M138,${VL} L147,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
-          <Pump x={162} y={VL} id="P01" on={!!on}
-            onClick={() => s({ id: 'P01', name: 'Pumpe P01', desc: 'Umwälzpumpe Erdwärme', status: on ? 'running' : 'off', flow: '42,1 m³/h', dn: 'DN 80' })} />
+          <E id="P01"><Pump x={162} y={VL} id="P01" on={!!on}
+            onClick={() => s({ id: 'P01', name: 'Pumpe P01', desc: 'Umwälzpumpe Erdwärme', status: on ? 'running' : 'off', flow: '42,1 m³/h', dn: 'DN 80' })} /></E>
           <Pipe d={`M176,${VL} L188,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
           {/* Rückschlagventil nach P01 */}
           <RV x={192} y={VL} />
@@ -547,7 +682,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M234,${VL} L350,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
           <L x={142} y={VL - 16} t="DN 80" />
           {/* VL Temperatur-Fühler */}
-          <PT x={298} y={VL - 18} v={`${aus}°`} c={C.geoPipe} />
+          <E id="PT3"><PT x={298} y={VL - 18} v={`${aus}°`} c={C.geoPipe} /></E>
           <TF x={275} y={VL - 8} c={C.geoPipe} />
 
           {/* Erdwärme ← Absperrventil ← RL */}
@@ -555,7 +690,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <V x={222} y={RL} />
           <Pipe d={`M216,${RL} L115,${RL} L65,${RL} L65,${VL + 20}`} c={C.geoPipe} w={2.5} dash="5,3" />
           {/* RL Temperatur-Fühler */}
-          <PT x={298} y={RL + 18} v={`${rl}°`} c={C.coldPipe} />
+          <E id="PT4"><PT x={298} y={RL + 18} v={`${rl}°`} c={C.coldPipe} /></E>
           <TF x={275} y={RL + 10} c={C.coldPipe} />
 
           {/* Auslegungsdaten Erdwärme */}
@@ -570,13 +705,13 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* ════════════════════════════════════════
                PUFFER PVT  (2000 L)
                ════════════════════════════════════════ */}
-          <Tank cx={235} y={VL - 45} w={48} h={RL - VL + 90} label="Puffer PVT" vol="2000 L"
+          <E id="TANK_PVT"><Tank cx={235} y={VL - 45} w={48} h={RL - VL + 90} label="Puffer PVT" vol="2000 L"
             temps={[`${po}°`, `${pm}°`, `${pu}°`]} grad="gTankHot"
-            onClick={() => s({ id: 'PS1', name: 'Pufferspeicher PVT', desc: 'Hydr. Trennung, 2000 L', status: on ? 'running' : 'standby', temp: `${po}°C`, power: '2000 L', dn: 'DN 100' })} />
+            onClick={() => s({ id: 'PS1', name: 'Pufferspeicher PVT', desc: 'Hydr. Trennung, 2000 L', status: on ? 'running' : 'standby', temp: `${po}°C`, power: '2000 L', dn: 'DN 100' })} /></E>
           {/* MAG am Puffer PVT */}
-          <MAG x={195} y={VL + 35} />
+          <E id="MAG1"><MAG x={195} y={VL + 35} /></E>
           {/* Sicherheitsventil Puffer PVT */}
-          <SV x={195} y={RL + 20} label="SV 3bar" />
+          <E id="SV3bar"><SV x={195} y={RL + 20} label="SV 3bar" /></E>
 
           {/* Puffer PVT Info-Box */}
           <g transform={`translate(175,${RL + 50})`}>
@@ -590,8 +725,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M259,${VL} L290,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
           <V x={296} y={VL} />
           <Pipe d={`M302,${VL} L316,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
-          <Pump x={330} y={VL} id="P03" on={!!on}
-            onClick={() => s({ id: 'P03', name: 'Pumpe P03', desc: 'Umwälzpumpe Puffer PVT', status: on ? 'running' : 'off', flow: '28,5 m³/h', dn: 'DN 100' })} />
+          <E id="P03"><Pump x={330} y={VL} id="P03" on={!!on}
+            onClick={() => s({ id: 'P03', name: 'Pumpe P03', desc: 'Umwälzpumpe Puffer PVT', status: on ? 'running' : 'off', flow: '28,5 m³/h', dn: 'DN 100' })} /></E>
           <RV x={346} y={VL} />
           <Pipe d={`M350,${VL} L352,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
           <L x={286} y={VL - 16} t="DN 100" />
@@ -615,8 +750,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <text x={380} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="4">WT 47 kW</text>
           <L x={362} y={VL - 12} t="DN 80" />
           {/* WT VL/RL Temps */}
-          <PT x={370} y={VL - 24} v={`${aus}°`} c={C.geoPipe} />
-          <PT x={370} y={RL + 35} v={`${rl}°`} c={C.coldPipe} />
+          <E id="PT5"><PT x={370} y={VL - 24} v={`${aus}°`} c={C.geoPipe} /></E>
+          <E id="PT6"><PT x={370} y={RL + 35} v={`${rl}°`} c={C.coldPipe} /></E>
           {/* TF sensors at WT (4 total) */}
           <TF x={358} y={VL + 8} c={C.warmPipe} />
           <TF x={358} y={RL - 8} c={C.coldPipe} />
@@ -663,7 +798,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <text x={538} y={VL - 40} fill={C.dim} fontSize="4.5">DN 25</text>
 
           {/* SV (Sicherheitsventil) im WP-Bereich */}
-          <SV x={580} y={VL - 42} label="SV 3,5" />
+          <E id="SV3,5"><SV x={580} y={VL - 42} label="SV 3,5" /></E>
 
           {/* 400V Label */}
           <text x={550} y={RL + 54} textAnchor="middle" fill={C.dim} fontSize="3" opacity="0.4">400V · 3~ · 50Hz</text>
@@ -671,7 +806,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* ════════════════════════════════════════
                WÄRMEPUMPE  (175 kW)
                ════════════════════════════════════════ */}
-          <g className="cursor-pointer" onClick={() => s({ id: 'WP1', name: 'Wärmepumpe', desc: '175 kW th. / 38,9 kW el.', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '175 kW', dn: 'DN 100' })}>
+          <E id="WP"><g className="cursor-pointer" onClick={() => s({ id: 'WP1', name: 'Wärmepumpe', desc: '175 kW th. / 38,9 kW el.', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '175 kW', dn: 'DN 100' })}>
             {on && <rect x={473} y={VL - 28} width={114} height={RL - VL + 56} rx="7" fill={C.hotPipe} opacity="0.04" filter="url(#gl)" />}
             <rect x={475} y={VL - 26} width={110} height={RL - VL + 52} rx="5"
               fill={C.panel} stroke={on ? C.hotPipe : C.border} strokeWidth={on ? 2 : 1.2} />
@@ -685,18 +820,18 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             <circle cx={490} cy={RL + 12} r={3.5} fill={on ? C.pumpOn : C.pumpOff} className={on ? 'pp' : ''} />
             <text x={500} y={RL + 15} fill={on ? C.pumpOn : C.pumpOff} fontSize="4" fontWeight="600">{on ? 'AKTIV' : 'STANDBY'}</text>
             <text x={530} y={RL + 25} textAnchor="middle" fill={C.dim} fontSize="3.5">400V · SV 3,5 bar</text>
-          </g>
+          </g></E>
           <L x={470} y={VL - 12} t="DN 100" />
 
           {/* WP → Absperrventil → P04 (VL) */}
           <Pipe d={`M585,${VL} L605,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
           <V x={612} y={VL} />
           <Pipe d={`M618,${VL} L640,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
-          <Pump x={660} y={VL} id="P04" on={!!on}
-            onClick={() => s({ id: 'P04', name: 'Pumpe P04', desc: 'Umwälzpumpe Heizung', status: on ? 'running' : 'off', flow: '18,3 m³/h', dn: 'DN 100' })} />
+          <E id="P04"><Pump x={660} y={VL} id="P04" on={!!on}
+            onClick={() => s({ id: 'P04', name: 'Pumpe P04', desc: 'Umwälzpumpe Heizung', status: on ? 'running' : 'off', flow: '18,3 m³/h', dn: 'DN 100' })} /></E>
           <RV x={678} y={VL} />
           <Pipe d={`M682,${VL} L720,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
-          <PT x={700} y={VL - 20} v={`${vl}°`} c={C.hotPipe} />
+          <E id="PT7"><PT x={700} y={VL - 20} v={`${vl}°`} c={C.hotPipe} /></E>
           <L x={620} y={VL - 16} t="DN 100" />
           <TF x={710} y={VL + 10} c={C.hotPipe} />
 
@@ -704,7 +839,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M585,${RL} L618,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={3} dash="5,3" />
           <V x={625} y={RL} />
           <Pipe d={`M632,${RL} L720,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={3} dash="5,3" />
-          <PT x={700} y={RL + 20} v={`${rl}°`} c={C.coldPipe} />
+          <E id="PT8"><PT x={700} y={RL + 20} v={`${rl}°`} c={C.coldPipe} /></E>
           <L x={620} y={RL + 14} t="DN 100" />
           <TF x={710} y={RL - 8} c={C.coldPipe} />
 
@@ -719,12 +854,12 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* ════════════════════════════════════════
                PUFFER HEIZUNG  (1500 L)
                ════════════════════════════════════════ */}
-          <Tank cx={750} y={VL - 45} w={44} h={RL - VL + 90} label="Puffer HZ" vol="1500 L"
+          <E id="TANK_HZ"><Tank cx={750} y={VL - 45} w={44} h={RL - VL + 90} label="Puffer HZ" vol="1500 L"
             temps={[`${vl}°`, undefined, `${rl}°`]} grad="gTankHot"
-            onClick={() => s({ id: 'PS2', name: 'Pufferspeicher HZ', desc: '1500 L', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '1500 L', dn: 'DN 80' })} />
-          <MAG x={788} y={VL + 35} />
+            onClick={() => s({ id: 'PS2', name: 'Pufferspeicher HZ', desc: '1500 L', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '1500 L', dn: 'DN 80' })} /></E>
+          <E id="MAG2"><MAG x={788} y={VL + 35} /></E>
           {/* SV am Puffer HZ */}
-          <SV x={726} y={VL - 52} label="SV 3" />
+          <E id="SV3"><SV x={726} y={VL - 52} label="SV 3" /></E>
 
           {/* Puffer HZ info */}
           <g transform={`translate(720,${RL + 52})`}>
@@ -737,8 +872,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M772,${VL} L794,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
           <V x={800} y={VL} />
           <Pipe d={`M806,${VL} L818,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
-          <Pump x={835} y={VL} id="P05" on={!!on}
-            onClick={() => s({ id: 'P05', name: 'Pumpe P05', desc: 'Umwälzpumpe Verteiler', status: on ? 'running' : 'off', flow: '22,1 m³/h', dn: 'DN 65' })} />
+          <E id="P05"><Pump x={835} y={VL} id="P05" on={!!on}
+            onClick={() => s({ id: 'P05', name: 'Pumpe P05', desc: 'Umwälzpumpe Verteiler', status: on ? 'running' : 'off', flow: '22,1 m³/h', dn: 'DN 65' })} /></E>
           <Pipe d={`M849,${VL} L870,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
           {/* Strangregulierventil */}
           <g transform={`translate(877,${VL})`}>
@@ -748,7 +883,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M883,${VL} L895,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
           <L x={810} y={VL - 16} t="DN 65" />
           {/* VL Temp nach P05 */}
-          <PT x={865} y={VL - 20} v={`${vl}°`} c={C.hotPipe} />
+          <E id="PT9"><PT x={865} y={VL - 20} v={`${vl}°`} c={C.hotPipe} /></E>
 
           {/* Puffer HZ ← Absperrventil ← Verteiler (RL) */}
           <Pipe d={`M772,${RL} L806,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
@@ -756,7 +891,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M794,${RL} L895,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
           <L x={810} y={RL + 14} t="DN 55" />
           {/* RL Temp */}
-          <PT x={865} y={RL + 18} v={`${rl}°`} c={C.coldPipe} />
+          <E id="PT10"><PT x={865} y={RL + 18} v={`${rl}°`} c={C.coldPipe} /></E>
 
           {/* ════════════════════════════════════════
                VERTEILER HEIZUNG (mit Mischern + Temps)
@@ -864,7 +999,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </g>
 
           {/* SV + Entlüftung am Brunnen-WT */}
-          <SV x={1190} y={VL - 25} label="SV 3" />
+          <E id="SV3"><SV x={1190} y={VL - 25} label="SV 3" /></E>
           <EBox x={1225} y={VL - 25} label="Entlüft." />
 
           {/* ──── Primär-VL: Brunnen-WT → rechts ──── */}
@@ -878,7 +1013,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             <polygon points="4,-3 0,0 4,3" fill={C.coolPipe} stroke={C.coolPipe} strokeWidth="0.6" />
           </g>
           <Pipe d={`M1294,${VL} L1320,${VL}`} c={C.coolPipe} w={2.5} />
-          <PT x={1260} y={VL - 22} v="37°" c={C.coolPipe} />
+          <E id="PT11"><PT x={1260} y={VL - 22} v="37°" c={C.coolPipe} /></E>
           <L x={1296} y={VL - 10} t="DN 65" />
 
           {/* ──── Primär-RL: Brunnen-WT ← links ──── */}
@@ -886,7 +1021,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <V x={1256} y={RL} />
           <Pipe d={`M1250,${RL} L1320,${RL}`} c={C.coolPipe} w={2} dash="4,3" />
           <TF x={1275} y={RL + 10} c={C.coolPipe} />
-          <PT x={1260} y={RL + 22} v="18°" c={C.coolPipe} />
+          <E id="PT12"><PT x={1260} y={RL + 22} v="18°" c={C.coolPipe} /></E>
           <L x={1296} y={RL + 12} t="DN 65" />
 
           {/* ──── Pendelleitung DN 20 (vertikal links) ──── */}
@@ -957,20 +1092,20 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <TF x={1268} y={RL + 102} c={C.coolPipe} />
 
           {/* MAG am Kältegestell */}
-          <MAG x={1405} y={RL + 68} />
+          <E id="MAG3"><MAG x={1405} y={RL + 68} /></E>
 
           {/* P06 + P07 */}
-          <Pump x={1185} y={RL + 68} id="P06" on={false}
-            onClick={() => s({ id: 'P06', name: 'Pumpe P06', desc: 'Umwälzpumpe Kühlung Primär', status: 'standby', flow: '12,4 m³/h', dn: 'DN 80' })} />
-          <Pump x={1185} y={RL + 95} id="P07" on={false}
-            onClick={() => s({ id: 'P07', name: 'Pumpe P07', desc: 'Umwälzpumpe Kühlung Sekundär', status: 'standby', flow: '8,7 m³/h', dn: 'DN 65' })} />
+          <E id="P06"><Pump x={1185} y={RL + 68} id="P06" on={false}
+            onClick={() => s({ id: 'P06', name: 'Pumpe P06', desc: 'Umwälzpumpe Kühlung Primär', status: 'standby', flow: '12,4 m³/h', dn: 'DN 80' })} /></E>
+          <E id="P07"><Pump x={1185} y={RL + 95} id="P07" on={false}
+            onClick={() => s({ id: 'P07', name: 'Pumpe P07', desc: 'Umwälzpumpe Kühlung Sekundär', status: 'standby', flow: '8,7 m³/h', dn: 'DN 65' })} /></E>
 
           {/* DN Labels */}
           <L x={1222} y={RL + 60} t="DN 80" />
           <L x={1222} y={RL + 106} t="DN 80" />
 
           {/* SV am Kältegestell */}
-          <SV x={1320} y={RL + 45} label="SV 3" />
+          <E id="SV3"><SV x={1320} y={RL + 45} label="SV 3" /></E>
 
           {/* ── Kältespeicher Info-Box (unten) ── */}
           <g transform={`translate(1180,${RL + 128})`}>
@@ -986,8 +1121,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M1320,${RL + 38} L1320,${RL + 42} L1440,${RL + 42} L1440,${VL + 116}`} c={C.coolPipe} w={2} dash="4,3" />
 
           {/* VL/RL Temps vor Verteiler */}
-          <PT x={1395} y={VL + 76} v="37°" c={C.coolPipe} />
-          <PT x={1460} y={RL + 36} v="18°" c={C.coolPipe} />
+          <E id="PT13"><PT x={1395} y={VL + 76} v="37°" c={C.coolPipe} /></E>
+          <E id="PT14"><PT x={1460} y={RL + 36} v="18°" c={C.coolPipe} /></E>
           <L x={1330} y={VL + 78} t="DN 65" />
           <L x={1330} y={RL + 38} t="DN 65" />
 
@@ -1022,7 +1157,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <text x={1506} y={VL + 22} textAnchor="middle" fill={C.dim} fontSize="3">Reserve</text>
 
           {/* MAG Kälte Verteiler */}
-          <MAG x={1420} y={VL + 148} />
+          <E id="MAG4"><MAG x={1420} y={VL + 148} /></E>
 
           {/* ════════════════════════════════════════
                ANIMIERTE STRÖMUNG
@@ -1057,8 +1192,25 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </text>
         </svg>
 
-      {sel && <DetailPanel i={sel} onClose={() => setSel(null)} />}
+      {sel && !editMode && <DetailPanel i={sel} onClose={() => setSel(null)} />}
     </div>
+    </EditContext.Provider>
+
+    {/* Edit Changes Panel */}
+    {editMode && changedItems.length > 0 && <div className="px-3 py-2 bg-[#111620] rounded-lg border border-amber-500/20 text-[10px] font-mono">
+      <span className="text-slate-400 text-[11px] font-sans font-medium">Geänderte Positionen:</span>
+      <div className="mt-1 grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-0.5">
+        {changedItems.map(([id, v]) => (
+          <div key={id} className="contents">
+            <span className={`${editSel === id ? 'text-amber-400' : 'text-emerald-400'} cursor-pointer`}
+              onClick={() => setEditSel(id)}>{id}</span>
+            <span className="text-amber-400">Δx={v.dx} Δy={v.dy}</span>
+            <button onClick={() => setOffsets(p => { const n = { ...p }; delete n[id]; return n; })}
+              className="text-red-500/60 hover:text-red-400">×</button>
+          </div>
+        ))}
+      </div>
+    </div>}
 
     {/* Legende */}
     <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-[10px]">
