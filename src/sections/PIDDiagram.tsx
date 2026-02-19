@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, ZoomIn, ZoomOut, RotateCcw, Droplets } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw, Droplets, Maximize2 } from 'lucide-react';
 import type { HeatingData } from '@/types/heating';
 
 /* ═══════════════════════════════════════════════════════════
@@ -325,10 +325,123 @@ function Ch({ l, v, badge, c = 'text-slate-300', mono }: { l: string; v?: string
 export function PIDDiagram({ data }: { data: HeatingData | null }) {
   const [sel, setSel] = useState<CI | null>(null);
   const [flow, setFlow] = useState(true);
-  const [zoom, setZoom] = useState(1);
+
+  // ── SVG viewBox zoom + pan ──
+  const SVG_W = 1560, SVG_H = 640;
+  const [vb, setVb] = useState({ x: 0, y: 0, w: SVG_W, h: SVG_H });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStart = useRef({ x: 0, y: 0, vbx: 0, vby: 0 });
+  const didPan = useRef(false);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const zoomLevel = Math.round((SVG_W / vb.w) * 100);
+
+  const zoomTo = useCallback((factor: number, cx?: number, cy?: number) => {
+    setVb(prev => {
+      const newW = Math.max(SVG_W * 0.15, Math.min(SVG_W * 1.2, prev.w / factor));
+      const newH = Math.max(SVG_H * 0.15, Math.min(SVG_H * 1.2, prev.h / factor));
+      // Zoom towards center or pointer
+      const focusX = cx ?? (prev.x + prev.w / 2);
+      const focusY = cy ?? (prev.y + prev.h / 2);
+      const ratioX = (focusX - prev.x) / prev.w;
+      const ratioY = (focusY - prev.y) / prev.h;
+      return {
+        x: Math.max(-200, Math.min(SVG_W, focusX - newW * ratioX)),
+        y: Math.max(-200, Math.min(SVG_H, focusY - newH * ratioY)),
+        w: newW, h: newH,
+      };
+    });
+  }, []);
+
+  const resetZoom = useCallback(() => setVb({ x: 0, y: 0, w: SVG_W, h: SVG_H }), []);
+
+  // Mouse pointer → SVG coords
+  const svgPoint = useCallback((clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const rect = svg.getBoundingClientRect();
+    return {
+      x: vb.x + (clientX - rect.left) / rect.width * vb.w,
+      y: vb.y + (clientY - rect.top) / rect.height * vb.h,
+    };
+  }, [vb]);
+
+  // Wheel zoom
+  const onWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    const pt = svgPoint(e.clientX, e.clientY);
+    zoomTo(factor, pt.x, pt.y);
+  }, [zoomTo, svgPoint]);
+
+  // Pan start
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    setIsPanning(true);
+    didPan.current = false;
+    panStart.current = { x: e.clientX, y: e.clientY, vbx: vb.x, vby: vb.y };
+    (e.target as Element).setPointerCapture(e.pointerId);
+  }, [vb]);
+
+  // Pan move
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isPanning) return;
+    const svg = svgRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const dx = (e.clientX - panStart.current.x) / rect.width * vb.w;
+    const dy = (e.clientY - panStart.current.y) / rect.height * vb.h;
+    if (Math.abs(e.clientX - panStart.current.x) > 3 || Math.abs(e.clientY - panStart.current.y) > 3) {
+      didPan.current = true;
+    }
+    setVb(prev => ({
+      ...prev,
+      x: Math.max(-200, Math.min(SVG_W, panStart.current.vbx - dx)),
+      y: Math.max(-200, Math.min(SVG_H, panStart.current.vby - dy)),
+    }));
+  }, [isPanning, vb.w, vb.h]);
+
+  // Pan end
+  const onPointerUp = useCallback(() => setIsPanning(false), []);
+
+  // Touch pinch zoom
+  const lastTouchDist = useRef(0);
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastTouchDist.current = Math.hypot(dx, dy);
+    }
+  }, []);
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      if (lastTouchDist.current > 0) {
+        const factor = dist / lastTouchDist.current;
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const pt = svgPoint(midX, midY);
+        zoomTo(factor, pt.x, pt.y);
+      }
+      lastTouchDist.current = dist;
+    }
+  }, [zoomTo, svgPoint]);
+
+  // Prevent default scroll on container
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const prevent = (e: WheelEvent) => e.preventDefault();
+    el.addEventListener('wheel', prevent, { passive: false });
+    return () => el.removeEventListener('wheel', prevent);
+  }, []);
 
   const on = data?.status === 'heizen';
-  const s = (i: CI) => setSel(i);
+  const s = (i: CI) => { if (!didPan.current) setSel(i); };
 
   const vl = data?.vorlauftemperatur?.toFixed(0) ?? '--';
   const rl = data?.ruecklauftemperatur?.toFixed(0) ?? '--';
@@ -355,10 +468,11 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Droplets className="w-3.5 h-3.5 mr-1" />{flow ? 'Strömung AN' : 'Strömung AUS'}
         </Button>
         <div className="flex items-center gap-1 bg-[#111620] rounded-lg border border-[#1e2736] p-0.5">
-          <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(0.5, zoom - 0.15))} className="text-slate-400 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
-          <span className="text-xs text-slate-400 w-10 text-center">{Math.round(zoom * 100)}%</span>
-          <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(2, zoom + 0.15))} className="text-slate-400 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
-          <Button variant="ghost" size="sm" onClick={() => setZoom(1)} className="text-slate-400 h-7 w-7 p-0"><RotateCcw className="w-3.5 h-3.5" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => zoomTo(1.3)} className="text-slate-400 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
+          <span className="text-xs text-slate-400 w-12 text-center font-mono">{zoomLevel}%</span>
+          <Button variant="ghost" size="sm" onClick={() => zoomTo(0.77)} className="text-slate-400 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
+          <Button variant="ghost" size="sm" onClick={resetZoom} className="text-slate-400 h-7 w-7 p-0" title="Zurücksetzen"><RotateCcw className="w-3.5 h-3.5" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => { setVb({ x: 0, y: 0, w: SVG_W, h: SVG_H }); }} className="text-slate-400 h-7 w-7 p-0" title="Übersicht"><Maximize2 className="w-3.5 h-3.5" /></Button>
         </div>
       </div>
     </div>
@@ -379,10 +493,26 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     </div>
 
     {/* ═════════════ SVG ═════════════ */}
-    <div className="relative overflow-auto rounded-xl border border-[#1e2736]" style={{ background: C.bg, maxHeight: 680 }}
-      onClick={() => setSel(null)}>
-      <div style={{ transform: `scale(${zoom})`, transformOrigin: '0 0' }}>
-        <svg viewBox="0 0 1560 640" width={1560} height={640} style={{ display: 'block' }}>
+    <div ref={containerRef}
+      className="relative rounded-xl border border-[#1e2736] select-none"
+      style={{ background: C.bg, maxHeight: 680, overflow: 'hidden', touchAction: 'none' }}
+      onClick={() => { if (!didPan.current) setSel(null); }}>
+      {/* Zoom hint */}
+      {zoomLevel <= 105 && <div className="absolute top-2 right-2 z-10 text-[10px] text-slate-600 pointer-events-none">
+        Mausrad = Zoom · Ziehen = Verschieben
+      </div>}
+      <svg ref={svgRef}
+        viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
+        width="100%" height="100%"
+        style={{ display: 'block', aspectRatio: `${SVG_W}/${SVG_H}`, cursor: isPanning ? 'grabbing' : 'grab' }}
+        preserveAspectRatio="xMidYMid meet"
+        onWheel={onWheel}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerLeave={onPointerUp}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}>
           <Defs />
           {/* Grid */}
           <pattern id="gr" width="30" height="30" patternUnits="userSpaceOnUse">
@@ -976,7 +1106,6 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             ② Hauptstation + Anschluss an Satellitenhaus – Detail · Darmstadt 2026
           </text>
         </svg>
-      </div>
 
       {sel && <DetailPanel i={sel} onClose={() => setSel(null)} />}
     </div>
