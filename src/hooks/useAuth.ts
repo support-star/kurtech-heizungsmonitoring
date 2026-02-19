@@ -8,7 +8,7 @@ const SHARED_PASSWORD = 'Darmstadt2026';
 
 const USERS: Record<string, User> = {
   'samir':       { username: 'samir',       password: SHARED_PASSWORD, role: 'admin',      anlageId: '*' },
-  'josip':       { username: 'josip',       password: SHARED_PASSWORD, role: 'customer',   anlageId: 'WP-001' },
+  'josip':       { username: 'josip',       password: SHARED_PASSWORD, role: 'admin',      anlageId: '*' },
   'installateur':{ username: 'installateur',password: SHARED_PASSWORD, role: 'installer',  anlageId: '*' },
   'techniker':   { username: 'techniker',   password: SHARED_PASSWORD, role: 'technician', anlageId: '*' },
   'admin':       { username: 'admin',       password: SHARED_PASSWORD, role: 'admin',      anlageId: '*' },
