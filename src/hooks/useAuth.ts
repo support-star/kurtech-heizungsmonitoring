@@ -27,6 +27,13 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('kurtech_user');
+    const storedVersion = localStorage.getItem('kurtech_auth_v');
+    // Alte Sessions (vor Passwort-Änderung) invalidieren
+    if (storedVersion !== '2') {
+      localStorage.removeItem('kurtech_user');
+      localStorage.removeItem('kurtech_auth_v');
+      return;
+    }
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -45,6 +52,7 @@ export function useAuth(): AuthState {
       setUser(foundUser);
       setIsAuthenticated(true);
       localStorage.setItem('kurtech_user', JSON.stringify(foundUser));
+      localStorage.setItem('kurtech_auth_v', '2');
       return true;
     }
 
@@ -54,6 +62,7 @@ export function useAuth(): AuthState {
       setUser(guestUser);
       setIsAuthenticated(true);
       localStorage.setItem('kurtech_user', JSON.stringify(guestUser));
+      localStorage.setItem('kurtech_auth_v', '2');
       return true;
     }
 
@@ -64,6 +73,7 @@ export function useAuth(): AuthState {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('kurtech_user');
+    localStorage.removeItem('kurtech_auth_v');
   }, []);
 
   return { isAuthenticated, user, login, logout };
