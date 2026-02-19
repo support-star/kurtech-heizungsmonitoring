@@ -4,6 +4,10 @@ import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, RotateCcw, X, Move, MousePointer } from 'lucide-react';
 import type { HeatingData } from '@/types/heating';
 
+// Bilder als Vite-Assets importieren (garantiert korrekter Pfad)
+import pidHeizungImg from '@/assets/pid-heizung.png';
+import pidKuehlungImg from '@/assets/pid-kuehlung.png';
+
 // ═══════════════════════════════════════════════════════════════
 //  HOTSPOT & OVERLAY DEFINITIONEN
 //  x, y, w, h → alles in PROZENT des Bildes
@@ -116,6 +120,8 @@ function PIDView({ imgSrc, hotspots, overlays, data, imgW, imgH }: {
   const containerRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const onMD = (e: React.MouseEvent) => {
     dragging.current = true;
@@ -196,7 +202,27 @@ function PIDView({ imgSrc, hotspots, overlays, data, imgW, imgH }: {
           width: imgW, height: imgH,
         }}>
           {/* Original-Zeichnung */}
-          <img src={imgSrc} alt="P&ID" style={{ width: imgW, height: imgH, display: 'block' }} draggable={false} />
+          <img
+            src={imgSrc}
+            alt="P&ID"
+            style={{ width: imgW, height: imgH, display: 'block' }}
+            draggable={false}
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+          />
+
+          {/* Lade-Anzeige */}
+          {!imgLoaded && !imgError && (
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}>
+              <div className="text-slate-400 text-sm animate-pulse">Zeichnung wird geladen...</div>
+            </div>
+          )}
+          {imgError && (
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', textAlign: 'center' }}>
+              <div className="text-red-400 text-sm font-bold mb-2">⚠️ Bild konnte nicht geladen werden</div>
+              <div className="text-slate-500 text-xs">Pfad: {imgSrc}</div>
+            </div>
+          )}
 
           {/* ── Hotspots ── */}
           {hotspots.map(h => {
@@ -416,9 +442,9 @@ export function PIDDiagram({ data }: PIDDiagramProps) {
 
       {/* P&ID View */}
       {tab === 'heizung' ? (
-        <PIDView imgSrc="./pid-heizung.png" hotspots={HEIZ_HOTSPOTS} overlays={HEIZ_OVERLAYS} data={data} imgW={2000} imgH={1204} />
+        <PIDView imgSrc={pidHeizungImg} hotspots={HEIZ_HOTSPOTS} overlays={HEIZ_OVERLAYS} data={data} imgW={2000} imgH={1204} />
       ) : (
-        <PIDView imgSrc="./pid-kuehlung.png" hotspots={KUEHL_HOTSPOTS} overlays={KUEHL_OVERLAYS} data={data} imgW={2000} imgH={1211} />
+        <PIDView imgSrc={pidKuehlungImg} hotspots={KUEHL_HOTSPOTS} overlays={KUEHL_OVERLAYS} data={data} imgW={2000} imgH={1211} />
       )}
 
       {/* Hinweis */}
