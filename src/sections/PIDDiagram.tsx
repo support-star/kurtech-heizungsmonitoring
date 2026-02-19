@@ -357,15 +357,31 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <PT x={470} y={100} v="35°C" c={C.warmPipe} />
           <PT x={525} y={100} v="40°C" c={C.hotPipe} />
 
-          {/* Erdwärme → P01 → WT (VL) */}
-          <Pipe d={`M115,${VL} L140,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
-          <Pump x={158} y={VL} id="P01" on={!!on}
+          {/* Erdwärme → Absperrventil → P01 → Schmutzfänger → Absperrventil → WT (VL) */}
+          <Pipe d={`M115,${VL} L128,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
+          <V x={133} y={VL} />
+          <Pipe d={`M138,${VL} L147,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
+          <Pump x={162} y={VL} id="P01" on={!!on}
             onClick={() => s({ id: 'P01', name: 'Pumpe P01', desc: 'Umwälzpumpe Erdwärme', status: on ? 'running' : 'off', flow: '42,1 m³/h', dn: 'DN 80' })} />
-          <Pipe d={`M172,${VL} L350,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
-          <L x={178} y={VL - 16} t="DN 80" />
+          <Pipe d={`M176,${VL} L195,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
+          {/* Schmutzfänger (Y-Filter Symbol) */}
+          <g transform={`translate(202,${VL})`}>
+            <polygon points="-5,-5 5,-5 0,5" fill="none" stroke={C.geoPipe} strokeWidth="1.2" />
+            <line x1="0" y1="5" x2="0" y2="9" stroke={C.geoPipe} strokeWidth="1" />
+          </g>
+          <Pipe d={`M208,${VL} L222,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
+          <V x={228} y={VL} />
+          <Pipe d={`M234,${VL} L350,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
+          <L x={142} y={VL - 16} t="DN 80" />
+          {/* VL Temperatur-Fühler */}
+          <PT x={298} y={VL - 18} v={`${aus}°`} c={C.geoPipe} />
 
-          {/* Erdwärme ← RL */}
-          <Pipe d={`M350,${RL} L115,${RL} L65,${RL} L65,${VL + 20}`} c={C.geoPipe} w={2.5} dash="5,3" />
+          {/* Erdwärme ← Absperrventil ← RL */}
+          <Pipe d={`M350,${RL} L228,${RL}`} c={C.geoPipe} w={2.5} dash="5,3" />
+          <V x={222} y={RL} />
+          <Pipe d={`M216,${RL} L115,${RL} L65,${RL} L65,${VL + 20}`} c={C.geoPipe} w={2.5} dash="5,3" />
+          {/* RL Temperatur-Fühler */}
+          <PT x={298} y={RL + 18} v={`${rl}°`} c={C.coldPipe} />
 
           {/* Auslegungsdaten Erdwärme */}
           <g transform={`translate(120,${RL + 22})`}>
@@ -382,16 +398,30 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Tank cx={235} y={VL - 45} w={48} h={RL - VL + 90} label="Puffer PVT" vol="2000 L"
             temps={[`${po}°`, `${pm}°`, `${pu}°`]} grad="gTankHot"
             onClick={() => s({ id: 'PS1', name: 'Pufferspeicher PVT', desc: 'Hydr. Trennung, 2000 L', status: on ? 'running' : 'standby', temp: `${po}°C`, power: '2000 L', dn: 'DN 100' })} />
+          {/* MAG am Puffer PVT */}
+          <MAG x={195} y={VL + 35} />
 
-          {/* Puffer PVT → P03 → WT  (VL) */}
-          <Pipe d={`M259,${VL} L312,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
+          {/* Puffer PVT Info-Box */}
+          <g transform={`translate(175,${RL + 50})`}>
+            <rect width="100" height="28" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" opacity="0.7" />
+            <text x="50" y="10" textAnchor="middle" fill={C.dim} fontSize="5.5" fontWeight="600">Pufferspeicher PVT</text>
+            <text x="50" y="19" textAnchor="middle" fill={C.text} fontSize="5.5">hydr. Trennung · 2000 L</text>
+            <text x="50" y="27" textAnchor="middle" fill={C.text} fontSize="5.5">Unterdruckspeicher · 395 AT</text>
+          </g>
+
+          {/* Puffer PVT → Absperrventil → P03 → WT  (VL) */}
+          <Pipe d={`M259,${VL} L290,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
+          <V x={296} y={VL} />
+          <Pipe d={`M302,${VL} L316,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
           <Pump x={330} y={VL} id="P03" on={!!on}
             onClick={() => s({ id: 'P03', name: 'Pumpe P03', desc: 'Umwälzpumpe Puffer PVT', status: on ? 'running' : 'off', flow: '28,5 m³/h', dn: 'DN 100' })} />
           <Pipe d={`M344,${VL} L352,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
-          <L x={300} y={VL - 16} t="DN 100" />
+          <L x={286} y={VL - 16} t="DN 100" />
 
-          {/* Puffer PVT ← WT (RL) */}
-          <Pipe d={`M259,${RL} L352,${RL}`} c={C.coldPipe} w={2.5} dash="5,3" />
+          {/* Puffer PVT ← Absperrventil ← WT (RL) */}
+          <Pipe d={`M259,${RL} L302,${RL}`} c={C.coldPipe} w={2.5} dash="5,3" />
+          <V x={296} y={RL} />
+          <Pipe d={`M290,${RL} L352,${RL}`} c={C.coldPipe} w={2.5} dash="5,3" />
 
           {/* ════════════════════════════════════════
                WÄRMETAUSCHER  (47 kW) – Halbkreis
@@ -404,11 +434,27 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </g>
           <text x={380} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="7.5">WT 47 kW</text>
           <L x={362} y={VL - 12} t="DN 80" />
+          {/* WT VL/RL Temps (Primär/Sekundär) */}
+          <PT x={370} y={VL - 24} v={`${aus}°`} c={C.geoPipe} />
+          <PT x={370} y={RL + 35} v={`${rl}°`} c={C.coldPipe} />
 
-          {/* WT → WP (VL) */}
-          <Pipe d={`M400,${VL} L465,${VL}`} c={C.warmPipe} glow={C.warmGlow} w={3.5} />
-          {/* WT ← WP (RL) */}
-          <Pipe d={`M400,${RL} L465,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
+          {/* WT → Absperrventil → WP (VL) */}
+          <Pipe d={`M400,${VL} L422,${VL}`} c={C.warmPipe} glow={C.warmGlow} w={3.5} />
+          <V x={428} y={VL} />
+          <Pipe d={`M434,${VL} L465,${VL}`} c={C.warmPipe} glow={C.warmGlow} w={3.5} />
+          {/* WT ← Absperrventil ← WP (RL) */}
+          <Pipe d={`M400,${RL} L434,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
+          <V x={428} y={RL} />
+          <Pipe d={`M422,${RL} L465,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
+
+          {/* WP Zuleitung Info-Box */}
+          <g transform={`translate(590,${VL - 70})`}>
+            <rect width="115" height="40" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.7" opacity="0.8" />
+            <text x="58" y="10" textAnchor="middle" fill={C.dim} fontSize="6" fontWeight="600">Zuleitung WP</text>
+            <text x="58" y="20" textAnchor="middle" fill={C.text} fontSize="5.5">Wärmetauscher · 38°C</text>
+            <text x="58" y="29" textAnchor="middle" fill={C.text} fontSize="5.5">Abl. Wärm.-rückg. · 6,4 kW</text>
+            <text x="58" y="38" textAnchor="middle" fill={C.text} fontSize="5.5">DN 25</text>
+          </g>
 
           {/* ════════════════════════════════════════
                WP-EINHAUSUNG (blaue gestrichelte Box)
@@ -437,17 +483,30 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </g>
           <L x={470} y={VL - 12} t="DN 100" />
 
-          {/* WP → P04 (VL) */}
-          <Pipe d={`M585,${VL} L640,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
+          {/* WP → Absperrventil → P04 (VL) */}
+          <Pipe d={`M585,${VL} L605,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
+          <V x={612} y={VL} />
+          <Pipe d={`M618,${VL} L640,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
           <Pump x={660} y={VL} id="P04" on={!!on}
             onClick={() => s({ id: 'P04', name: 'Pumpe P04', desc: 'Umwälzpumpe Heizung', status: on ? 'running' : 'off', flow: '18,3 m³/h', dn: 'DN 100' })} />
           <Pipe d={`M674,${VL} L720,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
           <PT x={700} y={VL - 20} v={`${vl}°`} c={C.hotPipe} />
-          <L x={640} y={VL - 16} t="DN 100" />
+          <L x={620} y={VL - 16} t="DN 100" />
 
-          {/* WP ← RL */}
-          <Pipe d={`M585,${RL} L720,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={3} dash="5,3" />
+          {/* WP ← Absperrventil ← RL */}
+          <Pipe d={`M585,${RL} L618,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={3} dash="5,3" />
+          <V x={625} y={RL} />
+          <Pipe d={`M632,${RL} L720,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={3} dash="5,3" />
           <PT x={700} y={RL + 20} v={`${rl}°`} c={C.coldPipe} />
+          <L x={620} y={RL + 14} t="DN 100" />
+
+          {/* Aufstellung Info */}
+          <g transform={`translate(610,${RL + 28})`}>
+            <rect width="105" height="34" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.6" opacity="0.7" />
+            <text x="52" y="10" textAnchor="middle" fill={C.dim} fontSize="6" fontWeight="600">Aufstellung WP</text>
+            <text x="52" y="19" textAnchor="middle" fill={C.text} fontSize="5.5">400V · 3~ · 50Hz</text>
+            <text x="52" y="28" textAnchor="middle" fill={C.text} fontSize="5.5">Nennleistung 38,9 kW el</text>
+          </g>
 
           {/* ════════════════════════════════════════
                PUFFER HEIZUNG  (1500 L)
@@ -457,16 +516,37 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             onClick={() => s({ id: 'PS2', name: 'Pufferspeicher HZ', desc: '1500 L', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '1500 L', dn: 'DN 80' })} />
           <MAG x={788} y={VL + 35} />
 
-          {/* Puffer HZ → P05 → Verteiler (VL) */}
-          <Pipe d={`M772,${VL} L818,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
+          {/* Puffer HZ info */}
+          <g transform={`translate(720,${RL + 52})`}>
+            <rect width="80" height="20" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" opacity="0.6" />
+            <text x="40" y="8" textAnchor="middle" fill={C.dim} fontSize="5.5">SV 3 bar · 6K ΔT</text>
+            <text x="40" y="16" textAnchor="middle" fill={C.dim} fontSize="5.5">DN 80 · 1500 L</text>
+          </g>
+
+          {/* Puffer HZ → Absperrventil → P05 → Verteiler (VL) */}
+          <Pipe d={`M772,${VL} L794,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
+          <V x={800} y={VL} />
+          <Pipe d={`M806,${VL} L818,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
           <Pump x={835} y={VL} id="P05" on={!!on}
             onClick={() => s({ id: 'P05', name: 'Pumpe P05', desc: 'Umwälzpumpe Verteiler', status: on ? 'running' : 'off', flow: '22,1 m³/h', dn: 'DN 65' })} />
-          <Pipe d={`M849,${VL} L895,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
-          <L x={850} y={VL - 16} t="DN 65" />
+          <Pipe d={`M849,${VL} L870,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
+          {/* Strangregulierventil */}
+          <g transform={`translate(877,${VL})`}>
+            <polygon points="-5,-4 0,0 -5,4" fill="none" stroke={C.hotPipe} strokeWidth="1.2" />
+            <polygon points="5,-4 0,0 5,4" fill={C.hotPipe} stroke={C.hotPipe} strokeWidth="1.2" />
+          </g>
+          <Pipe d={`M883,${VL} L895,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
+          <L x={810} y={VL - 16} t="DN 65" />
+          {/* VL Temp nach P05 */}
+          <PT x={865} y={VL - 20} v={`${vl}°`} c={C.hotPipe} />
 
-          {/* Puffer HZ ← Verteiler (RL) */}
-          <Pipe d={`M772,${RL} L895,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
-          <L x={850} y={RL + 14} t="DN 55" />
+          {/* Puffer HZ ← Absperrventil ← Verteiler (RL) */}
+          <Pipe d={`M772,${RL} L806,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
+          <V x={800} y={RL} />
+          <Pipe d={`M794,${RL} L895,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
+          <L x={810} y={RL + 14} t="DN 55" />
+          {/* RL Temp */}
+          <PT x={865} y={RL + 18} v={`${rl}°`} c={C.coldPipe} />
 
           {/* ════════════════════════════════════════
                VERTEILER HEIZUNG (mit Mischern + Temps)
@@ -522,23 +602,38 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* Puffer Kälte (1000L) */}
           <Tank cx={1250} y={VL - 30} w={42} h={RL - VL + 70} label="Puffer Kälte" vol="1000 L"
             temps={['37°', undefined, '18°']} grad="gTankCold"
-            onClick={() => s({ id: 'PS3', name: 'Pufferspeicher Kälte', desc: '1000 L', status: 'standby', temp: '37°C', tempRet: '18°C', power: '1000 L', dn: 'DN 80' })} />
+            onClick={() => s({ id: 'PS3', name: 'Pufferspeicher Kälte', desc: '1000 L · Nullenergiebrunnen', status: 'standby', temp: '37°C', tempRet: '18°C', power: '1000 L', dn: 'DN 80' })} />
+
+          {/* Puffer Kälte Info */}
+          <g transform={`translate(1215,${RL + 50})`}>
+            <rect width="95" height="28" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" opacity="0.7" />
+            <text x="48" y="10" textAnchor="middle" fill={C.dim} fontSize="5.5" fontWeight="600">Kältespeicher</text>
+            <text x="48" y="19" textAnchor="middle" fill={C.text} fontSize="5.5">1000 L · DN 80</text>
+            <text x="48" y="27" textAnchor="middle" fill={C.text} fontSize="5.5">Nullenergiebrunnen</text>
+          </g>
 
           {/* Pendelleitung DN 20 */}
           <Pipe d={`M1224,${VL} L1200,${VL} L1200,${RL + 80}`} c={C.coolPipe} w={1} dash="3,2" />
           <text x={1194} y={VL + 50} fill={C.coolPipe} fontSize="5.5" opacity="0.4"
             transform={`rotate(-90,1194,${VL + 50})`}>Pendelltg. DN 20</text>
 
-          {/* Puffer Kälte → P07 → Verteiler K (VL) */}
-          <Pipe d={`M1271,${VL + 5} L1320,${VL + 5}`} c={C.coolPipe} w={2.5} />
+          {/* Puffer Kälte → Absperrventil → P07 → Verteiler K (VL) */}
+          <Pipe d={`M1271,${VL + 5} L1295,${VL + 5}`} c={C.coolPipe} w={2.5} />
+          <V x={1302} y={VL + 5} />
+          <Pipe d={`M1308,${VL + 5} L1320,${VL + 5}`} c={C.coolPipe} w={2.5} />
           <Pump x={1338} y={VL + 5} id="P07" on={false}
             onClick={() => s({ id: 'P07', name: 'Pumpe P07', desc: 'Umwälzpumpe Kältepuffer', status: 'standby', flow: '8,7 m³/h', dn: 'DN 65' })} />
           <Pipe d={`M1352,${VL + 5} L1385,${VL + 5} L1385,${VL + 30}`} c={C.coolPipe} w={2.5} />
-          <L x={1300} y={VL - 8} t="DN 65" />
-          <V x={1305} y={VL + 5} />
+          <L x={1280} y={VL - 8} t="DN 65" />
+          {/* VL Temp */}
+          <PT x={1365} y={VL - 12} v="37°" c={C.coolPipe} />
 
-          {/* Rücklauf Kälte */}
-          <Pipe d={`M1385,${RL + 5} L1385,${RL + 40} L1271,${RL + 40} L1271,${RL}`} c={C.coolPipe} w={2} dash="4,3" />
+          {/* Rücklauf Kälte mit Absperrventil */}
+          <Pipe d={`M1385,${RL + 5} L1385,${RL + 40} L1308,${RL + 40}`} c={C.coolPipe} w={2} dash="4,3" />
+          <V x={1302} y={RL + 40} />
+          <Pipe d={`M1296,${RL + 40} L1271,${RL + 40} L1271,${RL}`} c={C.coolPipe} w={2} dash="4,3" />
+          {/* RL Temp */}
+          <PT x={1365} y={RL + 52} v="18°" c={C.coolPipe} />
 
           {/* P06 */}
           <Pump x={1250} y={RL + 40} id="P06" on={false}
@@ -573,27 +668,27 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
                ANIMIERTE STRÖMUNG
                ════════════════════════════════════════ */}
           {flow && on && <g>
-            {/* Erdwärme → WT */}
-            <Flow path={`M115,${VL} L350,${VL}`} c={C.geoPipe} dur="2.5s" />
-            <Flow path={`M115,${VL} L350,${VL}`} c={C.geoPipe} dur="2.5s" delay="1.2s" />
+            {/* Erdwärme → WT (VL mit Ventilen) */}
+            <Flow path={`M115,${VL} L350,${VL}`} c={C.geoPipe} dur="3s" />
+            <Flow path={`M115,${VL} L350,${VL}`} c={C.geoPipe} dur="3s" delay="1.5s" />
             {/* PVT → Puffer */}
             <Flow path={`M207,100 L207,155 L220,155 L220,${VL - 45}`} c={C.warmPipe} dur="2s" />
             {/* Abluft → Puffer */}
             <Flow path={`M455,100 L455,140 L250,140 L250,${VL - 45}`} c={C.warmPipe} dur="2.5s" />
             {/* Puffer PVT → WT */}
-            <Flow path={`M259,${VL} L355,${VL}`} c={C.warmPipe} dur="1.5s" />
-            {/* WT → WP */}
+            <Flow path={`M259,${VL} L352,${VL}`} c={C.warmPipe} dur="1.5s" />
+            {/* WT → WP (mit Ventil) */}
             <Flow path={`M400,${VL} L465,${VL}`} c={C.warmPipe} dur="1.2s" />
             <Flow path={`M400,${VL} L465,${VL}`} c={C.warmPipe} dur="1.2s" delay="0.6s" />
-            {/* WP → Puffer HZ (VL) */}
+            {/* WP → Puffer HZ (VL mit Ventil) */}
             <Flow path={`M585,${VL} L720,${VL}`} c={C.hotPipe} dur="2s" r={5} />
             <Flow path={`M585,${VL} L720,${VL}`} c={C.hotPipe} dur="2s" delay="1s" r={5} />
-            {/* Puffer HZ → Verteiler */}
+            {/* Puffer HZ → Verteiler (mit Ventil + Strangregulier) */}
             <Flow path={`M772,${VL} L895,${VL}`} c={C.hotPipe} dur="1.8s" r={4} />
             {/* Rücklauf WP */}
             <Flow path={`M720,${RL} L585,${RL}`} c={C.coldPipe} dur="2.5s" r={4} />
             {/* RL Erdwärme */}
-            <Flow path={`M350,${RL} L115,${RL}`} c={C.geoPipe} dur="2.5s" r={3} />
+            <Flow path={`M350,${RL} L115,${RL}`} c={C.geoPipe} dur="3s" r={3} />
           </g>}
 
           {/* Titel */}
@@ -620,8 +715,20 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
         <span className="text-slate-400">Pumpe aktiv</span>
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="w-5 h-0.5 rounded-full border-b border-dashed" style={{ borderColor: C.enclosure }} />
-        <span className="text-slate-400">Einhausung</span>
+        <svg width="12" height="12"><polygon points="3,2 9,6 3,10" fill="none" stroke={C.tankStroke} strokeWidth="1.2" /><polygon points="9,2 3,6 9,10" fill="none" stroke={C.tankStroke} strokeWidth="1.2" /></svg>
+        <span className="text-slate-400">Absperrventil</span>
+      </span>
+      <span className="flex items-center gap-1.5">
+        <svg width="12" height="12"><polygon points="6,1 11,11 1,11" fill="none" stroke={C.geoPipe} strokeWidth="1" /><line x1="6" y1="11" x2="6" y2="14" stroke={C.geoPipe} strokeWidth="0.8" /></svg>
+        <span className="text-slate-400">Schmutzfänger</span>
+      </span>
+      <span className="flex items-center gap-1.5">
+        <svg width="16" height="12"><polygon points="2,2 8,6 2,10" fill="none" stroke={C.accent} strokeWidth="1" /><polygon points="14,2 8,6 14,10" fill={C.accent} stroke={C.accent} strokeWidth="1" /></svg>
+        <span className="text-slate-400">Strangregulierventil</span>
+      </span>
+      <span className="flex items-center gap-1.5">
+        <svg width="14" height="14"><polygon points="4,2 10,2 7,8" fill="none" stroke={C.pumpOn} strokeWidth="1" /><circle cx="7" cy="12" r="3" fill={C.tankFill} stroke={C.pumpOn} strokeWidth="0.8" /><text x="7" y="13.5" textAnchor="middle" fill={C.pumpOn} fontSize="4">M</text></svg>
+        <span className="text-slate-400">3-Wege-Mischer</span>
       </span>
     </div>
   </div>;
