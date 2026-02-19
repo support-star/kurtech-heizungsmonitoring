@@ -162,21 +162,51 @@ function FBH({ x, y, label }: { x: number; y: number; label: string }) {
   </g>;
 }
 
-/** Verteiler-Balken */
-function Dist({ x, y, w, h, label, active, color, onClick }: {
-  x: number; y: number; w: number; h: number;
-  label: string; active?: boolean; color?: string; onClick?: () => void;
-}) {
-  const cl = color || C.accent;
-  return <g className="cursor-pointer" onClick={onClick}>
-    <rect x={x} y={y} width={w} height={h} rx="3" fill={C.panel} stroke={active ? cl : C.border} strokeWidth={active ? 2 : 1.2} />
-    <text x={x + w / 2} y={y + h / 2 + 4} textAnchor="middle" fill={C.bright} fontSize="9.5" fontWeight="700" letterSpacing="0.5">{label}</text>
-    {[0.2, 0.4, 0.6, 0.8].map((p, i) => (
-      <g key={i}><line x1={x + w * p} y1={y} x2={x + w * p} y2={y - 10} stroke={C.border} strokeWidth="1.2" />
-        <V x={x + w * p} y={y - 10} r={90} /></g>
-    ))}
+/** 3-Wege-Mischer (Dreiwegemischventil) – DIN Symbol */
+function Mischer({ x, y, rot = 0, on }: { x: number; y: number; rot?: number; on?: boolean }) {
+  const cl = on ? C.pumpOn : C.pumpOff;
+  return <g transform={`translate(${x},${y}) rotate(${rot})`}>
+    {/* Zwei Dreiecke = Bowtie + dritter Anschluss */}
+    <polygon points="-7,-6 0,0 -7,6" fill="none" stroke={cl} strokeWidth="1.5" />
+    <polygon points="7,-6 0,0 7,6" fill="none" stroke={cl} strokeWidth="1.5" />
+    {/* Bypass-Pfeil (3. Weg) */}
+    <line x1="0" y1="0" x2="0" y2="-10" stroke={cl} strokeWidth="1.3" />
+    <polygon points="-2.5,-10 0,-14 2.5,-10" fill={cl} />
+    {/* M-Kreis (Stellantrieb) */}
+    <circle cx="0" cy="-18" r="5" fill={C.tankFill} stroke={cl} strokeWidth="1" />
+    <text x="0" y="-15.5" textAnchor="middle" fill={cl} fontSize="5.5" fontWeight="700">M</text>
   </g>;
 }
+
+/** Heizkreis-Abgang: VL-Pipe + Mischer + RL-Pipe + Temp-Labels */
+function HKAbgang({ vlX, y, rlY, nr, vlTemp, rlTemp, on, dn }: {
+  vlX: number; y: number; rlY?: number; nr: number; vlTemp: string; rlTemp: string; on?: boolean; dn: string;
+}) {
+  const rlX = vlX + 22;
+  const topY = y - 68;
+  const rlStart = rlY ?? y + 24;
+  return <g>
+    {/* VL hoch (aus VL-Balken) */}
+    <line x1={vlX} y1={y} x2={vlX} y2={topY + 28} stroke={C.hotPipe} strokeWidth="1.8" />
+    {/* Mischer auf VL-Leitung */}
+    <Mischer x={vlX} y={topY + 20} rot={0} on={on} />
+    {/* VL weiter hoch */}
+    <line x1={vlX} y1={topY + 6} x2={vlX} y2={topY} stroke={C.hotPipe} strokeWidth="1.5" />
+    {/* RL hoch (aus RL-Balken) */}
+    <line x1={rlX} y1={rlStart} x2={rlX} y2={topY} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+    {/* Temp VL */}
+    <T x={vlX + 12} y={topY + 38} v={vlTemp} c={C.hotPipe} />
+    {/* Temp RL */}
+    <T x={rlX + 12} y={topY + 52} v={rlTemp} c={C.coldPipe} />
+    {/* DN Label */}
+    <L x={vlX - 3} y={y - 4} t={dn} />
+    {/* HK Nummer */}
+    <text x={vlX + 11} y={topY - 5} textAnchor="middle" fill={C.dim} fontSize="6.5" fontWeight="600">HK{nr}</text>
+  </g>;
+}
+
+/** Unused - kept for reference */
+// Dist component removed - replaced by inline Verteiler bars with HKAbgang
 
 function Rgn({ x, y, t }: { x: number; y: number; t: string }) {
   return <text x={x} y={y} fill={C.dim} fontSize="10" fontWeight="700" letterSpacing="2.5" opacity="0.22">{t}</text>;
@@ -276,7 +306,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     <div className="relative overflow-auto rounded-xl border border-[#1e2736]" style={{ background: C.bg, maxHeight: 680 }}
       onClick={() => setSel(null)}>
       <div style={{ transform: `scale(${zoom})`, transformOrigin: '0 0' }}>
-        <svg viewBox="0 0 1550 600" width={1550} height={600} style={{ display: 'block' }}>
+        <svg viewBox="0 0 1550 620" width={1550} height={620} style={{ display: 'block' }}>
           <Defs />
           {/* Grid */}
           <pattern id="gr" width="30" height="30" patternUnits="userSpaceOnUse">
@@ -439,28 +469,38 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <L x={850} y={RL + 14} t="DN 55" />
 
           {/* ════════════════════════════════════════
-               VERTEILER HEIZUNG
+               VERTEILER HEIZUNG (mit Mischern + Temps)
                ════════════════════════════════════════ */}
-          <Dist x={895} y={VL + 20} w={180} h={40} label="VERTEILER HEIZUNG" active={!!on} color={C.hotPipe}
-            onClick={() => s({ id: 'VH', name: 'Verteiler Heizung', desc: 'Heizungsverteiler', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, dn: 'DN 65/55' })} />
+          {/* Verteiler-Balken */}
+          <g className="cursor-pointer" onClick={() => s({ id: 'VH', name: 'Verteiler Heizung', desc: 'Heizungsverteiler mit 4 Heizkreisen', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, dn: 'DN 56/55' })}>
+            <rect x={895} y={VL + 20} width={180} height={18} rx="3" fill={C.panel} stroke={on ? C.hotPipe : C.border} strokeWidth={on ? 2 : 1.2} />
+            <text x={985} y={VL + 33} textAnchor="middle" fill={C.bright} fontSize="9" fontWeight="700" letterSpacing="0.5">VERTEILER HEIZUNG</text>
+            {/* RL-Balken darunter */}
+            <rect x={895} y={VL + 44} width={180} height={14} rx="3" fill={C.panel} stroke={on ? C.coldPipe : C.border} strokeWidth={on ? 1.5 : 1} strokeDasharray="4,2" />
+            <text x={985} y={VL + 54} textAnchor="middle" fill={C.coldPipe} fontSize="7" opacity="0.6">Rücklauf</text>
+          </g>
 
-          {/* VL/RL ins Verteiler */}
+          {/* VL/RL Zuleitungen */}
           <Pipe d={`M895,${VL} L895,${VL + 20}`} c={C.hotPipe} w={3} />
-          <Pipe d={`M895,${RL} L895,${VL + 60}`} c={C.coldPipe} w={2.5} dash="4,2" />
+          <Pipe d={`M895,${RL} L895,${VL + 58}`} c={C.coldPipe} w={2.5} dash="4,2" />
 
-          {/* Fußbodenheizung Anschluss (oben) */}
-          <line x1="950" y1={VL + 8} x2="950" y2={VL - 35} stroke={C.hotPipe} strokeWidth="1.5" />
-          <line x1="1010" y1={VL + 8} x2="1010" y2={VL - 35} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
-          <FBH x={975} y={VL - 50} label="Anschluss weitere" />
-          <text x={1018} y={VL - 42} fill={C.dim} fontSize="7">Stockwerke</text>
-          <L x={935} y={VL - 10} t="DN 56" />
-          <L x={995} y={VL - 10} t="DN 56" />
+          {/* ── Heizkreis 1: FBH EG ── */}
+          <HKAbgang vlX={920} y={VL + 20} rlY={VL + 58} nr={1} vlTemp={`${vl}°`} rlTemp={`${rl}°`} on={on} dn="DN 56" />
+          <FBH x={930} y={VL - 62} label="FBH EG" />
 
-          {/* Satellitenhaus HZ (Abgang rechts) */}
-          <Pipe d={`M1075,${VL + 35} L1115,${VL + 35}`} c={C.hotPipe} glow={C.hotGlow} w={2.5} />
-          <Pipe d={`M1075,${VL + 50} L1115,${VL + 50}`} c={C.coldPipe} w={2} dash="4,2" />
-          <text x={1097} y={VL + 28} textAnchor="middle" fill={C.dim} fontSize="6.5">Pufferspeicher Heizung</text>
-          <text x={1097} y={VL + 18} textAnchor="middle" fill={C.dim} fontSize="6.5">ca. Econ System E</text>
+          {/* ── Heizkreis 2: FBH OG ── */}
+          <HKAbgang vlX={965} y={VL + 20} rlY={VL + 58} nr={2} vlTemp={`${vl}°`} rlTemp={`${rl}°`} on={on} dn="DN 56" />
+          <FBH x={975} y={VL - 62} label="FBH OG" />
+
+          {/* ── Heizkreis 3: Stockwerke ── */}
+          <HKAbgang vlX={1010} y={VL + 20} rlY={VL + 58} nr={3} vlTemp={`${vl}°`} rlTemp={`${rl}°`} on={on} dn="DN 56" />
+          <text x={1021} y={VL - 54} textAnchor="middle" fill={C.dim} fontSize="6">Anschluss</text>
+          <text x={1021} y={VL - 46} textAnchor="middle" fill={C.dim} fontSize="6">weitere SW</text>
+
+          {/* ── Heizkreis 4: Satellitenhaus E ── */}
+          <HKAbgang vlX={1055} y={VL + 20} rlY={VL + 58} nr={4} vlTemp={`${vl}°`} rlTemp={`${rl}°`} on={on} dn="DN 56" />
+          <text x={1066} y={VL - 54} textAnchor="middle" fill={C.dim} fontSize="6">Sat.-Haus E</text>
+          <text x={1066} y={VL - 46} textAnchor="middle" fill={C.dim} fontSize="6">Heizung</text>
 
           {/* Druckhalte-/Nachspeise */}
           <g transform={`translate(895,${RL + 22})`}>
@@ -505,28 +545,26 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             onClick={() => s({ id: 'P06', name: 'Pumpe P06', desc: 'Umwälzpumpe Kühlung', status: 'standby', flow: '12,4 m³/h', dn: 'DN 80' })} />
 
           {/* Verteiler Kühlung */}
-          <Dist x={1385} y={VL + 30} w={130} h={35} label="VERTEILER KÜHLUNG" color={C.coolPipe}
-            onClick={() => s({ id: 'VK', name: 'Verteiler Kühlung', desc: 'Kühlverteiler', status: 'standby', temp: '37°C', tempRet: '18°C', dn: 'DN 65' })} />
+          <g className="cursor-pointer" onClick={() => s({ id: 'VK', name: 'Verteiler Kühlung', desc: 'Kühlverteiler mit 3 Kreisen', status: 'standby', temp: '37°C', tempRet: '18°C', dn: 'DN 65' })}>
+            <rect x={1385} y={VL + 30} width={130} height={16} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.2" strokeOpacity="0.6" />
+            <text x={1450} y={VL + 41} textAnchor="middle" fill={C.bright} fontSize="8.5" fontWeight="700" letterSpacing="0.5">VERT. KÜHLUNG</text>
+            <rect x={1385} y={VL + 50} width={130} height={12} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.8" strokeDasharray="4,2" strokeOpacity="0.4" />
+            <text x={1450} y={VL + 59} textAnchor="middle" fill={C.coolPipe} fontSize="6" opacity="0.5">Rücklauf</text>
+          </g>
 
-          {/* VL/RL Kälte labels */}
-          <L x={1390} y={VL + 22} t="DN 65" />
-          <L x={1435} y={VL + 22} t="DN 65" />
-          <PT x={1400} y={VL + 80} v="37°C" c={C.coolPipe} />
-          <PT x={1460} y={VL + 80} v="18°C" c={C.coolPipe} />
+          {/* Kälte-Abgänge mit Mischern */}
+          {/* KK1: FBH Kühlung */}
+          <HKAbgang vlX={1405} y={VL + 30} rlY={VL + 62} nr={1} vlTemp="37°" rlTemp="18°" on={false} dn="DN 65" />
+          <FBH x={1415} y={VL - 32} label="FBH Kühl." />
 
-          {/* Fußbodenheizung Kühlung (oben) */}
-          <line x1="1420" y1={VL + 18} x2="1420" y2={VL - 25} stroke={C.coolPipe} strokeWidth="1.5" />
-          <line x1="1470" y1={VL + 18} x2="1470" y2={VL - 25} stroke={C.coolPipe} strokeWidth="1.5" strokeDasharray="3,2" />
-          <FBH x={1445} y={VL - 38} label="Anschluss" />
-          <text x={1488} y={VL - 30} fill={C.dim} fontSize="6.5">WV/SE</text>
-          <text x={1488} y={VL - 22} fill={C.dim} fontSize="6.5">Fußbodenhzg.</text>
+          {/* KK2: Sat.E Kühlung */}
+          <HKAbgang vlX={1450} y={VL + 30} rlY={VL + 62} nr={2} vlTemp="37°" rlTemp="18°" on={false} dn="DN 65" />
+          <text x={1461} y={VL - 24} textAnchor="middle" fill={C.dim} fontSize="6">Sat.E</text>
+          <text x={1461} y={VL - 16} textAnchor="middle" fill={C.dim} fontSize="6">Kühlung</text>
 
-          {/* Zuleitung Satellitenhaus Kälte (rechts) */}
-          <Pipe d={`M1515,${VL + 45} L1535,${VL + 45}`} c={C.coolPipe} w={2} />
-          <text x={1540} y={VL + 40} fill={C.dim} fontSize="6.5" textAnchor="start">Zuleitung WV Kälte</text>
-          <text x={1540} y={VL + 50} fill={C.dim} fontSize="6.5" textAnchor="start">FBH Sat. E</text>
-          <L x={1515} y={VL + 35} t="DN 80" />
-          <L x={1515} y={VL + 60} t="DN 63" />
+          {/* KK3: Reserve */}
+          <HKAbgang vlX={1495} y={VL + 30} rlY={VL + 62} nr={3} vlTemp="37°" rlTemp="18°" on={false} dn="DN 63" />
+          <text x={1506} y={VL - 24} textAnchor="middle" fill={C.dim} fontSize="6">Reserve</text>
 
           {/* MAG Kälte */}
           <MAG x={1420} y={RL + 40} />
@@ -559,7 +597,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </g>}
 
           {/* Titel */}
-          <text x="775" y="575" textAnchor="middle" fill={C.dim} fontSize="8.5">
+          <text x="775" y="598" textAnchor="middle" fill={C.dim} fontSize="8.5">
             ② Hauptstation + Anschluss an Satellitenhaus – Detail · Darmstadt 2026
           </text>
         </svg>
