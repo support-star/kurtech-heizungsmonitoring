@@ -382,7 +382,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     <div className="relative overflow-auto rounded-xl border border-[#1e2736]" style={{ background: C.bg, maxHeight: 680 }}
       onClick={() => setSel(null)}>
       <div style={{ transform: `scale(${zoom})`, transformOrigin: '0 0' }}>
-        <svg viewBox="0 0 1550 620" width={1550} height={620} style={{ display: 'block' }}>
+        <svg viewBox="0 0 1560 640" width={1560} height={640} style={{ display: 'block' }}>
           <Defs />
           {/* Grid */}
           <pattern id="gr" width="30" height="30" patternUnits="userSpaceOnUse">
@@ -753,162 +753,196 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <EBox x={750} y={VL - 52} label="Entlüft." />
 
           {/* ════════════════════════════════════════
-               KÄLTE-BEREICH – KOMPLETT NEU
+               KÄLTE-BEREICH – KOMPLETT
                ════════════════════════════════════════ */}
 
-          {/* ──── Nullenergiebrunnen WT (großer Halbkreis) ──── */}
-          <g className="cursor-pointer" onClick={() => s({ id: 'WT2', name: 'Wärmetauscher Kälte', desc: 'Nullenergiebrunnen WT · 4/50 · 1000 L', status: 'standby', power: '25 kW', dn: 'DN 65' })}>
-            <path d={`M1220,${VL - 8} A48,48 0 0,1 1220,${RL + 8}`} fill="url(#gTankCold)" stroke={C.tankStroke} strokeWidth="2" />
-            {[0, 1, 2, 3].map(i => <line key={i} x1={1224} y1={VL + 5 + i * 22} x2={1258} y2={VL + 5 + i * 22} stroke="rgba(255,255,255,0.1)" strokeWidth="0.6" />)}
-          </g>
-          {/* WT Label + Info */}
-          <text x={1245} y={RL + 25} textAnchor="middle" fill={C.dim} fontSize="7.5">WT Kälte</text>
-          <g transform={`translate(1195,${VL - 65})`}>
-            <rect width="100" height="38" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.7" opacity="0.8" />
-            <text x="50" y="10" textAnchor="middle" fill={C.coolPipe} fontSize="7" fontWeight="600">Nullenergiebrunnen</text>
-            <text x="50" y="20" textAnchor="middle" fill={C.text} fontSize="6">4/50 · 1000 Liter</text>
-            <text x="50" y="30" textAnchor="middle" fill={C.text} fontSize="6">DN 80 · ΔT 5K</text>
-          </g>
-          {/* SV oben am WT */}
-          <SV x={1230} y={VL - 22} label="SV" />
-          {/* Entlüftung oben */}
-          <EBox x={1260} y={VL - 22} label="Entlüft." />
+          {/* ── Füllung Heizung / Verbindung links ── */}
+          <Pipe d={`M1100,${VL} L1140,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={2} dash="6,3" />
+          <Pipe d={`M1100,${RL} L1140,${RL}`} c={C.coldPipe} w={1.5} dash="4,3" />
+          <text x={1115} y={VL - 8} fill={C.dim} fontSize="5.5">Füllung Heiz.</text>
+          <text x={1115} y={VL - 2} fill={C.dim} fontSize="4.5">zu Gas Brunnen P</text>
 
-          {/* ──── VL-Pipe: WT → Absperr → TF → Strangregulier → DN 65 → rechts ──── */}
-          <Pipe d={`M1265,${VL} L1280,${VL}`} c={C.coolPipe} w={2.5} />
-          <V x={1286} y={VL} />
-          <Pipe d={`M1292,${VL} L1310,${VL}`} c={C.coolPipe} w={2.5} />
-          <TF x={1306} y={VL - 8} c={C.coolPipe} />
-          {/* Strangregulierventil VL */}
-          <g transform={`translate(1318,${VL})`}>
+          {/* ──── Nullenergiebrunnen (großer Halbkreis / WT-Symbol) ──── */}
+          <g className="cursor-pointer" onClick={() => s({ id: 'NEB', name: 'Nullenergiebrunnen', desc: 'Kälte-WT · 4/50 · 40m³ · 1000 L', status: 'standby', power: '25 kW', dn: 'DN 80', temp: '37°C', tempRet: '18°C' })}>
+            {/* Großer Halbkreis – Brunnen-WT */}
+            <path d={`M1180,${VL - 12} A55,55 0 0,1 1180,${RL + 12}`} fill="url(#gTankCold)" stroke={C.tankStroke} strokeWidth="2.5" />
+            {/* Interne Platten-Linien */}
+            {[0, 1, 2, 3, 4].map(i => <line key={i} x1={1185} y1={VL + i * 18} x2={1225} y2={VL + i * 18} stroke="rgba(255,255,255,0.08)" strokeWidth="0.7" />)}
+            {/* Temperatur-Schichtung */}
+            <text x={1205} y={VL + 10} textAnchor="middle" fill={C.coolPipe} fontSize="6" opacity="0.4">warm</text>
+            <text x={1205} y={RL - 5} textAnchor="middle" fill={C.coolPipe} fontSize="6" opacity="0.4">kalt</text>
+          </g>
+          <text x={1210} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="8" fontWeight="600">Brunnen-WT</text>
+
+          {/* Brunnen-WT Info-Box (oben) */}
+          <g transform={`translate(1155,${VL - 78})`}>
+            <rect width="115" height="48" rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.8" opacity="0.85" />
+            <text x="57" y="11" textAnchor="middle" fill={C.coolPipe} fontSize="7.5" fontWeight="700">Nullenergiebrunnen</text>
+            <text x="57" y="22" textAnchor="middle" fill={C.text} fontSize="6">4/50 · 40m³ · 1000 Liter</text>
+            <text x="57" y="32" textAnchor="middle" fill={C.text} fontSize="6">DN 80 · ΔT 5K</text>
+            <text x="57" y="42" textAnchor="middle" fill={C.text} fontSize="5.5">Druckhaltesystem m. Entgasung</text>
+          </g>
+
+          {/* SV + Entlüftung am Brunnen-WT */}
+          <SV x={1190} y={VL - 25} label="SV 3" />
+          <EBox x={1225} y={VL - 25} label="Entlüft." />
+
+          {/* ──── Primär-VL: Brunnen-WT → rechts ──── */}
+          <Pipe d={`M1232,${VL} L1250,${VL}`} c={C.coolPipe} w={2.5} />
+          <V x={1256} y={VL} />
+          <Pipe d={`M1262,${VL} L1280,${VL}`} c={C.coolPipe} w={2.5} />
+          <TF x={1275} y={VL - 10} c={C.coolPipe} />
+          {/* Strangregulierventil */}
+          <g transform={`translate(1288,${VL})`}>
             <polygon points="-4,-3 0,0 -4,3" fill="none" stroke={C.coolPipe} strokeWidth="1" />
             <polygon points="4,-3 0,0 4,3" fill={C.coolPipe} stroke={C.coolPipe} strokeWidth="1" />
           </g>
-          <Pipe d={`M1324,${VL} L1345,${VL}`} c={C.coolPipe} w={2.5} />
-          <L x={1326} y={VL - 10} t="DN 65" />
-          <PT x={1280} y={VL - 18} v="37°" c={C.coolPipe} />
+          <Pipe d={`M1294,${VL} L1320,${VL}`} c={C.coolPipe} w={2.5} />
+          <PT x={1260} y={VL - 22} v="37°" c={C.coolPipe} />
+          <L x={1296} y={VL - 10} t="DN 65" />
 
-          {/* ──── RL-Pipe: WT ← Absperr ← TF ← links ──── */}
-          <Pipe d={`M1265,${RL} L1292,${RL}`} c={C.coolPipe} w={2} dash="4,3" />
-          <V x={1286} y={RL} />
-          <Pipe d={`M1280,${RL} L1345,${RL}`} c={C.coolPipe} w={2} dash="4,3" />
-          <TF x={1306} y={RL + 10} c={C.coolPipe} />
-          <PT x={1280} y={RL + 18} v="18°" c={C.coolPipe} />
-          <L x={1326} y={RL + 14} t="DN 65" />
+          {/* ──── Primär-RL: Brunnen-WT ← links ──── */}
+          <Pipe d={`M1232,${RL} L1262,${RL}`} c={C.coolPipe} w={2} dash="4,3" />
+          <V x={1256} y={RL} />
+          <Pipe d={`M1250,${RL} L1320,${RL}`} c={C.coolPipe} w={2} dash="4,3" />
+          <TF x={1275} y={RL + 10} c={C.coolPipe} />
+          <PT x={1260} y={RL + 22} v="18°" c={C.coolPipe} />
+          <L x={1296} y={RL + 12} t="DN 65" />
 
-          {/* ──── Vertikale Pipes VL → Kältegestell (unten) ──── */}
-          <Pipe d={`M1345,${VL} L1345,${VL + 25}`} c={C.coolPipe} w={2.5} />
-          <TF x={1352} y={VL + 12} c={C.coolPipe} />
-          <Pipe d={`M1345,${VL + 25} L1345,${VL + 55}`} c={C.coolPipe} w={2.5} />
-          <TF x={1352} y={VL + 42} c={C.coolPipe} />
+          {/* ──── Pendelleitung DN 20 (vertikal links) ──── */}
+          <Pipe d={`M1160,${VL} L1160,${RL + 115}`} c={C.coolPipe} w={0.8} dash="2,2" />
+          <Pipe d={`M1160,${VL} L1180,${VL}`} c={C.coolPipe} w={0.8} dash="2,2" />
+          <text x={1154} y={(VL + RL) / 2} fill={C.coolPipe} fontSize="5" opacity="0.35"
+            transform={`rotate(-90,1154,${(VL + RL) / 2})`}>Pendelltg. DN 20</text>
 
-          {/* ──── Vertikale Pipes RL ← Kältegestell (unten) ──── */}
-          <Pipe d={`M1345,${RL} L1345,${RL + 25}`} c={C.coolPipe} w={2} dash="4,3" />
-          <TF x={1352} y={RL + 12} c={C.coolPipe} />
+          {/* ──── Vertikale VL-Pipe: nach unten zum Kältegestell ──── */}
+          <Pipe d={`M1320,${VL} L1320,${VL + 18}`} c={C.coolPipe} w={2.5} />
+          <TF x={1328} y={VL + 10} c={C.coolPipe} />
+          <Pipe d={`M1320,${VL + 18} L1320,${VL + 36}`} c={C.coolPipe} w={2.5} />
+          <TF x={1328} y={VL + 30} c={C.coolPipe} />
+          <Pipe d={`M1320,${VL + 36} L1320,${VL + 54}`} c={C.coolPipe} w={2.5} />
+          <TF x={1328} y={VL + 48} c={C.coolPipe} />
+          <Pipe d={`M1320,${VL + 54} L1320,${VL + 72}`} c={C.coolPipe} w={2.5} />
 
-          {/* ──── Kältegestell / Untere Einhausung (cyan) ──── */}
-          <rect x={1210} y={RL + 30} width={200} height={75} rx="4"
-            fill="none" stroke={C.coolPipe} strokeWidth="1.5" opacity="0.4" />
-          <text x={1310} y={RL + 42} textAnchor="middle" fill={C.coolPipe} fontSize="6.5" fontWeight="600" opacity="0.5">Kältegestell · Einhausung</text>
+          {/* ──── Vertikale RL-Pipe: nach unten zum Kältegestell ──── */}
+          <Pipe d={`M1320,${RL} L1320,${RL + 18}`} c={C.coolPipe} w={2} dash="4,3" />
+          <TF x={1328} y={RL + 10} c={C.coolPipe} />
+          <Pipe d={`M1320,${RL + 18} L1320,${RL + 38}`} c={C.coolPipe} w={2} dash="4,3" />
+          <TF x={1328} y={RL + 30} c={C.coolPipe} />
 
-          {/* ── Interne Verrohrung im Kältegestell ── */}
-          {/* VL-Pipe intern: links → Absperr → Schmutzfänger → Puffer → rechts */}
-          <Pipe d={`M1220,${RL + 60} L1240,${RL + 60}`} c={C.coolPipe} w={2} />
-          <V x={1246} y={RL + 60} />
-          <Pipe d={`M1252,${RL + 60} L1265,${RL + 60}`} c={C.coolPipe} w={2} />
+          {/* DN labels vertikal */}
+          <L x={1304} y={VL + 25} t="DN 65" />
+          <L x={1304} y={RL + 22} t="DN 65" />
+
+          {/* ──── Kältegestell / Einhausung (cyan) ──── */}
+          <rect x={1170} y={RL + 40} width={240} height={85} rx="5"
+            fill={C.coolPipe} fillOpacity="0.03" stroke={C.coolPipe} strokeWidth="1.8" opacity="0.5" />
+          <text x={1290} y={RL + 52} textAnchor="middle" fill={C.coolPipe} fontSize="7" fontWeight="600" opacity="0.6">Kältegestell · Einhausung</text>
+
+          {/* ── Interne VL-Verrohrung im Kältegestell ── */}
+          <Pipe d={`M1185,${RL + 68} L1210,${RL + 68}`} c={C.coolPipe} w={2.2} />
+          <V x={1216} y={RL + 68} />
+          <Pipe d={`M1222,${RL + 68} L1238,${RL + 68}`} c={C.coolPipe} w={2.2} />
           {/* Schmutzfänger */}
-          <g transform={`translate(1272,${RL + 60})`}>
-            <polygon points="-4,-4 4,-4 0,4" fill="none" stroke={C.coolPipe} strokeWidth="1" />
-            <line x1="0" y1="4" x2="0" y2="7" stroke={C.coolPipe} strokeWidth="0.8" />
+          <g transform={`translate(1245,${RL + 68})`}>
+            <polygon points="-5,-5 5,-5 0,5" fill="none" stroke={C.coolPipe} strokeWidth="1.2" />
+            <line x1="0" y1="5" x2="0" y2="9" stroke={C.coolPipe} strokeWidth="0.8" />
           </g>
-          <Pipe d={`M1278,${RL + 60} L1310,${RL + 60}`} c={C.coolPipe} w={2} />
-          {/* Interner Puffer-Zylinder (Nullenergie-Brunnen) */}
-          <rect x={1310} y={RL + 48} width={60} height={24} rx="4" fill={C.tankFill} stroke={C.coolPipe} strokeWidth="1.5" strokeDasharray="4,2" />
-          <text x={1340} y={RL + 57} textAnchor="middle" fill={C.coolPipe} fontSize="5">Brunnen</text>
-          <text x={1340} y={RL + 66} textAnchor="middle" fill={C.coolPipe} fontSize="5">1000 L</text>
-          <Pipe d={`M1370,${RL + 60} L1390,${RL + 60}`} c={C.coolPipe} w={2} />
-          <V x={1396} y={RL + 60} />
+          <Pipe d={`M1252,${RL + 68} L1280,${RL + 68}`} c={C.coolPipe} w={2.2} />
+          <TF x={1268} y={RL + 58} c={C.coolPipe} />
 
-          {/* RL intern */}
-          <Pipe d={`M1220,${RL + 80} L1260,${RL + 80}`} c={C.coolPipe} w={1.5} dash="3,2" />
-          <V x={1266} y={RL + 80} />
-          <Pipe d={`M1272,${RL + 80} L1396,${RL + 80}`} c={C.coolPipe} w={1.5} dash="3,2" />
+          {/* ── Puffer Kälte Tank (innen im Gestell) ── */}
+          <rect x={1280} y={RL + 55} width={80} height={30} rx="6" fill={C.tankFill} stroke={C.coolPipe} strokeWidth="2" />
+          {/* Innere Schichtung */}
+          <line x1={1290} y1={RL + 70} x2={1350} y2={RL + 70} stroke={C.coolPipe} strokeWidth="0.4" strokeDasharray="3,2" opacity="0.3" />
+          <text x={1320} y={RL + 64} textAnchor="middle" fill={C.coolPipe} fontSize="6.5" fontWeight="600">Puffer Kälte</text>
+          <text x={1320} y={RL + 77} textAnchor="middle" fill={C.coolPipe} fontSize="5.5">1000 L</text>
+          {/* Temp-Sensoren am Puffer */}
+          <circle cx={1365} cy={RL + 60} r="2" fill={C.coolPipe} opacity="0.5" />
+          <line x1={1365} y1={RL + 60} x2={1378} y2={RL + 60} stroke={C.dim} strokeWidth="0.6" />
+          <T x={1380} y={RL + 60} v="37°" c={C.coolPipe} />
+          <circle cx={1365} cy={RL + 78} r="2" fill={C.coolPipe} opacity="0.5" />
+          <line x1={1365} y1={RL + 78} x2={1378} y2={RL + 78} stroke={C.dim} strokeWidth="0.6" />
+          <T x={1380} y={RL + 78} v="18°" c={C.coolPipe} />
+
+          <Pipe d={`M1360,${RL + 68} L1385,${RL + 68}`} c={C.coolPipe} w={2.2} />
+          <V x={1392} y={RL + 68} />
+
+          {/* ── Interne RL-Verrohrung ── */}
+          <Pipe d={`M1185,${RL + 95} L1230,${RL + 95}`} c={C.coolPipe} w={1.5} dash="3,2" />
+          <V x={1236} y={RL + 95} />
+          <Pipe d={`M1242,${RL + 95} L1280,${RL + 95}`} c={C.coolPipe} w={1.5} dash="3,2" />
+          <Pipe d={`M1360,${RL + 95} L1392,${RL + 95}`} c={C.coolPipe} w={1.5} dash="3,2" />
+          <V x={1398} y={RL + 95} />
+          <TF x={1268} y={RL + 102} c={C.coolPipe} />
 
           {/* MAG am Kältegestell */}
-          <MAG x={1402} y={RL + 55} />
+          <MAG x={1405} y={RL + 68} />
 
           {/* P06 + P07 */}
-          <Pump x={1220} y={RL + 60} id="P06" on={false}
+          <Pump x={1185} y={RL + 68} id="P06" on={false}
             onClick={() => s({ id: 'P06', name: 'Pumpe P06', desc: 'Umwälzpumpe Kühlung Primär', status: 'standby', flow: '12,4 m³/h', dn: 'DN 80' })} />
-          <Pump x={1220} y={RL + 80} id="P07" on={false}
+          <Pump x={1185} y={RL + 95} id="P07" on={false}
             onClick={() => s({ id: 'P07', name: 'Pumpe P07', desc: 'Umwälzpumpe Kühlung Sekundär', status: 'standby', flow: '8,7 m³/h', dn: 'DN 65' })} />
 
-          {/* DN Labels am Kältegestell */}
-          <L x={1252} y={RL + 52} t="DN 80" />
-          <L x={1252} y={RL + 92} t="DN 80" />
+          {/* DN Labels */}
+          <L x={1222} y={RL + 60} t="DN 80" />
+          <L x={1222} y={RL + 106} t="DN 80" />
 
-          {/* ──── Pendelleitung DN 20 (vertikal links am WT) ──── */}
-          <Pipe d={`M1200,${VL} L1200,${RL + 100}`} c={C.coolPipe} w={1} dash="3,2" />
-          <text x={1194} y={VL + 50} fill={C.coolPipe} fontSize="5.5" opacity="0.4"
-            transform={`rotate(-90,1194,${VL + 50})`}>Pendelltg. DN 20</text>
-          {/* Pendelleitung Anschluss an VL */}
-          <Pipe d={`M1200,${VL} L1220,${VL}`} c={C.coolPipe} w={1} dash="3,2" />
+          {/* SV am Kältegestell */}
+          <SV x={1320} y={RL + 45} label="SV 3" />
 
-          {/* ──── Kältespeicher Info unten ──── */}
-          <g transform={`translate(1210,${RL + 108})`}>
-            <rect width="118" height="38" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.6" opacity="0.7" />
-            <text x="59" y="10" textAnchor="middle" fill={C.dim} fontSize="6" fontWeight="600">Kältepufferanlage</text>
-            <text x="59" y="20" textAnchor="middle" fill={C.text} fontSize="5.5">Nullenergiebrunnen · 1000 L</text>
-            <text x="59" y="29" textAnchor="middle" fill={C.text} fontSize="5.5">ΔT 5K · SV 3 bar · DN 80</text>
-            <text x="59" y="37" textAnchor="middle" fill={C.text} fontSize="5.5">Druckhaltesystem mit Entgasung</text>
+          {/* ── Kältespeicher Info-Box (unten) ── */}
+          <g transform={`translate(1180,${RL + 128})`}>
+            <rect width="130" height="38" rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.7" opacity="0.8" />
+            <text x="65" y="10" textAnchor="middle" fill={C.coolPipe} fontSize="6.5" fontWeight="600">Kältepufferanlage</text>
+            <text x="65" y="20" textAnchor="middle" fill={C.text} fontSize="5.5">Nullenergiebrunnen · 1000 L</text>
+            <text x="65" y="29" textAnchor="middle" fill={C.text} fontSize="5.5">ΔT 5K · SV 3 bar · DN 80</text>
+            <text x="65" y="37" textAnchor="middle" fill={C.text} fontSize="5.5">Druckhalte m. Entgasung</text>
           </g>
 
-          {/* ──── Rohre zum Verteiler Kühlung ──── */}
-          {/* VL: Kältegestell → rechts → runter → Verteiler */}
-          <Pipe d={`M1345,${VL + 55} L1345,${VL + 65} L1420,${VL + 65} L1420,${VL + 78}`} c={C.coolPipe} w={2.5} />
-          {/* RL: Kältegestell ← links ← hoch ← Verteiler */}
-          <Pipe d={`M1345,${RL + 25} L1345,${RL + 35} L1440,${RL + 35} L1440,${VL + 98}`} c={C.coolPipe} w={2} dash="4,3" />
+          {/* ── Rohre zum Verteiler Kühlung ── */}
+          <Pipe d={`M1320,${VL + 72} L1320,${VL + 82} L1420,${VL + 82} L1420,${VL + 96}`} c={C.coolPipe} w={2.5} />
+          <Pipe d={`M1320,${RL + 38} L1320,${RL + 42} L1440,${RL + 42} L1440,${VL + 116}`} c={C.coolPipe} w={2} dash="4,3" />
 
           {/* VL/RL Temps vor Verteiler */}
-          <PT x={1395} y={VL + 58} v="37°" c={C.coolPipe} />
-          <PT x={1460} y={RL + 28} v="18°" c={C.coolPipe} />
+          <PT x={1395} y={VL + 76} v="37°" c={C.coolPipe} />
+          <PT x={1460} y={RL + 36} v="18°" c={C.coolPipe} />
+          <L x={1330} y={VL + 78} t="DN 65" />
+          <L x={1330} y={RL + 38} t="DN 65" />
 
-          {/* DN Labels Zuleitung Verteiler */}
-          <L x={1348} y={VL + 60} t="DN 65" />
-          <L x={1348} y={RL + 30} t="DN 65" />
-
-          {/* ──── Zuleitung Kälte / Sat.E rechter Rand ──── */}
-          <g transform={`translate(1510,${VL - 20})`}>
-            <rect width="38" height="24" rx="2" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.6" opacity="0.7" />
-            <text x="19" y="9" textAnchor="middle" fill={C.coolPipe} fontSize="5">Zuleitung</text>
-            <text x="19" y="18" textAnchor="middle" fill={C.coolPipe} fontSize="5">Kälte</text>
+          {/* ── Zuleitung Kälte → rechter Rand ── */}
+          <g transform={`translate(1510,${VL - 10})`}>
+            <rect width="42" height="24" rx="2" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.6" opacity="0.7" />
+            <text x="21" y="9" textAnchor="middle" fill={C.coolPipe} fontSize="5">Zuleitung</text>
+            <text x="21" y="19" textAnchor="middle" fill={C.coolPipe} fontSize="5">Kälte</text>
           </g>
-          <Pipe d={`M1420,${VL - 8} L1510,${VL - 8}`} c={C.coolPipe} w={1.5} />
+          <Pipe d={`M1420,${VL + 2} L1510,${VL + 2}`} c={C.coolPipe} w={1.5} />
 
           {/* Verteiler Kühlung */}
           <g className="cursor-pointer" onClick={() => s({ id: 'VK', name: 'Verteiler Kühlung', desc: 'Kühlverteiler mit 3 Kreisen', status: 'standby', temp: '37°C', tempRet: '18°C', dn: 'DN 65' })}>
-            <rect x={1385} y={VL + 30} width={130} height={16} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.2" strokeOpacity="0.6" />
-            <text x={1450} y={VL + 41} textAnchor="middle" fill={C.bright} fontSize="8.5" fontWeight="700" letterSpacing="0.5">VERT. KÜHLUNG</text>
-            <rect x={1385} y={VL + 50} width={130} height={12} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.8" strokeDasharray="4,2" strokeOpacity="0.4" />
-            <text x={1450} y={VL + 59} textAnchor="middle" fill={C.coolPipe} fontSize="6" opacity="0.5">Rücklauf</text>
+            <rect x={1385} y={VL + 96} width={130} height={16} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.2" strokeOpacity="0.6" />
+            <text x={1450} y={VL + 107} textAnchor="middle" fill={C.bright} fontSize="8.5" fontWeight="700" letterSpacing="0.5">VERT. KÜHLUNG</text>
+            <rect x={1385} y={VL + 116} width={130} height={12} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.8" strokeDasharray="4,2" strokeOpacity="0.4" />
+            <text x={1450} y={VL + 125} textAnchor="middle" fill={C.coolPipe} fontSize="6" opacity="0.5">Rücklauf</text>
           </g>
 
           {/* Kälte-Abgänge mit Mischern */}
           {/* KK1: FBH Kühlung */}
-          <HKAbgang vlX={1405} y={VL + 30} rlY={VL + 62} nr={1} vlTemp="37°" rlTemp="18°" on={false} dn="DN 65" />
-          <FBH x={1415} y={VL - 32} label="FBH Kühl." />
+          <HKAbgang vlX={1405} y={VL + 96} rlY={VL + 128} nr={1} vlTemp="37°" rlTemp="18°" on={false} dn="DN 65" />
+          <FBH x={1415} y={VL + 18} label="FBH Kühl." />
 
           {/* KK2: Sat.E Kühlung */}
-          <HKAbgang vlX={1450} y={VL + 30} rlY={VL + 62} nr={2} vlTemp="22°" rlTemp="18°" on={false} dn="DN 80" />
-          <text x={1461} y={VL - 24} textAnchor="middle" fill={C.dim} fontSize="6">Sat.E</text>
-          <text x={1461} y={VL - 16} textAnchor="middle" fill={C.dim} fontSize="6">Kühlung</text>
+          <HKAbgang vlX={1450} y={VL + 96} rlY={VL + 128} nr={2} vlTemp="22°" rlTemp="18°" on={false} dn="DN 80" />
+          <text x={1461} y={VL + 22} textAnchor="middle" fill={C.dim} fontSize="6">Sat.E</text>
+          <text x={1461} y={VL + 30} textAnchor="middle" fill={C.dim} fontSize="6">Kühlung</text>
 
           {/* KK3: Reserve */}
-          <HKAbgang vlX={1495} y={VL + 30} rlY={VL + 62} nr={3} vlTemp="37°" rlTemp="18°" on={false} dn="DN 63" />
-          <text x={1506} y={VL - 24} textAnchor="middle" fill={C.dim} fontSize="6">Reserve</text>
+          <HKAbgang vlX={1495} y={VL + 96} rlY={VL + 128} nr={3} vlTemp="37°" rlTemp="18°" on={false} dn="DN 63" />
+          <text x={1506} y={VL + 22} textAnchor="middle" fill={C.dim} fontSize="6">Reserve</text>
 
-          {/* MAG Kälte */}
-          <MAG x={1420} y={RL + 40} />
+          {/* MAG Kälte Verteiler */}
+          <MAG x={1420} y={VL + 148} />
 
           {/* ════════════════════════════════════════
                ANIMIERTE STRÖMUNG
@@ -938,7 +972,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </g>}
 
           {/* Titel */}
-          <text x="775" y="598" textAnchor="middle" fill={C.dim} fontSize="8.5">
+          <text x="775" y="620" textAnchor="middle" fill={C.dim} fontSize="8.5">
             ② Hauptstation + Anschluss an Satellitenhaus – Detail · Darmstadt 2026
           </text>
         </svg>
