@@ -68,23 +68,23 @@ function Defs() {
 /* ═══════════════════════════════════════════════════════════
    PRIMITIVES
    ═══════════════════════════════════════════════════════════ */
-function Pipe({ d, c, w = 3, dash, glow }: { d: string; c: string; w?: number; dash?: string; glow?: string }) {
+function Pipe({ d, c, w = 4, dash, glow }: { d: string; c: string; w?: number; dash?: string; glow?: string }) {
   return <g>
     {glow && <path d={d} fill="none" stroke={glow} strokeWidth={w + 8} strokeLinecap="round" strokeLinejoin="round" />}
     <path d={d} fill="none" stroke={c} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dash} />
   </g>;
 }
 
-function Flow({ path, c, dur = '3s', delay = '0s', r = 4 }: { path: string; c: string; dur?: string; delay?: string; r?: number }) {
+function Flow({ path, c, dur = '3s', delay = '0s', r = 5 }: { path: string; c: string; dur?: string; delay?: string; r?: number }) {
   return <circle r={r} fill={c} opacity="0.85"><animateMotion dur={dur} repeatCount="indefinite" begin={delay} path={path} /></circle>;
 }
 
 function Pump({ x, y, id, on, onClick }: { x: number; y: number; id: string; on: boolean; onClick?: () => void }) {
   return <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-    {on && <circle r="18" fill={C.pumpOn} opacity="0.1" filter="url(#gl)" />}
-    <circle r="13" fill={C.tankFill} stroke={on ? C.pumpOn : C.pumpOff} strokeWidth="2" />
-    <polygon points="0,-6 6,4 -6,4" fill={on ? C.pumpOn : C.pumpOff} className={on ? 'pp' : ''} />
-    <text y="24" textAnchor="middle" fill={on ? C.pumpOn : C.pumpOff} fontSize="8.5" fontWeight="700">{id}</text>
+    {on && <circle r="22" fill={C.pumpOn} opacity="0.1" filter="url(#gl)" />}
+    <circle r="16" fill={C.tankFill} stroke={on ? C.pumpOn : C.pumpOff} strokeWidth="2" />
+    <polygon points="0,-8 8,5 -8,5" fill={on ? C.pumpOn : C.pumpOff} className={on ? 'pp' : ''} />
+    <text y="28" textAnchor="middle" fill={on ? C.pumpOn : C.pumpOff} fontSize="11" fontWeight="700">{id}</text>
   </g>;
 }
 
@@ -95,56 +95,56 @@ function Tank({ cx, y, w, h, label, vol, temps, grad, onClick }: {
   const lx = cx - w / 2;
   return <g className="cursor-pointer" onClick={onClick}>
     <rect x={lx} y={y} width={w} height={h} rx={w / 2} fill={`url(#${grad})`} stroke={C.tankStroke} strokeWidth="2" />
-    {temps?.[0] && <><circle cx={lx + w + 4} cy={y + h * 0.17} r="2" fill={C.tankStroke} />
-      <line x1={lx + w + 4} y1={y + h * 0.17} x2={lx + w + 14} y2={y + h * 0.17} stroke={C.dim} strokeWidth="1" />
+    {temps?.[0] && <><circle cx={lx + w + 4} cy={y + h * 0.17} r="3" fill={C.tankStroke} />
+      <line x1={lx + w + 4} y1={y + h * 0.17} x2={lx + w + 14} y2={y + h * 0.17} stroke={C.dim} strokeWidth="1.5" />
       <T x={lx + w + 17} y={y + h * 0.17} v={temps[0]} c={C.hotPipe} /></>}
-    {temps?.[1] && <><circle cx={lx + w + 4} cy={y + h * 0.5} r="2" fill={C.tankStroke} />
-      <line x1={lx + w + 4} y1={y + h * 0.5} x2={lx + w + 14} y2={y + h * 0.5} stroke={C.dim} strokeWidth="1" />
+    {temps?.[1] && <><circle cx={lx + w + 4} cy={y + h * 0.5} r="3" fill={C.tankStroke} />
+      <line x1={lx + w + 4} y1={y + h * 0.5} x2={lx + w + 14} y2={y + h * 0.5} stroke={C.dim} strokeWidth="1.5" />
       <T x={lx + w + 17} y={y + h * 0.5} v={temps[1]} c={C.warmPipe} /></>}
-    {temps?.[2] && <><circle cx={lx + w + 4} cy={y + h * 0.83} r="2" fill={C.tankStroke} />
-      <line x1={lx + w + 4} y1={y + h * 0.83} x2={lx + w + 14} y2={y + h * 0.83} stroke={C.dim} strokeWidth="1" />
+    {temps?.[2] && <><circle cx={lx + w + 4} cy={y + h * 0.83} r="3" fill={C.tankStroke} />
+      <line x1={lx + w + 4} y1={y + h * 0.83} x2={lx + w + 14} y2={y + h * 0.83} stroke={C.dim} strokeWidth="1.5" />
       <T x={lx + w + 17} y={y + h * 0.83} v={temps[2]} c={C.coldPipe} /></>}
-    <text x={cx} y={y - 6} textAnchor="middle" fill={C.bright} fontSize="9.5" fontWeight="600">{label}</text>
-    <text x={cx} y={y - 17} textAnchor="middle" fill={C.dim} fontSize="7.5">{vol}</text>
+    <text x={cx} y={y - 6} textAnchor="middle" fill={C.bright} fontSize="12" fontWeight="600">{label}</text>
+    <text x={cx} y={y - 17} textAnchor="middle" fill={C.dim} fontSize="10">{vol}</text>
   </g>;
 }
 
 function T({ x, y, v, c }: { x: number; y: number; v: string; c: string }) {
-  return <g className="mf"><rect x={x} y={y - 7} width={36} height={14} rx="3" fill={C.panel} stroke={c} strokeWidth="0.7" strokeOpacity="0.5" />
-    <text x={x + 18} y={y + 3.5} textAnchor="middle" fill={c} fontSize="9" fontWeight="700">{v}</text></g>;
+  return <g className="mf"><rect x={x} y={y - 7} width={44} height={18} rx="4" fill={C.panel} stroke={c} strokeWidth="1.4" strokeOpacity="0.5" />
+    <text x={x + 22} y={y + 5} textAnchor="middle" fill={c} fontSize="11.5" fontWeight="700">{v}</text></g>;
 }
 
 function PT({ x, y, v, c }: { x: number; y: number; v: string; c: string }) {
-  return <g className="mf"><rect x={x - 20} y={y - 8} width={40} height={16} rx="4" fill={C.bg} stroke={c} strokeWidth="1" strokeOpacity="0.4" />
-    <text x={x} y={y + 3} textAnchor="middle" fill={c} fontSize="9.5" fontWeight="800">{v}</text></g>;
+  return <g className="mf"><rect x={x - 24} y={y - 10} width={48} height={20} rx="5" fill={C.bg} stroke={c} strokeWidth="1.5" strokeOpacity="0.4" />
+    <text x={x} y={y + 3} textAnchor="middle" fill={c} fontSize="12" fontWeight="800">{v}</text></g>;
 }
 
 function L({ x, y, t }: { x: number; y: number; t: string }) {
-  return <text x={x} y={y} fill={C.dim} fontSize="7.5" fontWeight="500">{t}</text>;
+  return <text x={x} y={y} fill={C.dim} fontSize="10" fontWeight="500">{t}</text>;
 }
 
 function V({ x, y, r = 0 }: { x: number; y: number; r?: number }) {
   return <g transform={`translate(${x},${y}) rotate(${r})`}>
-    <polygon points="-5,-4 0,0 -5,4" fill="none" stroke={C.tankStroke} strokeWidth="1.2" />
-    <polygon points="5,-4 0,0 5,4" fill="none" stroke={C.tankStroke} strokeWidth="1.2" />
+    <polygon points="-7,-5 0,0 -7,5" fill="none" stroke={C.tankStroke} strokeWidth="1.8" />
+    <polygon points="7,-5 0,0 7,5" fill="none" stroke={C.tankStroke} strokeWidth="1.8" />
   </g>;
 }
 
 /** Rückschlagventil (Check Valve) – DIN: Dreieck + Sperrlinie */
 function RV({ x, y, rot = 0 }: { x: number; y: number; rot?: number }) {
   return <g transform={`translate(${x},${y}) rotate(${rot})`}>
-    <polygon points="-4,-5 -4,5 4,0" fill="none" stroke={C.tankStroke} strokeWidth="1.2" />
-    <line x1="4" y1="-5" x2="4" y2="5" stroke={C.tankStroke} strokeWidth="1.5" />
+    <polygon points="-6,-7 -6,7 6,0" fill="none" stroke={C.tankStroke} strokeWidth="1.8" />
+    <line x1="6" y1="-7" x2="6" y2="7" stroke={C.tankStroke} strokeWidth="2.2" />
   </g>;
 }
 
 /** Sicherheitsventil (Safety Valve) – DIN */
 function SV({ x, y, label = 'SV' }: { x: number; y: number; label?: string }) {
   return <g>
-    <line x1={x} y1={y - 8} x2={x} y2={y - 2} stroke={C.dim} strokeWidth="1" />
-    <polygon points={`${x - 5},${y - 2} ${x + 5},${y - 2} ${x},${y + 6}`} fill="none" stroke="#f59e0b" strokeWidth="1.2" />
-    <line x1={x - 4} y1={y + 8} x2={x + 4} y2={y + 8} stroke="#f59e0b" strokeWidth="1" />
-    <text x={x} y={y + 16} textAnchor="middle" fill="#f59e0b" fontSize="5.5" fontWeight="600">{label}</text>
+    <line x1={x} y1={y - 10} x2={x} y2={y - 3} stroke={C.dim} strokeWidth="1.5" />
+    <polygon points={`${x - 7},${y - 3} ${x + 7},${y - 3} ${x},${y + 8}`} fill="none" stroke="#f59e0b" strokeWidth="1.8" />
+    <line x1={x - 6} y1={y + 10} x2={x + 6} y2={y + 10} stroke="#f59e0b" strokeWidth="1.5" />
+    <text x={x} y={y + 20} textAnchor="middle" fill="#f59e0b" fontSize="8" fontWeight="600">{label}</text>
   </g>;
 }
 
@@ -152,25 +152,25 @@ function SV({ x, y, label = 'SV' }: { x: number; y: number; label?: string }) {
 function USV({ x, y1v, y2r }: { x: number; y1v: number; y2r: number }) {
   const mid = (y1v + y2r) / 2;
   return <g>
-    <line x1={x} y1={y1v} x2={x} y2={y2r} stroke={C.dim} strokeWidth="1" strokeDasharray="3,2" />
+    <line x1={x} y1={y1v} x2={x} y2={y2r} stroke={C.dim} strokeWidth="1.5" strokeDasharray="3,2" />
     <V x={x} y={mid} r={90} />
-    <text x={x + 8} y={mid + 3} fill={C.dim} fontSize="5">ÜSV</text>
+    <text x={x + 8} y={mid + 3} fill={C.dim} fontSize="7.5">ÜSV</text>
   </g>;
 }
 
 /** Temperaturfühler-Symbol (kleiner Kreis mit T) */
 function TF({ x, y, c = C.dim }: { x: number; y: number; c?: string }) {
   return <g>
-    <circle cx={x} cy={y} r="4" fill={C.tankFill} stroke={c} strokeWidth="0.8" />
-    <text x={x} y={y + 2.5} textAnchor="middle" fill={c} fontSize="5.5" fontWeight="700">T</text>
+    <circle cx={x} cy={y} r="6" fill={C.tankFill} stroke={c} strokeWidth="1.5" />
+    <text x={x} y={y + 2.5} textAnchor="middle" fill={c} fontSize="8" fontWeight="700">T</text>
   </g>;
 }
 
 function MAG({ x, y }: { x: number; y: number }) {
   return <g>
-    <line x1={x} y1={y - 14} x2={x} y2={y - 6} stroke={C.dim} strokeWidth="1" />
-    <ellipse cx={x} cy={y} rx="9" ry="11" fill={C.tankFill} stroke={C.dim} strokeWidth="1.2" />
-    <text x={x} y={y + 3} textAnchor="middle" fill={C.dim} fontSize="5.5" fontWeight="600">MAG</text>
+    <line x1={x} y1={y - 18} x2={x} y2={y - 8} stroke={C.dim} strokeWidth="1.5" />
+    <ellipse cx={x} cy={y} rx="12" ry="14" fill={C.tankFill} stroke={C.dim} strokeWidth="1.8" />
+    <text x={x} y={y + 3} textAnchor="middle" fill={C.dim} fontSize="8" fontWeight="600">MAG</text>
   </g>;
 }
 
@@ -182,8 +182,8 @@ function Box({ x, y, w, h, title, sub, active, color, onClick }: {
   return <g className="cursor-pointer" onClick={onClick}>
     {active && <rect x={x - 2} y={y - 2} width={w + 4} height={h + 4} rx="6" fill={cl} opacity="0.06" filter="url(#gl)" />}
     <rect x={x} y={y} width={w} height={h} rx="4" fill={C.panel} stroke={active ? cl : C.border} strokeWidth={active ? 1.8 : 1.2} />
-    <text x={x + w / 2} y={y + (sub ? h / 2 - 3 : h / 2 + 3)} textAnchor="middle" fill={C.bright} fontSize="9.5" fontWeight="600">{title}</text>
-    {sub && <text x={x + w / 2} y={y + h / 2 + 8} textAnchor="middle" fill={C.dim} fontSize="7">{sub}</text>}
+    <text x={x + w / 2} y={y + (sub ? h / 2 - 3 : h / 2 + 3)} textAnchor="middle" fill={C.bright} fontSize="12" fontWeight="600">{title}</text>
+    {sub && <text x={x + w / 2} y={y + h / 2 + 8} textAnchor="middle" fill={C.dim} fontSize="9.5">{sub}</text>}
   </g>;
 }
 
@@ -191,10 +191,10 @@ function Box({ x, y, w, h, title, sub, active, color, onClick }: {
 function FBH({ x, y, label }: { x: number; y: number; label: string }) {
   return <g>
     <path d={`M${x - 15},${y} L${x - 8},${y - 8} L${x},${y} L${x + 8},${y - 8} L${x + 15},${y}`}
-      fill="none" stroke={C.dim} strokeWidth="1.5" />
+      fill="none" stroke={C.dim} strokeWidth="2.2" />
     <path d={`M${x - 12},${y + 4} L${x - 5},${y - 4} L${x + 3},${y + 4} L${x + 11},${y - 4} L${x + 18},${y + 4}`}
-      fill="none" stroke={C.dim} strokeWidth="1.2" strokeDasharray="2,2" />
-    <text x={x + 22} y={y - 2} fill={C.dim} fontSize="7">{label}</text>
+      fill="none" stroke={C.dim} strokeWidth="1.8" strokeDasharray="2,2" />
+    <text x={x + 22} y={y - 2} fill={C.dim} fontSize="9.5">{label}</text>
   </g>;
 }
 
@@ -203,14 +203,14 @@ function Mischer({ x, y, rot = 0, on }: { x: number; y: number; rot?: number; on
   const cl = on ? C.pumpOn : C.pumpOff;
   return <g transform={`translate(${x},${y}) rotate(${rot})`}>
     {/* Zwei Dreiecke = Bowtie + dritter Anschluss */}
-    <polygon points="-7,-6 0,0 -7,6" fill="none" stroke={cl} strokeWidth="1.5" />
-    <polygon points="7,-6 0,0 7,6" fill="none" stroke={cl} strokeWidth="1.5" />
+    <polygon points="-9,-8 0,0 -9,8" fill="none" stroke={cl} strokeWidth="2.2" />
+    <polygon points="9,-8 0,0 9,8" fill="none" stroke={cl} strokeWidth="2.2" />
     {/* Bypass-Pfeil (3. Weg) */}
-    <line x1="0" y1="0" x2="0" y2="-10" stroke={cl} strokeWidth="1.3" />
-    <polygon points="-2.5,-10 0,-14 2.5,-10" fill={cl} />
+    <line x1="0" y1="0" x2="0" y2="-13" stroke={cl} strokeWidth="1.8" />
+    <polygon points="-3,-13 0,-18 3,-13" fill={cl} />
     {/* M-Kreis (Stellantrieb) */}
-    <circle cx="0" cy="-18" r="5" fill={C.tankFill} stroke={cl} strokeWidth="1" />
-    <text x="0" y="-15.5" textAnchor="middle" fill={cl} fontSize="5.5" fontWeight="700">M</text>
+    <circle cx="0" cy="-22" r="7" fill={C.tankFill} stroke={cl} strokeWidth="1.5" />
+    <text x="0" y="-19" textAnchor="middle" fill={cl} fontSize="8" fontWeight="700">M</text>
   </g>;
 }
 
@@ -236,23 +236,23 @@ function HKAbgang({ vlX, y, rlY, nr, vlTemp, rlTemp, on, dn }: {
     {/* Mischer */}
     <Mischer x={vlX} y={topY + 24} rot={0} on={on} />
     {/* VL weiter hoch */}
-    <line x1={vlX} y1={topY + 10} x2={vlX} y2={topY} stroke={C.hotPipe} strokeWidth="1.5" />
+    <line x1={vlX} y1={topY + 10} x2={vlX} y2={topY} stroke={C.hotPipe} strokeWidth="2.2" />
 
     {/* ── RL-Leitung (von unten nach oben) ── */}
     {/* RL aus Balken hoch */}
-    <line x1={rlX} y1={rlStart} x2={rlX} y2={rlStart - 6} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+    <line x1={rlX} y1={rlStart} x2={rlX} y2={rlStart - 6} stroke={C.coldPipe} strokeWidth="2.2" strokeDasharray="3,2" />
     {/* Absperrventil RL */}
     <V x={rlX} y={rlStart - 10} r={90} />
-    <line x1={rlX} y1={rlStart - 14} x2={rlX} y2={rlStart - 22} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+    <line x1={rlX} y1={rlStart - 14} x2={rlX} y2={rlStart - 22} stroke={C.coldPipe} strokeWidth="2.2" strokeDasharray="3,2" />
     {/* Strangregulierventil RL */}
     <g transform={`translate(${rlX},${rlStart - 26})`}>
-      <polygon points="-4,-3 0,0 -4,3" fill="none" stroke={C.coldPipe} strokeWidth="1" />
-      <polygon points="4,-3 0,0 4,3" fill={C.coldPipe} stroke={C.coldPipe} strokeWidth="1" />
+      <polygon points="-4,-3 0,0 -4,3" fill="none" stroke={C.coldPipe} strokeWidth="1.5" />
+      <polygon points="4,-3 0,0 4,3" fill={C.coldPipe} stroke={C.coldPipe} strokeWidth="1.5" />
     </g>
-    <line x1={rlX} y1={rlStart - 30} x2={rlX} y2={topY + 38} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+    <line x1={rlX} y1={rlStart - 30} x2={rlX} y2={topY + 38} stroke={C.coldPipe} strokeWidth="2.2" strokeDasharray="3,2" />
     {/* T-Sensor RL */}
     <TF x={rlX + 7} y={topY + 44} c={C.coldPipe} />
-    <line x1={rlX} y1={topY + 38} x2={rlX} y2={topY} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+    <line x1={rlX} y1={topY + 38} x2={rlX} y2={topY} stroke={C.coldPipe} strokeWidth="2.2" strokeDasharray="3,2" />
 
     {/* Temp-Anzeigen */}
     <T x={vlX - 30} y={topY + 52} v={vlTemp} c={C.hotPipe} />
@@ -260,7 +260,7 @@ function HKAbgang({ vlX, y, rlY, nr, vlTemp, rlTemp, on, dn }: {
     {/* DN Label */}
     <L x={vlX - 3} y={y - 36} t={dn} />
     {/* HK Nummer */}
-    <text x={vlX + 11} y={topY - 5} textAnchor="middle" fill={C.dim} fontSize="6.5" fontWeight="600">HK{nr}</text>
+    <text x={vlX + 11} y={topY - 5} textAnchor="middle" fill={C.dim} fontSize="9" fontWeight="600">HK{nr}</text>
   </g>;
 }
 
@@ -270,22 +270,22 @@ function HKAbgang({ vlX, y, rlY, nr, vlTemp, rlTemp, on, dn }: {
 /** Wärmemengenzähler (WMZ / Σ-Symbol) */
 function WMZ({ x, y, c = C.dim }: { x: number; y: number; c?: string }) {
   return <g>
-    <rect x={x - 5} y={y - 5} width={10} height={10} rx="1.5" fill={C.coldPipe} fillOpacity="0.15" stroke={c} strokeWidth="0.8" />
-    <text x={x} y={y + 3} textAnchor="middle" fill={c} fontSize="7" fontWeight="700">Σ</text>
+    <rect x={x - 7} y={y - 7} width={14} height={14} rx="2.5" fill={C.coldPipe} fillOpacity="0.15" stroke={c} strokeWidth="1.5" />
+    <text x={x} y={y + 3} textAnchor="middle" fill={c} fontSize="9.5" fontWeight="700">Σ</text>
   </g>;
 }
 
 /** Entlüftungs-/Entleerungs-Box */
 function EBox({ x, y, label }: { x: number; y: number; label: string }) {
   return <g>
-    <line x1={x} y1={y - 8} x2={x} y2={y - 3} stroke={C.dim} strokeWidth="0.8" />
-    <rect x={x - 12} y={y - 3} width={24} height={10} rx="1.5" fill={C.panel} stroke={C.border} strokeWidth="0.5" />
-    <text x={x} y={y + 4} textAnchor="middle" fill={C.dim} fontSize="4.5">{label}</text>
+    <line x1={x} y1={y - 8} x2={x} y2={y - 3} stroke={C.dim} strokeWidth="1.5" />
+    <rect x={x - 16} y={y - 4} width={32} height={14} rx="2" fill={C.panel} stroke={C.border} strokeWidth="1" />
+    <text x={x} y={y + 4} textAnchor="middle" fill={C.dim} fontSize="7">{label}</text>
   </g>;
 }
 
 function Rgn({ x, y, t }: { x: number; y: number; t: string }) {
-  return <text x={x} y={y} fill={C.dim} fontSize="10" fontWeight="700" letterSpacing="2.5" opacity="0.22">{t}</text>;
+  return <text x={x} y={y} fill={C.dim} fontSize="13" fontWeight="700" letterSpacing="2.5" opacity="0.22">{t}</text>;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -495,16 +495,18 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     {/* ═════════════ SVG ═════════════ */}
     <div ref={containerRef}
       className="relative rounded-xl border border-[#1e2736] select-none"
-      style={{ background: C.bg, maxHeight: 680, overflow: 'hidden', touchAction: 'none' }}
+      style={{ background: C.bg, overflow: 'hidden', touchAction: 'none' }}
       onClick={() => { if (!didPan.current) setSel(null); }}>
-      {/* Zoom hint */}
-      {zoomLevel <= 105 && <div className="absolute top-2 right-2 z-10 text-[10px] text-slate-600 pointer-events-none">
-        Mausrad = Zoom · Ziehen = Verschieben
+      {/* Zoom info overlay */}
+      {zoomLevel <= 105 && <div className="absolute top-2 right-2 z-10 text-[10px] text-slate-600 pointer-events-none bg-[#0a0e14]/70 px-2 py-1 rounded">
+        🖱️ Mausrad = Zoom · Ziehen = Pan
+      </div>}
+      {zoomLevel > 105 && <div className="absolute top-2 left-2 z-10 text-[10px] text-slate-500 pointer-events-none bg-[#0a0e14]/80 px-2 py-1 rounded font-mono">
+        {zoomLevel}% – Doppelklick = Reset
       </div>}
       <svg ref={svgRef}
-        viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
-        width="100%" height="100%"
-        style={{ display: 'block', aspectRatio: `${SVG_W}/${SVG_H}`, cursor: isPanning ? 'grabbing' : 'grab' }}
+        viewBox={`${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}`}
+        style={{ display: 'block', width: '100%', aspectRatio: `${SVG_W}/${SVG_H}`, cursor: isPanning ? 'grabbing' : 'grab' }}
         preserveAspectRatio="xMidYMid meet"
         onWheel={onWheel}
         onPointerDown={onPointerDown}
@@ -512,11 +514,12 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerUp}
         onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}>
+        onTouchMove={onTouchMove}
+        onDoubleClick={resetZoom}>
           <Defs />
           {/* Grid */}
           <pattern id="gr" width="30" height="30" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="0.35" fill="#334155" opacity="0.1" />
+            <circle cx="1" cy="1" r="0.5" fill="#334155" opacity="0.1" />
           </pattern>
           <rect width="100%" height="100%" fill="url(#gr)" />
 
@@ -528,7 +531,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Rgn x={1230} y={170} t="KÄLTE" />
 
           {/* Trennlinie Heizung ┊ Kälte */}
-          <line x1="1175" y1="50" x2="1175" y2="560" stroke={C.border} strokeWidth="1" strokeDasharray="6,4" opacity="0.35" />
+          <line x1="1175" y1="50" x2="1175" y2="560" stroke={C.border} strokeWidth="1.5" strokeDasharray="6,4" opacity="0.35" />
 
           {/* ════════════════════════════════════════
                ABLUFT-WP AUF DACH (oben Mitte)
@@ -536,20 +539,20 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Box x={390} y={55} w={130} h={45} title="Abluft-WP" sub="auf Dach · Rohrbegl." active={!!on} color={C.warmPipe}
             onClick={() => s({ id: 'ABWP', name: 'Abluft-Wärmepumpe', desc: 'Auf Dach mit Rohrbegleitheizung', status: on ? 'running' : 'standby', temp: '40°C', tempRet: '35°C' })} />
           {/* Rohrbegleitheizung-Zickzack */}
-          <path d="M528,68 L536,60 L544,68 L552,60 L560,68" fill="none" stroke="#fb923c" strokeWidth="1" strokeDasharray="2,1" opacity="0.5" />
+          <path d="M528,68 L536,60 L544,68 L552,60 L560,68" fill="none" stroke="#fb923c" strokeWidth="1.5" strokeDasharray="2,1" opacity="0.5" />
           {/* "in: Lüftung 400V" */}
-          <text x={455} y={108} textAnchor="middle" fill={C.dim} fontSize="6">in: Lüftung 400V</text>
+          <text x={455} y={108} textAnchor="middle" fill={C.dim} fontSize="8.5">in: Lüftung 400V</text>
 
           {/* PVT-Solar (oben links) */}
           <Box x={155} y={55} w={105} h={45} title="PVT-Solar" sub="6,2 kW th." active={!!on} color={C.warmPipe}
             onClick={() => s({ id: 'PVT', name: 'PVT-Solarkollektoren', desc: 'Auf Dach, 6,2 kW thermisch', status: 'running', temp: `${aus}°C`, power: '6,2 kW' })} />
-          <circle cx="208" cy={46} r="7" fill="none" stroke="#fbbf24" strokeWidth="1.2" opacity="0.35" />
+          <circle cx="208" cy={46} r="7" fill="none" stroke="#fbbf24" strokeWidth="1.8" opacity="0.35" />
           <circle cx="208" cy={46} r="2.5" fill="#fbbf24" opacity="0.35" />
           {/* PVT Detail-Label */}
           <g transform="translate(155,108)">
-            <rect width="92" height="22" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" opacity="0.7" />
-            <text x="46" y="9" textAnchor="middle" fill={C.dim} fontSize="5.5">Rohrfeldstation</text>
-            <text x="46" y="18" textAnchor="middle" fill={C.text} fontSize="5.5">6,5°C opt. · DN 65</text>
+            <rect width="92" height="22" rx="2" fill={C.panel} stroke={C.border} strokeWidth="1" opacity="0.7" />
+            <text x="46" y="9" textAnchor="middle" fill={C.dim} fontSize="8">Rohrfeldstation</text>
+            <text x="46" y="18" textAnchor="middle" fill={C.text} fontSize="8">6,5°C opt. · DN 65</text>
           </g>
 
           {/* Erdwärmefeld (links) */}
@@ -557,9 +560,9 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             onClick={() => s({ id: 'ERD', name: 'Erdwärmefeld', desc: 'Zuleitung FVU Nahwärme', status: on ? 'running' : 'standby', flow: '42,1 m³/h', dn: 'DN 80' })} />
           {/* Erdwärme-Sonden Zigzag (unterirdisch) */}
           <g opacity="0.35">
-            <path d={`M30,${VL + 25} L38,${VL + 35} L46,${VL + 25} L54,${VL + 35} L62,${VL + 25}`} fill="none" stroke={C.geoPipe} strokeWidth="1.2" />
-            <path d={`M55,${VL + 30} L63,${VL + 40} L71,${VL + 30} L79,${VL + 40} L87,${VL + 30}`} fill="none" stroke={C.geoPipe} strokeWidth="1.2" />
-            <text x="58" y={VL + 50} textAnchor="middle" fill={C.geoPipe} fontSize="5">Sondernfeld</text>
+            <path d={`M30,${VL + 25} L38,${VL + 35} L46,${VL + 25} L54,${VL + 35} L62,${VL + 25}`} fill="none" stroke={C.geoPipe} strokeWidth="1.8" />
+            <path d={`M55,${VL + 30} L63,${VL + 40} L71,${VL + 30} L79,${VL + 40} L87,${VL + 30}`} fill="none" stroke={C.geoPipe} strokeWidth="1.8" />
+            <text x="58" y={VL + 50} textAnchor="middle" fill={C.geoPipe} fontSize="7.5">Sondernfeld</text>
           </g>
 
           {/* ════════════════════════════════════════
@@ -589,8 +592,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M196,${VL} L198,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
           {/* Schmutzfänger (Y-Filter Symbol) */}
           <g transform={`translate(202,${VL})`}>
-            <polygon points="-5,-5 5,-5 0,5" fill="none" stroke={C.geoPipe} strokeWidth="1.2" />
-            <line x1="0" y1="5" x2="0" y2="9" stroke={C.geoPipe} strokeWidth="1" />
+            <polygon points="-5,-5 5,-5 0,5" fill="none" stroke={C.geoPipe} strokeWidth="1.8" />
+            <line x1="0" y1="5" x2="0" y2="9" stroke={C.geoPipe} strokeWidth="1.5" />
           </g>
           <Pipe d={`M208,${VL} L222,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
           <V x={228} y={VL} />
@@ -610,11 +613,11 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* Auslegungsdaten Erdwärme */}
           <g transform={`translate(120,${RL + 22})`}>
-            <rect width="100" height="42" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.7" opacity="0.7" />
-            <text x="50" y="10" textAnchor="middle" fill={C.dim} fontSize="6.5" fontWeight="600">Auslegung Erdwärme</text>
-            <text x="50" y="20" textAnchor="middle" fill={C.text} fontSize="6">ΔT 3K · Glycol 30%</text>
-            <text x="50" y="29" textAnchor="middle" fill={C.text} fontSize="6">42,1 m³/h · DN 80</text>
-            <text x="50" y="38" textAnchor="middle" fill={C.text} fontSize="6">SV 3,5 bar · 400V</text>
+            <rect width="100" height="42" rx="3" fill={C.panel} stroke={C.border} strokeWidth="1.4" opacity="0.7" />
+            <text x="50" y="10" textAnchor="middle" fill={C.dim} fontSize="9" fontWeight="600">Auslegung Erdwärme</text>
+            <text x="50" y="20" textAnchor="middle" fill={C.text} fontSize="8.5">ΔT 3K · Glycol 30%</text>
+            <text x="50" y="29" textAnchor="middle" fill={C.text} fontSize="8.5">42,1 m³/h · DN 80</text>
+            <text x="50" y="38" textAnchor="middle" fill={C.text} fontSize="8.5">SV 3,5 bar · 400V</text>
           </g>
 
           {/* ════════════════════════════════════════
@@ -630,10 +633,10 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* Puffer PVT Info-Box */}
           <g transform={`translate(175,${RL + 50})`}>
-            <rect width="100" height="28" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" opacity="0.7" />
-            <text x="50" y="10" textAnchor="middle" fill={C.dim} fontSize="5.5" fontWeight="600">Pufferspeicher PVT</text>
-            <text x="50" y="19" textAnchor="middle" fill={C.text} fontSize="5.5">hydr. Trennung · 2000 L</text>
-            <text x="50" y="27" textAnchor="middle" fill={C.text} fontSize="5.5">Unterdruckspeicher · 395 AT</text>
+            <rect width="100" height="28" rx="2" fill={C.panel} stroke={C.border} strokeWidth="1" opacity="0.7" />
+            <text x="50" y="10" textAnchor="middle" fill={C.dim} fontSize="8" fontWeight="600">Pufferspeicher PVT</text>
+            <text x="50" y="19" textAnchor="middle" fill={C.text} fontSize="8">hydr. Trennung · 2000 L</text>
+            <text x="50" y="27" textAnchor="middle" fill={C.text} fontSize="8">Unterdruckspeicher · 395 AT</text>
           </g>
 
           {/* Puffer PVT → Absperrventil → P03 → WT  (VL) */}
@@ -660,9 +663,9 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             {/* Halbkreis-Symbol (DIN-Norm) */}
             <path d={`M355,${VL - 5} A45,45 0 0,1 355,${RL + 5}`} fill="url(#gWt)" stroke={C.tankStroke} strokeWidth="2" />
             {/* Platten-Linien */}
-            {[0, 1, 2, 3].map(i => <line key={i} x1={358} y1={VL + 10 + i * 22} x2={390} y2={VL + 10 + i * 22} stroke="rgba(255,255,255,0.12)" strokeWidth="0.7" />)}
+            {[0, 1, 2, 3].map(i => <line key={i} x1={358} y1={VL + 10 + i * 22} x2={390} y2={VL + 10 + i * 22} stroke="rgba(255,255,255,0.12)" strokeWidth="1.4" />)}
           </g>
-          <text x={380} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="7.5">WT 47 kW</text>
+          <text x={380} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="10">WT 47 kW</text>
           <L x={362} y={VL - 12} t="DN 80" />
           {/* WT VL/RL Temps */}
           <PT x={370} y={VL - 24} v={`${aus}°`} c={C.geoPipe} />
@@ -684,39 +687,39 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* WP Zuleitung Info-Box */}
           <g transform={`translate(590,${VL - 70})`}>
-            <rect width="115" height="40" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.7" opacity="0.8" />
-            <text x="58" y="10" textAnchor="middle" fill={C.dim} fontSize="6" fontWeight="600">Zuleitung WP</text>
-            <text x="58" y="20" textAnchor="middle" fill={C.text} fontSize="5.5">Wärmetauscher · 38°C</text>
-            <text x="58" y="29" textAnchor="middle" fill={C.text} fontSize="5.5">Abl. Wärm.-rückg. · 6,4 kW</text>
-            <text x="58" y="38" textAnchor="middle" fill={C.text} fontSize="5.5">DN 25</text>
+            <rect width="115" height="40" rx="3" fill={C.panel} stroke={C.border} strokeWidth="1.4" opacity="0.8" />
+            <text x="58" y="10" textAnchor="middle" fill={C.dim} fontSize="8.5" fontWeight="600">Zuleitung WP</text>
+            <text x="58" y="20" textAnchor="middle" fill={C.text} fontSize="8">Wärmetauscher · 38°C</text>
+            <text x="58" y="29" textAnchor="middle" fill={C.text} fontSize="8">Abl. Wärm.-rückg. · 6,4 kW</text>
+            <text x="58" y="38" textAnchor="middle" fill={C.text} fontSize="8">DN 25</text>
           </g>
 
           {/* ════════════════════════════════════════
                WP-EINHAUSUNG (blaue gestrichelte Box)
                ════════════════════════════════════════ */}
           <rect x={460} y={VL - 55} width={180} height={RL - VL + 110} rx="5"
-            fill="none" stroke={C.enclosure} strokeWidth="1.5" strokeDasharray="8,4" />
-          <text x={550} y={VL - 62} textAnchor="middle" fill={C.enclosure} fontSize="7.5" fontWeight="600">Maschinenraum WP</text>
+            fill="none" stroke={C.enclosure} strokeWidth="2.2" strokeDasharray="8,4" />
+          <text x={550} y={VL - 62} textAnchor="middle" fill={C.enclosure} fontSize="10" fontWeight="600">Maschinenraum WP</text>
 
           {/* Soleanbindung Label */}
           <g transform={`translate(462,${RL + 30})`}>
-            <rect width="78" height="22" rx="2" fill={C.panel} stroke={C.enclosure} strokeWidth="0.6" opacity="0.8" />
-            <text x="39" y="9" textAnchor="middle" fill={C.dim} fontSize="5.5">Soleanbindung</text>
-            <text x="39" y="18" textAnchor="middle" fill={C.text} fontSize="5.5">DN 65 · SV 3 bar</text>
+            <rect width="78" height="22" rx="2" fill={C.panel} stroke={C.enclosure} strokeWidth="1.2" opacity="0.8" />
+            <text x="39" y="9" textAnchor="middle" fill={C.dim} fontSize="8">Soleanbindung</text>
+            <text x="39" y="18" textAnchor="middle" fill={C.text} fontSize="8">DN 65 · SV 3 bar</text>
           </g>
 
           {/* SC (Sole Circuit) Label innerhalb Einhausung */}
-          <text x={510} y={RL + 8} textAnchor="middle" fill={C.enclosure} fontSize="6" opacity="0.5">SC</text>
+          <text x={510} y={RL + 8} textAnchor="middle" fill={C.enclosure} fontSize="8.5" opacity="0.5">SC</text>
 
           {/* DN 25 interne Leitung (Zuleitung Wärmerückgewinnung) */}
-          <line x1={530} y1={VL - 50} x2={530} y2={VL - 30} stroke={C.dim} strokeWidth="0.7" strokeDasharray="2,2" />
-          <text x={538} y={VL - 40} fill={C.dim} fontSize="4.5">DN 25</text>
+          <line x1={530} y1={VL - 50} x2={530} y2={VL - 30} stroke={C.dim} strokeWidth="1.4" strokeDasharray="2,2" />
+          <text x={538} y={VL - 40} fill={C.dim} fontSize="7">DN 25</text>
 
           {/* SV (Sicherheitsventil) im WP-Bereich */}
           <SV x={580} y={VL - 42} label="SV 3,5" />
 
           {/* 400V Label */}
-          <text x={550} y={RL + 54} textAnchor="middle" fill={C.dim} fontSize="6" opacity="0.4">400V · 3~ · 50Hz</text>
+          <text x={550} y={RL + 54} textAnchor="middle" fill={C.dim} fontSize="8.5" opacity="0.4">400V · 3~ · 50Hz</text>
 
           {/* ════════════════════════════════════════
                WÄRMEPUMPE  (175 kW)
@@ -726,15 +729,15 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             <rect x={475} y={VL - 26} width={110} height={RL - VL + 52} rx="5"
               fill={C.panel} stroke={on ? C.hotPipe : C.border} strokeWidth={on ? 2 : 1.2} />
             <text x={530} y={VL - 8} textAnchor="middle" fill={C.bright} fontSize="10.5" fontWeight="700">Wärmepumpe</text>
-            <text x={530} y={VL + 5} textAnchor="middle" fill={C.dim} fontSize="7.5">175 kW th · 38,9 kW el</text>
+            <text x={530} y={VL + 5} textAnchor="middle" fill={C.dim} fontSize="10">175 kW th · 38,9 kW el</text>
             {/* COP */}
-            <rect x={500} y={VL + 18} width={60} height={26} rx="4" fill={C.bg} stroke={C.border} strokeWidth="0.7" />
-            <text x={530} y={VL + 28} textAnchor="middle" fill={C.dim} fontSize="7">COP</text>
+            <rect x={500} y={VL + 18} width={60} height={26} rx="4" fill={C.bg} stroke={C.border} strokeWidth="1.4" />
+            <text x={530} y={VL + 28} textAnchor="middle" fill={C.dim} fontSize="9.5">COP</text>
             <text x={530} y={VL + 40} textAnchor="middle" fill={C.accent} fontSize="13" fontWeight="800" className="mf">{cop}</text>
             {/* Status */}
             <circle cx={490} cy={RL + 12} r={3.5} fill={on ? C.pumpOn : C.pumpOff} className={on ? 'pp' : ''} />
-            <text x={500} y={RL + 15} fill={on ? C.pumpOn : C.pumpOff} fontSize="8" fontWeight="600">{on ? 'AKTIV' : 'STANDBY'}</text>
-            <text x={530} y={RL + 25} textAnchor="middle" fill={C.dim} fontSize="6.5">400V · SV 3,5 bar</text>
+            <text x={500} y={RL + 15} fill={on ? C.pumpOn : C.pumpOff} fontSize="10.5" fontWeight="600">{on ? 'AKTIV' : 'STANDBY'}</text>
+            <text x={530} y={RL + 25} textAnchor="middle" fill={C.dim} fontSize="9">400V · SV 3,5 bar</text>
           </g>
           <L x={470} y={VL - 12} t="DN 100" />
 
@@ -760,10 +763,10 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* Aufstellung Info */}
           <g transform={`translate(610,${RL + 28})`}>
-            <rect width="105" height="34" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.6" opacity="0.7" />
-            <text x="52" y="10" textAnchor="middle" fill={C.dim} fontSize="6" fontWeight="600">Aufstellung WP</text>
-            <text x="52" y="19" textAnchor="middle" fill={C.text} fontSize="5.5">400V · 3~ · 50Hz</text>
-            <text x="52" y="28" textAnchor="middle" fill={C.text} fontSize="5.5">Nennleistung 38,9 kW el</text>
+            <rect width="105" height="34" rx="3" fill={C.panel} stroke={C.border} strokeWidth="1.2" opacity="0.7" />
+            <text x="52" y="10" textAnchor="middle" fill={C.dim} fontSize="8.5" fontWeight="600">Aufstellung WP</text>
+            <text x="52" y="19" textAnchor="middle" fill={C.text} fontSize="8">400V · 3~ · 50Hz</text>
+            <text x="52" y="28" textAnchor="middle" fill={C.text} fontSize="8">Nennleistung 38,9 kW el</text>
           </g>
 
           {/* ════════════════════════════════════════
@@ -778,9 +781,9 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* Puffer HZ info */}
           <g transform={`translate(720,${RL + 52})`}>
-            <rect width="80" height="20" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" opacity="0.6" />
-            <text x="40" y="8" textAnchor="middle" fill={C.dim} fontSize="5.5">SV 3 bar · 6K ΔT</text>
-            <text x="40" y="16" textAnchor="middle" fill={C.dim} fontSize="5.5">DN 80 · 1500 L</text>
+            <rect width="80" height="20" rx="2" fill={C.panel} stroke={C.border} strokeWidth="1" opacity="0.6" />
+            <text x="40" y="8" textAnchor="middle" fill={C.dim} fontSize="8">SV 3 bar · 6K ΔT</text>
+            <text x="40" y="16" textAnchor="middle" fill={C.dim} fontSize="8">DN 80 · 1500 L</text>
           </g>
 
           {/* Puffer HZ → Absperrventil → P05 → Verteiler (VL) */}
@@ -792,8 +795,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M849,${VL} L870,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
           {/* Strangregulierventil */}
           <g transform={`translate(877,${VL})`}>
-            <polygon points="-5,-4 0,0 -5,4" fill="none" stroke={C.hotPipe} strokeWidth="1.2" />
-            <polygon points="5,-4 0,0 5,4" fill={C.hotPipe} stroke={C.hotPipe} strokeWidth="1.2" />
+            <polygon points="-7,-5 0,0 -7,5" fill="none" stroke={C.hotPipe} strokeWidth="1.8" />
+            <polygon points="7,-5 0,0 7,5" fill={C.hotPipe} stroke={C.hotPipe} strokeWidth="1.8" />
           </g>
           <Pipe d={`M883,${VL} L895,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={3.5} />
           <L x={810} y={VL - 16} t="DN 65" />
@@ -814,10 +817,10 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* Verteiler-Balken */}
           <g className="cursor-pointer" onClick={() => s({ id: 'VH', name: 'Verteiler Heizung', desc: 'Heizungsverteiler mit 4 Heizkreisen', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, dn: 'DN 56/55' })}>
             <rect x={895} y={VL + 20} width={180} height={18} rx="3" fill={C.panel} stroke={on ? C.hotPipe : C.border} strokeWidth={on ? 2 : 1.2} />
-            <text x={985} y={VL + 33} textAnchor="middle" fill={C.bright} fontSize="9" fontWeight="700" letterSpacing="0.5">VERTEILER HEIZUNG</text>
+            <text x={985} y={VL + 33} textAnchor="middle" fill={C.bright} fontSize="11.5" fontWeight="700" letterSpacing="0.5">VERTEILER HEIZUNG</text>
             {/* RL-Balken darunter */}
             <rect x={895} y={VL + 44} width={180} height={14} rx="3" fill={C.panel} stroke={on ? C.coldPipe : C.border} strokeWidth={on ? 1.5 : 1} strokeDasharray="4,2" />
-            <text x={985} y={VL + 54} textAnchor="middle" fill={C.coldPipe} fontSize="7" opacity="0.6">Rücklauf</text>
+            <text x={985} y={VL + 54} textAnchor="middle" fill={C.coldPipe} fontSize="9.5" opacity="0.6">Rücklauf</text>
           </g>
 
           {/* VL/RL Zuleitungen */}
@@ -837,19 +840,19 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* ── Heizkreis 3: Stockwerke ── */}
           <HKAbgang vlX={1010} y={VL + 20} rlY={VL + 58} nr={3} vlTemp={`${vl}°`} rlTemp={`${rl}°`} on={on} dn="DN 56" />
-          <text x={1021} y={VL - 54} textAnchor="middle" fill={C.dim} fontSize="6">Anschluss</text>
-          <text x={1021} y={VL - 46} textAnchor="middle" fill={C.dim} fontSize="6">weitere SW</text>
+          <text x={1021} y={VL - 54} textAnchor="middle" fill={C.dim} fontSize="8.5">Anschluss</text>
+          <text x={1021} y={VL - 46} textAnchor="middle" fill={C.dim} fontSize="8.5">weitere SW</text>
 
           {/* ── Heizkreis 4: Satellitenhaus E ── */}
           <HKAbgang vlX={1055} y={VL + 20} rlY={VL + 58} nr={4} vlTemp={`${vl}°`} rlTemp={`${rl}°`} on={on} dn="DN 56" />
-          <text x={1066} y={VL - 54} textAnchor="middle" fill={C.dim} fontSize="6">Sat.-Haus E</text>
-          <text x={1066} y={VL - 46} textAnchor="middle" fill={C.dim} fontSize="6">Heizung</text>
+          <text x={1066} y={VL - 54} textAnchor="middle" fill={C.dim} fontSize="8.5">Sat.-Haus E</text>
+          <text x={1066} y={VL - 46} textAnchor="middle" fill={C.dim} fontSize="8.5">Heizung</text>
 
           {/* Druckhalte-/Nachspeise */}
           <g transform={`translate(895,${RL + 22})`}>
-            <rect width="140" height="24" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.7" strokeDasharray="4,2" />
-            <text x="70" y="9" textAnchor="middle" fill={C.dim} fontSize="6.5">Druckhalte-/Entgasungs-</text>
-            <text x="70" y="19" textAnchor="middle" fill={C.dim} fontSize="6.5">und Nachspeisestation</text>
+            <rect width="140" height="24" rx="3" fill={C.panel} stroke={C.border} strokeWidth="1.4" strokeDasharray="4,2" />
+            <text x="70" y="9" textAnchor="middle" fill={C.dim} fontSize="9">Druckhalte-/Entgasungs-</text>
+            <text x="70" y="19" textAnchor="middle" fill={C.dim} fontSize="9">und Nachspeisestation</text>
           </g>
 
           {/* USV (Überströmventil) zwischen VL und RL am Verteiler */}
@@ -857,21 +860,21 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* Wasseraufbereitung */}
           <g transform={`translate(1050,${RL + 22})`}>
-            <rect width="85" height="22" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" />
-            <text x="42" y="9" textAnchor="middle" fill={C.dim} fontSize="5.5">Wasseraufbereitung</text>
-            <text x="42" y="18" textAnchor="middle" fill={C.text} fontSize="5.5">Enthärtung · Füllung</text>
+            <rect width="85" height="22" rx="2" fill={C.panel} stroke={C.border} strokeWidth="1" />
+            <text x="42" y="9" textAnchor="middle" fill={C.dim} fontSize="8">Wasseraufbereitung</text>
+            <text x="42" y="18" textAnchor="middle" fill={C.text} fontSize="8">Enthärtung · Füllung</text>
           </g>
 
           {/* Anschluss P04 / Kapselfeed */}
           <g transform={`translate(895,${RL + 50})`}>
-            <rect width="100" height="16" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" />
-            <text x="50" y="11" textAnchor="middle" fill={C.dim} fontSize="6">Kapselfeed · Anschluss P04</text>
+            <rect width="100" height="16" rx="2" fill={C.panel} stroke={C.border} strokeWidth="1" />
+            <text x="50" y="11" textAnchor="middle" fill={C.dim} fontSize="8.5">Kapselfeed · Anschluss P04</text>
           </g>
 
           {/* Entleerung/Füllung Label */}
           <g transform={`translate(1050,${RL + 48})`}>
-            <rect width="85" height="16" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.4" />
-            <text x="42" y="11" textAnchor="middle" fill={C.dim} fontSize="5.5">Füllung Heizung · Anl.</text>
+            <rect width="85" height="16" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.8" />
+            <text x="42" y="11" textAnchor="middle" fill={C.dim} fontSize="8">Füllung Heizung · Anl.</text>
           </g>
 
           {/* Entleerungshähne an Tiefpunkten */}
@@ -889,28 +892,28 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* ── Füllung Heizung / Verbindung links ── */}
           <Pipe d={`M1100,${VL} L1140,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={2} dash="6,3" />
           <Pipe d={`M1100,${RL} L1140,${RL}`} c={C.coldPipe} w={1.5} dash="4,3" />
-          <text x={1115} y={VL - 8} fill={C.dim} fontSize="5.5">Füllung Heiz.</text>
-          <text x={1115} y={VL - 2} fill={C.dim} fontSize="4.5">zu Gas Brunnen P</text>
+          <text x={1115} y={VL - 8} fill={C.dim} fontSize="8">Füllung Heiz.</text>
+          <text x={1115} y={VL - 2} fill={C.dim} fontSize="7">zu Gas Brunnen P</text>
 
           {/* ──── Nullenergiebrunnen (großer Halbkreis / WT-Symbol) ──── */}
           <g className="cursor-pointer" onClick={() => s({ id: 'NEB', name: 'Nullenergiebrunnen', desc: 'Kälte-WT · 4/50 · 40m³ · 1000 L', status: 'standby', power: '25 kW', dn: 'DN 80', temp: '37°C', tempRet: '18°C' })}>
             {/* Großer Halbkreis – Brunnen-WT */}
             <path d={`M1180,${VL - 12} A55,55 0 0,1 1180,${RL + 12}`} fill="url(#gTankCold)" stroke={C.tankStroke} strokeWidth="2.5" />
             {/* Interne Platten-Linien */}
-            {[0, 1, 2, 3, 4].map(i => <line key={i} x1={1185} y1={VL + i * 18} x2={1225} y2={VL + i * 18} stroke="rgba(255,255,255,0.08)" strokeWidth="0.7" />)}
+            {[0, 1, 2, 3, 4].map(i => <line key={i} x1={1185} y1={VL + i * 18} x2={1225} y2={VL + i * 18} stroke="rgba(255,255,255,0.08)" strokeWidth="1.4" />)}
             {/* Temperatur-Schichtung */}
-            <text x={1205} y={VL + 10} textAnchor="middle" fill={C.coolPipe} fontSize="6" opacity="0.4">warm</text>
-            <text x={1205} y={RL - 5} textAnchor="middle" fill={C.coolPipe} fontSize="6" opacity="0.4">kalt</text>
+            <text x={1205} y={VL + 10} textAnchor="middle" fill={C.coolPipe} fontSize="8.5" opacity="0.4">warm</text>
+            <text x={1205} y={RL - 5} textAnchor="middle" fill={C.coolPipe} fontSize="8.5" opacity="0.4">kalt</text>
           </g>
-          <text x={1210} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="8" fontWeight="600">Brunnen-WT</text>
+          <text x={1210} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="10.5" fontWeight="600">Brunnen-WT</text>
 
           {/* Brunnen-WT Info-Box (oben) */}
           <g transform={`translate(1155,${VL - 78})`}>
-            <rect width="115" height="48" rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.8" opacity="0.85" />
-            <text x="57" y="11" textAnchor="middle" fill={C.coolPipe} fontSize="7.5" fontWeight="700">Nullenergiebrunnen</text>
-            <text x="57" y="22" textAnchor="middle" fill={C.text} fontSize="6">4/50 · 40m³ · 1000 Liter</text>
-            <text x="57" y="32" textAnchor="middle" fill={C.text} fontSize="6">DN 80 · ΔT 5K</text>
-            <text x="57" y="42" textAnchor="middle" fill={C.text} fontSize="5.5">Druckhaltesystem m. Entgasung</text>
+            <rect width="115" height="48" rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.5" opacity="0.85" />
+            <text x="57" y="11" textAnchor="middle" fill={C.coolPipe} fontSize="10" fontWeight="700">Nullenergiebrunnen</text>
+            <text x="57" y="22" textAnchor="middle" fill={C.text} fontSize="8.5">4/50 · 40m³ · 1000 Liter</text>
+            <text x="57" y="32" textAnchor="middle" fill={C.text} fontSize="8.5">DN 80 · ΔT 5K</text>
+            <text x="57" y="42" textAnchor="middle" fill={C.text} fontSize="8">Druckhaltesystem m. Entgasung</text>
           </g>
 
           {/* SV + Entlüftung am Brunnen-WT */}
@@ -924,8 +927,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <TF x={1275} y={VL - 10} c={C.coolPipe} />
           {/* Strangregulierventil */}
           <g transform={`translate(1288,${VL})`}>
-            <polygon points="-4,-3 0,0 -4,3" fill="none" stroke={C.coolPipe} strokeWidth="1" />
-            <polygon points="4,-3 0,0 4,3" fill={C.coolPipe} stroke={C.coolPipe} strokeWidth="1" />
+            <polygon points="-4,-3 0,0 -4,3" fill="none" stroke={C.coolPipe} strokeWidth="1.5" />
+            <polygon points="4,-3 0,0 4,3" fill={C.coolPipe} stroke={C.coolPipe} strokeWidth="1.5" />
           </g>
           <Pipe d={`M1294,${VL} L1320,${VL}`} c={C.coolPipe} w={2.5} />
           <PT x={1260} y={VL - 22} v="37°" c={C.coolPipe} />
@@ -942,7 +945,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* ──── Pendelleitung DN 20 (vertikal links) ──── */}
           <Pipe d={`M1160,${VL} L1160,${RL + 115}`} c={C.coolPipe} w={0.8} dash="2,2" />
           <Pipe d={`M1160,${VL} L1180,${VL}`} c={C.coolPipe} w={0.8} dash="2,2" />
-          <text x={1154} y={(VL + RL) / 2} fill={C.coolPipe} fontSize="5" opacity="0.35"
+          <text x={1154} y={(VL + RL) / 2} fill={C.coolPipe} fontSize="7.5" opacity="0.35"
             transform={`rotate(-90,1154,${(VL + RL) / 2})`}>Pendelltg. DN 20</text>
 
           {/* ──── Vertikale VL-Pipe: nach unten zum Kältegestell ──── */}
@@ -967,7 +970,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* ──── Kältegestell / Einhausung (cyan) ──── */}
           <rect x={1170} y={RL + 40} width={240} height={85} rx="5"
             fill={C.coolPipe} fillOpacity="0.03" stroke={C.coolPipe} strokeWidth="1.8" opacity="0.5" />
-          <text x={1290} y={RL + 52} textAnchor="middle" fill={C.coolPipe} fontSize="7" fontWeight="600" opacity="0.6">Kältegestell · Einhausung</text>
+          <text x={1290} y={RL + 52} textAnchor="middle" fill={C.coolPipe} fontSize="9.5" fontWeight="600" opacity="0.6">Kältegestell · Einhausung</text>
 
           {/* ── Interne VL-Verrohrung im Kältegestell ── */}
           <Pipe d={`M1185,${RL + 68} L1210,${RL + 68}`} c={C.coolPipe} w={2.2} />
@@ -975,8 +978,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M1222,${RL + 68} L1238,${RL + 68}`} c={C.coolPipe} w={2.2} />
           {/* Schmutzfänger */}
           <g transform={`translate(1245,${RL + 68})`}>
-            <polygon points="-5,-5 5,-5 0,5" fill="none" stroke={C.coolPipe} strokeWidth="1.2" />
-            <line x1="0" y1="5" x2="0" y2="9" stroke={C.coolPipe} strokeWidth="0.8" />
+            <polygon points="-5,-5 5,-5 0,5" fill="none" stroke={C.coolPipe} strokeWidth="1.8" />
+            <line x1="0" y1="5" x2="0" y2="9" stroke={C.coolPipe} strokeWidth="1.5" />
           </g>
           <Pipe d={`M1252,${RL + 68} L1280,${RL + 68}`} c={C.coolPipe} w={2.2} />
           <TF x={1268} y={RL + 58} c={C.coolPipe} />
@@ -984,15 +987,15 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* ── Puffer Kälte Tank (innen im Gestell) ── */}
           <rect x={1280} y={RL + 55} width={80} height={30} rx="6" fill={C.tankFill} stroke={C.coolPipe} strokeWidth="2" />
           {/* Innere Schichtung */}
-          <line x1={1290} y1={RL + 70} x2={1350} y2={RL + 70} stroke={C.coolPipe} strokeWidth="0.4" strokeDasharray="3,2" opacity="0.3" />
-          <text x={1320} y={RL + 64} textAnchor="middle" fill={C.coolPipe} fontSize="6.5" fontWeight="600">Puffer Kälte</text>
-          <text x={1320} y={RL + 77} textAnchor="middle" fill={C.coolPipe} fontSize="5.5">1000 L</text>
+          <line x1={1290} y1={RL + 70} x2={1350} y2={RL + 70} stroke={C.coolPipe} strokeWidth="0.8" strokeDasharray="3,2" opacity="0.3" />
+          <text x={1320} y={RL + 64} textAnchor="middle" fill={C.coolPipe} fontSize="9" fontWeight="600">Puffer Kälte</text>
+          <text x={1320} y={RL + 77} textAnchor="middle" fill={C.coolPipe} fontSize="8">1000 L</text>
           {/* Temp-Sensoren am Puffer */}
           <circle cx={1365} cy={RL + 60} r="2" fill={C.coolPipe} opacity="0.5" />
-          <line x1={1365} y1={RL + 60} x2={1378} y2={RL + 60} stroke={C.dim} strokeWidth="0.6" />
+          <line x1={1365} y1={RL + 60} x2={1378} y2={RL + 60} stroke={C.dim} strokeWidth="1.2" />
           <T x={1380} y={RL + 60} v="37°" c={C.coolPipe} />
           <circle cx={1365} cy={RL + 78} r="2" fill={C.coolPipe} opacity="0.5" />
-          <line x1={1365} y1={RL + 78} x2={1378} y2={RL + 78} stroke={C.dim} strokeWidth="0.6" />
+          <line x1={1365} y1={RL + 78} x2={1378} y2={RL + 78} stroke={C.dim} strokeWidth="1.2" />
           <T x={1380} y={RL + 78} v="18°" c={C.coolPipe} />
 
           <Pipe d={`M1360,${RL + 68} L1385,${RL + 68}`} c={C.coolPipe} w={2.2} />
@@ -1024,11 +1027,11 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* ── Kältespeicher Info-Box (unten) ── */}
           <g transform={`translate(1180,${RL + 128})`}>
-            <rect width="130" height="38" rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.7" opacity="0.8" />
-            <text x="65" y="10" textAnchor="middle" fill={C.coolPipe} fontSize="6.5" fontWeight="600">Kältepufferanlage</text>
-            <text x="65" y="20" textAnchor="middle" fill={C.text} fontSize="5.5">Nullenergiebrunnen · 1000 L</text>
-            <text x="65" y="29" textAnchor="middle" fill={C.text} fontSize="5.5">ΔT 5K · SV 3 bar · DN 80</text>
-            <text x="65" y="37" textAnchor="middle" fill={C.text} fontSize="5.5">Druckhalte m. Entgasung</text>
+            <rect width="130" height="38" rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.4" opacity="0.8" />
+            <text x="65" y="10" textAnchor="middle" fill={C.coolPipe} fontSize="9" fontWeight="600">Kältepufferanlage</text>
+            <text x="65" y="20" textAnchor="middle" fill={C.text} fontSize="8">Nullenergiebrunnen · 1000 L</text>
+            <text x="65" y="29" textAnchor="middle" fill={C.text} fontSize="8">ΔT 5K · SV 3 bar · DN 80</text>
+            <text x="65" y="37" textAnchor="middle" fill={C.text} fontSize="8">Druckhalte m. Entgasung</text>
           </g>
 
           {/* ── Rohre zum Verteiler Kühlung ── */}
@@ -1043,18 +1046,18 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* ── Zuleitung Kälte → rechter Rand ── */}
           <g transform={`translate(1510,${VL - 10})`}>
-            <rect width="42" height="24" rx="2" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.6" opacity="0.7" />
-            <text x="21" y="9" textAnchor="middle" fill={C.coolPipe} fontSize="5">Zuleitung</text>
-            <text x="21" y="19" textAnchor="middle" fill={C.coolPipe} fontSize="5">Kälte</text>
+            <rect width="42" height="24" rx="2" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.2" opacity="0.7" />
+            <text x="21" y="9" textAnchor="middle" fill={C.coolPipe} fontSize="7.5">Zuleitung</text>
+            <text x="21" y="19" textAnchor="middle" fill={C.coolPipe} fontSize="7.5">Kälte</text>
           </g>
           <Pipe d={`M1420,${VL + 2} L1510,${VL + 2}`} c={C.coolPipe} w={1.5} />
 
           {/* Verteiler Kühlung */}
           <g className="cursor-pointer" onClick={() => s({ id: 'VK', name: 'Verteiler Kühlung', desc: 'Kühlverteiler mit 3 Kreisen', status: 'standby', temp: '37°C', tempRet: '18°C', dn: 'DN 65' })}>
-            <rect x={1385} y={VL + 96} width={130} height={16} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.2" strokeOpacity="0.6" />
-            <text x={1450} y={VL + 107} textAnchor="middle" fill={C.bright} fontSize="8.5" fontWeight="700" letterSpacing="0.5">VERT. KÜHLUNG</text>
-            <rect x={1385} y={VL + 116} width={130} height={12} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.8" strokeDasharray="4,2" strokeOpacity="0.4" />
-            <text x={1450} y={VL + 125} textAnchor="middle" fill={C.coolPipe} fontSize="6" opacity="0.5">Rücklauf</text>
+            <rect x={1385} y={VL + 96} width={130} height={16} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.8" strokeOpacity="0.6" />
+            <text x={1450} y={VL + 107} textAnchor="middle" fill={C.bright} fontSize="11" fontWeight="700" letterSpacing="0.5">VERT. KÜHLUNG</text>
+            <rect x={1385} y={VL + 116} width={130} height={12} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.5" strokeDasharray="4,2" strokeOpacity="0.4" />
+            <text x={1450} y={VL + 125} textAnchor="middle" fill={C.coolPipe} fontSize="8.5" opacity="0.5">Rücklauf</text>
           </g>
 
           {/* Kälte-Abgänge mit Mischern */}
@@ -1064,12 +1067,12 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
 
           {/* KK2: Sat.E Kühlung */}
           <HKAbgang vlX={1450} y={VL + 96} rlY={VL + 128} nr={2} vlTemp="22°" rlTemp="18°" on={false} dn="DN 80" />
-          <text x={1461} y={VL + 22} textAnchor="middle" fill={C.dim} fontSize="6">Sat.E</text>
-          <text x={1461} y={VL + 30} textAnchor="middle" fill={C.dim} fontSize="6">Kühlung</text>
+          <text x={1461} y={VL + 22} textAnchor="middle" fill={C.dim} fontSize="8.5">Sat.E</text>
+          <text x={1461} y={VL + 30} textAnchor="middle" fill={C.dim} fontSize="8.5">Kühlung</text>
 
           {/* KK3: Reserve */}
           <HKAbgang vlX={1495} y={VL + 96} rlY={VL + 128} nr={3} vlTemp="37°" rlTemp="18°" on={false} dn="DN 63" />
-          <text x={1506} y={VL + 22} textAnchor="middle" fill={C.dim} fontSize="6">Reserve</text>
+          <text x={1506} y={VL + 22} textAnchor="middle" fill={C.dim} fontSize="8.5">Reserve</text>
 
           {/* MAG Kälte Verteiler */}
           <MAG x={1420} y={VL + 148} />
@@ -1102,7 +1105,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </g>}
 
           {/* Titel */}
-          <text x="775" y="620" textAnchor="middle" fill={C.dim} fontSize="8.5">
+          <text x="775" y="620" textAnchor="middle" fill={C.dim} fontSize="11">
             ② Hauptstation + Anschluss an Satellitenhaus – Detail · Darmstadt 2026
           </text>
         </svg>
@@ -1120,23 +1123,23 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
         <span className="w-5 h-0.5 rounded-full" style={{ background: c }} /><span className="text-slate-400">{l}</span>
       </span>)}
       <span className="flex items-center gap-1.5">
-        <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOn} strokeWidth="1.2" /><polygon points="6,3 9,8 3,8" fill={C.pumpOn} /></svg>
+        <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOn} strokeWidth="1.8" /><polygon points="6,3 9,8 3,8" fill={C.pumpOn} /></svg>
         <span className="text-slate-400">Pumpe aktiv</span>
       </span>
       <span className="flex items-center gap-1.5">
-        <svg width="12" height="12"><polygon points="3,2 9,6 3,10" fill="none" stroke={C.tankStroke} strokeWidth="1.2" /><polygon points="9,2 3,6 9,10" fill="none" stroke={C.tankStroke} strokeWidth="1.2" /></svg>
+        <svg width="12" height="12"><polygon points="3,2 9,6 3,10" fill="none" stroke={C.tankStroke} strokeWidth="1.8" /><polygon points="9,2 3,6 9,10" fill="none" stroke={C.tankStroke} strokeWidth="1.8" /></svg>
         <span className="text-slate-400">Absperrventil</span>
       </span>
       <span className="flex items-center gap-1.5">
-        <svg width="12" height="12"><polygon points="6,1 11,11 1,11" fill="none" stroke={C.geoPipe} strokeWidth="1" /><line x1="6" y1="11" x2="6" y2="14" stroke={C.geoPipe} strokeWidth="0.8" /></svg>
+        <svg width="12" height="12"><polygon points="6,1 11,11 1,11" fill="none" stroke={C.geoPipe} strokeWidth="1.5" /><line x1="6" y1="11" x2="6" y2="14" stroke={C.geoPipe} strokeWidth="1.5" /></svg>
         <span className="text-slate-400">Schmutzfänger</span>
       </span>
       <span className="flex items-center gap-1.5">
-        <svg width="16" height="12"><polygon points="2,2 8,6 2,10" fill="none" stroke={C.accent} strokeWidth="1" /><polygon points="14,2 8,6 14,10" fill={C.accent} stroke={C.accent} strokeWidth="1" /></svg>
+        <svg width="16" height="12"><polygon points="2,2 8,6 2,10" fill="none" stroke={C.accent} strokeWidth="1.5" /><polygon points="14,2 8,6 14,10" fill={C.accent} stroke={C.accent} strokeWidth="1.5" /></svg>
         <span className="text-slate-400">Strangregulierventil</span>
       </span>
       <span className="flex items-center gap-1.5">
-        <svg width="14" height="14"><polygon points="4,2 10,2 7,8" fill="none" stroke={C.pumpOn} strokeWidth="1" /><circle cx="7" cy="12" r="3" fill={C.tankFill} stroke={C.pumpOn} strokeWidth="0.8" /><text x="7" y="13.5" textAnchor="middle" fill={C.pumpOn} fontSize="4">M</text></svg>
+        <svg width="14" height="14"><polygon points="4,2 10,2 7,8" fill="none" stroke={C.pumpOn} strokeWidth="1.5" /><circle cx="7" cy="12" r="3" fill={C.tankFill} stroke={C.pumpOn} strokeWidth="1.5" /><text x="7" y="13.5" textAnchor="middle" fill={C.pumpOn} fontSize="6">M</text></svg>
         <span className="text-slate-400">3-Wege-Mischer</span>
       </span>
     </div>
