@@ -11,261 +11,259 @@ const C = {
   bg: '#0c1017',
   panel: '#111820',
   border: '#1a2332',
-  hotPipe: '#ef4444',
-  hotGlow: '#ef444440',
-  warmPipe: '#f97316',
-  warmGlow: '#f9731640',
-  coldPipe: '#3b82f6',
-  coldGlow: '#3b82f640',
-  coolPipe: '#06b6d4',
-  coolGlow: '#06b6d440',
-  geoPipe: '#22c55e',
-  geoGlow: '#22c55e40',
+  borderLight: '#243044',
+  hotPipe: '#ef4444',     // Vorlauf
+  hotGlow: '#ef444430',
+  warmPipe: '#f97316',    // Quelle warm
+  warmGlow: '#f9731630',
+  coldPipe: '#3b82f6',    // Rücklauf
+  coldGlow: '#3b82f630',
+  coolPipe: '#06b6d4',    // Kältekreis
+  coolGlow: '#06b6d430',
+  geoPipe: '#22c55e',     // Erdwärme
+  geoGlow: '#22c55e30',
   pumpOn: '#22c55e',
   pumpOff: '#475569',
-  tankStroke: '#64748b',
+  tankStroke: '#475569',
   tankFill: '#0f172a',
   text: '#94a3b8',
   textBright: '#e2e8f0',
-  textDim: '#475569',
+  textDim: '#334155',
   accent: '#10b981',
 };
 
 // ═══════════════════════════════════════════════════════════════
-//  SVG DEFS (Gradienten, Filter, Animationen)
+//  GRID-KONSTANTEN (saubere Positionierung)
+// ═══════════════════════════════════════════════════════════════
+const Y = {
+  source: 65,       // Quellen-Boxen (Oberkante)
+  srcPipe: 155,     // Quellen-Rohre horizontal
+  tankTop: 185,     // Tank Oberkante
+  vl: 260,          // ═══ VORLAUF Hauptleitung ═══
+  mid: 300,         // Mittelachse
+  rl: 350,          // ═══ RÜCKLAUF Hauptleitung ═══
+  tankBot: 420,     // Tank Unterkante
+  info: 470,        // Info-Boxen
+  title: 550,       // Titelzeile
+};
+
+const CX = {
+  erd: 75,          // Erdwärmefeld
+  p01: 160,         // Pumpe P01
+  pvt: 235,         // Puffer PVT Mitte
+  p03: 330,         // Pumpe P03
+  wt: 400,          // Wärmetauscher Mitte
+  wtR: 420,         // WT rechte Kante
+  wp: 550,          // Wärmepumpe Mitte
+  wpR: 630,         // WP rechte Kante
+  p04: 680,         // Pumpe P04
+  psHz: 760,        // Puffer HZ Mitte
+  p05: 840,         // Pumpe P05
+  vert: 960,        // Verteiler HZ Mitte
+  vertR: 1050,      // Verteiler rechte Kante
+  sat: 1100,        // Satellitenhaus
+  div: 1170,        // Trennlinie
+  psK: 1260,        // Puffer Kälte Mitte
+  p07: 1340,        // Pumpe P07
+  vertK: 1400,      // Verteiler Kühlung Mitte
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  SVG DEFS
 // ═══════════════════════════════════════════════════════════════
 function Defs() {
   return (
     <defs>
-      {/* Pipe Gradients */}
-      <linearGradient id="pipeHot" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#dc2626" /><stop offset="100%" stopColor="#ef4444" />
-      </linearGradient>
-      <linearGradient id="pipeCold" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#2563eb" /><stop offset="100%" stopColor="#3b82f6" />
-      </linearGradient>
-      <linearGradient id="pipeWarm" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#ea580c" /><stop offset="100%" stopColor="#f97316" />
-      </linearGradient>
-      <linearGradient id="pipeCool" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#0891b2" /><stop offset="100%" stopColor="#06b6d4" />
-      </linearGradient>
-      <linearGradient id="pipeGeo" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#16a34a" /><stop offset="100%" stopColor="#22c55e" />
-      </linearGradient>
-
-      {/* Tank Gradients */}
       <linearGradient id="tankHot" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#dc2626" stopOpacity="0.3" />
-        <stop offset="50%" stopColor="#ea580c" stopOpacity="0.15" />
-        <stop offset="100%" stopColor="#2563eb" stopOpacity="0.2" />
+        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.25" />
+        <stop offset="50%" stopColor="#ea580c" stopOpacity="0.1" />
+        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.15" />
       </linearGradient>
       <linearGradient id="tankCold" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.2" />
-        <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.3" />
+        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.15" />
+        <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.2" />
       </linearGradient>
-
-      {/* Heat Exchanger */}
       <linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#ef4444" /><stop offset="50%" stopColor="#8b5cf6" /><stop offset="100%" stopColor="#3b82f6" />
+        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+        <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.7" />
+        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.8" />
       </linearGradient>
-
-      {/* Glow Filter */}
-      <filter id="glowGreen" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="3" result="blur" />
-        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+      <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3" result="b" />
+        <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
-      <filter id="glowRed" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="4" result="blur" />
-        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-      </filter>
-      <filter id="glowBlue" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="3" result="blur" />
-        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-      </filter>
-
-      {/* Animated Flow Dots */}
       <style>{`
-        @keyframes flowRight { from { offset-distance: 0% } to { offset-distance: 100% } }
-        @keyframes flowLeft { from { offset-distance: 100% } to { offset-distance: 0% } }
-        @keyframes flowDown { from { offset-distance: 0% } to { offset-distance: 100% } }
-        @keyframes pulse { 0%, 100% { opacity: 0.6 } 50% { opacity: 1 } }
-        @keyframes pumpSpin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-        .flow-dot { animation: flowRight 3s linear infinite; }
-        .flow-dot-slow { animation: flowRight 5s linear infinite; }
-        .flow-dot-rev { animation: flowLeft 3s linear infinite; }
-        .flow-dot-down { animation: flowDown 4s linear infinite; }
-        .pump-pulse { animation: pulse 2s ease-in-out infinite; }
-        .temp-badge { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+        @keyframes pulse { 0%,100% { opacity:.5 } 50% { opacity:1 } }
+        .pump-pulse { animation: pulse 2s ease-in-out infinite }
+        .temp-font { font-family: 'JetBrains Mono','Fira Code',ui-monospace,monospace }
       `}</style>
     </defs>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  KOMPONENTEN-SYMBOLE
+//  PRIMITIVE KOMPONENTEN
 // ═══════════════════════════════════════════════════════════════
 
-/** Pumpe – DIN-Kreis mit Dreieck */
+/** Rohrleitung – sauber horizontal/vertikal */
+function Pipe({ d, color, w = 3, dash, glow }: {
+  d: string; color: string; w?: number; dash?: string; glow?: string;
+}) {
+  return (
+    <g>
+      {glow && <path d={d} fill="none" stroke={glow} strokeWidth={w + 8} strokeLinecap="round" strokeLinejoin="round" />}
+      <path d={d} fill="none" stroke={color} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dash} />
+    </g>
+  );
+}
+
+/** Animierter Strömungspunkt */
+function Flow({ path, color, dur = '3s', delay = '0s', r = 4 }: {
+  path: string; color: string; dur?: string; delay?: string; r?: number;
+}) {
+  return (
+    <circle r={r} fill={color} opacity="0.85">
+      <animateMotion dur={dur} repeatCount="indefinite" begin={delay} path={path} />
+    </circle>
+  );
+}
+
+/** Pumpe – DIN-Symbol */
 function Pump({ x, y, id, on, onClick }: {
   x: number; y: number; id: string; on: boolean; onClick?: () => void;
 }) {
   return (
     <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-      {on && <circle cx="0" cy="0" r="20" fill={C.pumpOn} opacity="0.15" filter="url(#glowGreen)" />}
-      <circle cx="0" cy="0" r="15" fill={C.tankFill} stroke={on ? C.pumpOn : C.pumpOff} strokeWidth="2.5" />
-      <polygon points="0,-8 8,5 -8,5" fill={on ? C.pumpOn : C.pumpOff} className={on ? 'pump-pulse' : ''} />
-      <text x="0" y="28" textAnchor="middle" fill={on ? C.pumpOn : C.pumpOff} fontSize="10" fontWeight="700">{id}</text>
+      {on && <circle r="19" fill={C.pumpOn} opacity="0.12" filter="url(#glow)" />}
+      <circle r="14" fill={C.tankFill} stroke={on ? C.pumpOn : C.pumpOff} strokeWidth="2" />
+      <polygon points="0,-7 7,4 -7,4" fill={on ? C.pumpOn : C.pumpOff} className={on ? 'pump-pulse' : ''} />
+      <text y="26" textAnchor="middle" fill={on ? C.pumpOn : C.pumpOff} fontSize="9" fontWeight="700">{id}</text>
     </g>
   );
 }
 
-/** Tank / Pufferspeicher */
-function Tank({ x, y, w, h, label, vol, temps, grad, onClick }: {
-  x: number; y: number; w: number; h: number; label: string; vol: string;
-  temps?: { top?: string; mid?: string; bot?: string };
-  grad: string; onClick?: () => void;
+/** Pufferspeicher */
+function Tank({ cx, y, w, h, label, vol, temps, grad, onClick }: {
+  cx: number; y: number; w: number; h: number; label: string; vol: string;
+  temps?: [string, string?, string?]; grad: string; onClick?: () => void;
 }) {
-  const rx = w / 2;
+  const x = cx - w / 2;
   return (
     <g className="cursor-pointer" onClick={onClick}>
-      {/* Körper */}
-      <rect x={x} y={y} width={w} height={h} rx={rx} fill={`url(#${grad})`} stroke={C.tankStroke} strokeWidth="2" />
-      {/* Temperaturfühler-Linien */}
-      {temps?.top && (
-        <g>
-          <line x1={x + w + 4} y1={y + h * 0.15} x2={x + w + 15} y2={y + h * 0.15} stroke={C.textDim} strokeWidth="1" />
-          <TempBadge x={x + w + 18} y={y + h * 0.15} temp={temps.top} color={C.hotPipe} />
-        </g>
-      )}
-      {temps?.mid && (
-        <g>
-          <line x1={x + w + 4} y1={y + h * 0.5} x2={x + w + 15} y2={y + h * 0.5} stroke={C.textDim} strokeWidth="1" />
-          <TempBadge x={x + w + 18} y={y + h * 0.5} temp={temps.mid} color={C.warmPipe} />
-        </g>
-      )}
-      {temps?.bot && (
-        <g>
-          <line x1={x + w + 4} y1={y + h * 0.85} x2={x + w + 15} y2={y + h * 0.85} stroke={C.textDim} strokeWidth="1" />
-          <TempBadge x={x + w + 18} y={y + h * 0.85} temp={temps.bot} color={C.coldPipe} />
-        </g>
-      )}
-      {/* Temperaturfühler-Punkte */}
-      {[0.15, 0.3, 0.5, 0.7, 0.85].map((p, i) => (
-        <circle key={i} cx={x + w + 4} cy={y + h * p} r="2.5" fill={C.textDim} stroke={C.panel} strokeWidth="1" />
-      ))}
+      <rect x={x} y={y} width={w} height={h} rx={w / 2} fill={`url(#${grad})`} stroke={C.tankStroke} strokeWidth="2" />
+      {/* Sensor-Punkte + Temps */}
+      {temps?.[0] && <>
+        <circle cx={x + w + 5} cy={y + h * 0.18} r="2" fill={C.tankStroke} />
+        <line x1={x + w + 5} y1={y + h * 0.18} x2={x + w + 16} y2={y + h * 0.18} stroke={C.textDim} strokeWidth="1" />
+        <Temp x={x + w + 19} y={y + h * 0.18} v={temps[0]} c={C.hotPipe} />
+      </>}
+      {temps?.[1] && <>
+        <circle cx={x + w + 5} cy={y + h * 0.5} r="2" fill={C.tankStroke} />
+        <line x1={x + w + 5} y1={y + h * 0.5} x2={x + w + 16} y2={y + h * 0.5} stroke={C.textDim} strokeWidth="1" />
+        <Temp x={x + w + 19} y={y + h * 0.5} v={temps[1]} c={C.warmPipe} />
+      </>}
+      {temps?.[2] && <>
+        <circle cx={x + w + 5} cy={y + h * 0.82} r="2" fill={C.tankStroke} />
+        <line x1={x + w + 5} y1={y + h * 0.82} x2={x + w + 16} y2={y + h * 0.82} stroke={C.textDim} strokeWidth="1" />
+        <Temp x={x + w + 19} y={y + h * 0.82} v={temps[2]} c={C.coldPipe} />
+      </>}
       {/* Label */}
-      <text x={x + w / 2} y={y - 8} textAnchor="middle" fill={C.textBright} fontSize="10" fontWeight="600">{label}</text>
-      <text x={x + w / 2} y={y - 20} textAnchor="middle" fill={C.textDim} fontSize="8">{vol}</text>
+      <text x={cx} y={y - 6} textAnchor="middle" fill={C.textBright} fontSize="10" fontWeight="600">{label}</text>
+      <text x={cx} y={y - 18} textAnchor="middle" fill={C.textDim} fontSize="8">{vol}</text>
     </g>
   );
 }
 
-/** Temperatur-Badge */
-function TempBadge({ x, y, temp, color }: { x: number; y: number; temp: string; color: string }) {
+/** Temperatur-Badge (kompakt) */
+function Temp({ x, y, v, c }: { x: number; y: number; v: string; c: string }) {
   return (
-    <g className="temp-badge">
-      <rect x={x} y={y - 8} width={42} height={16} rx="4" fill={C.panel} stroke={color} strokeWidth="1" strokeOpacity="0.4" />
-      <text x={x + 21} y={y + 3} textAnchor="middle" fill={color} fontSize="10" fontWeight="700">{temp}</text>
+    <g className="temp-font">
+      <rect x={x} y={y - 7} width={38} height={14} rx="3" fill={C.panel} stroke={c} strokeWidth="0.8" strokeOpacity="0.5" />
+      <text x={x + 19} y={y + 4} textAnchor="middle" fill={c} fontSize="9" fontWeight="700">{v}</text>
     </g>
   );
 }
 
-/** Absperrventil (Bowtie) */
+/** Inline Temp-Label an Pipe */
+function PipeTemp({ x, y, v, c }: { x: number; y: number; v: string; c: string }) {
+  return (
+    <g className="temp-font">
+      <rect x={x - 22} y={y - 8} width={44} height={16} rx="4" fill={C.bg} stroke={c} strokeWidth="1" strokeOpacity="0.4" />
+      <text x={x} y={y + 3} textAnchor="middle" fill={c} fontSize="10" fontWeight="800">{v}</text>
+    </g>
+  );
+}
+
+/** Kompaktes Info-Label */
+function Label({ x, y, text, size = 8 }: { x: number; y: number; text: string; size?: number }) {
+  return <text x={x} y={y} fill={C.textDim} fontSize={size} fontWeight="500">{text}</text>;
+}
+
+/** Absperrventil */
 function Valve({ x, y, rot = 0 }: { x: number; y: number; rot?: number }) {
   return (
     <g transform={`translate(${x},${y}) rotate(${rot})`}>
-      <polygon points="-6,-5 0,0 -6,5" fill="none" stroke={C.textDim} strokeWidth="1.5" />
-      <polygon points="6,-5 0,0 6,5" fill="none" stroke={C.textDim} strokeWidth="1.5" />
+      <polygon points="-5,-4 0,0 -5,4" fill="none" stroke={C.tankStroke} strokeWidth="1.3" />
+      <polygon points="5,-4 0,0 5,4" fill="none" stroke={C.tankStroke} strokeWidth="1.3" />
     </g>
   );
 }
 
-/** MAG */
+/** MAG-Gefäß */
 function MAG({ x, y }: { x: number; y: number }) {
   return (
-    <g transform={`translate(${x},${y})`}>
-      <ellipse cx="0" cy="0" rx="12" ry="15" fill={C.tankFill} stroke={C.textDim} strokeWidth="1.5" />
-      <text x="0" y="3" textAnchor="middle" fill={C.textDim} fontSize="7" fontWeight="600">MAG</text>
+    <g>
+      <line x1={x} y1={y - 16} x2={x} y2={y - 8} stroke={C.textDim} strokeWidth="1" />
+      <ellipse cx={x} cy={y} rx="10" ry="12" fill={C.tankFill} stroke={C.textDim} strokeWidth="1.2" />
+      <text x={x} y={y + 3} textAnchor="middle" fill={C.textDim} fontSize="6" fontWeight="600">MAG</text>
     </g>
   );
 }
 
-/** Beschriftungs-Box (Komponente) */
-function CompBox({ x, y, w, h, title, sub, active, color, onClick }: {
+/** Komponenten-Box */
+function Box({ x, y, w, h, title, sub, active, color, onClick }: {
   x: number; y: number; w: number; h: number;
   title: string; sub?: string; active?: boolean; color?: string; onClick?: () => void;
 }) {
   const c = color || C.accent;
   return (
     <g className="cursor-pointer" onClick={onClick}>
-      {active && <rect x={x - 2} y={y - 2} width={w + 4} height={h + 4} rx="6" fill={c} opacity="0.08" filter="url(#glowGreen)" />}
-      <rect x={x} y={y} width={w} height={h} rx="4" fill={C.panel} stroke={active ? c : C.border} strokeWidth={active ? 2 : 1.5} />
-      <text x={x + w / 2} y={y + (sub ? h / 2 - 4 : h / 2 + 3)} textAnchor="middle" fill={C.textBright} fontSize="10" fontWeight="600">{title}</text>
-      {sub && <text x={x + w / 2} y={y + h / 2 + 8} textAnchor="middle" fill={C.textDim} fontSize="8">{sub}</text>}
+      {active && <rect x={x - 2} y={y - 2} width={w + 4} height={h + 4} rx="6" fill={c} opacity="0.06" filter="url(#glow)" />}
+      <rect x={x} y={y} width={w} height={h} rx="4" fill={C.panel} stroke={active ? c : C.border} strokeWidth={active ? 1.8 : 1.2} />
+      <text x={x + w / 2} y={y + (sub ? h / 2 - 3 : h / 2 + 3)} textAnchor="middle" fill={C.textBright} fontSize="10" fontWeight="600">{title}</text>
+      {sub && <text x={x + w / 2} y={y + h / 2 + 8} textAnchor="middle" fill={C.textDim} fontSize="7.5">{sub}</text>}
     </g>
   );
 }
 
-/** DN-Label */
-function DN({ x, y, text }: { x: number; y: number; text: string }) {
-  return <text x={x} y={y} fill={C.textDim} fontSize="8" fontWeight="500">{text}</text>;
-}
-
-/** Verteiler-Balken */
-function Verteiler({ x, y, w, h, label, active, color, onClick }: {
+/** Verteiler (breiter Balken mit Abgängen) */
+function Dist({ x, y, w, h, label, active, color, onClick }: {
   x: number; y: number; w: number; h: number;
   label: string; active?: boolean; color?: string; onClick?: () => void;
 }) {
   const c = color || C.accent;
   return (
     <g className="cursor-pointer" onClick={onClick}>
-      <rect x={x} y={y} width={w} height={h} rx="3" fill={C.panel} stroke={active ? c : C.border} strokeWidth={active ? 2 : 1.5} />
-      <text x={x + w / 2} y={y + h / 2 + 4} textAnchor="middle" fill={C.textBright} fontSize="11" fontWeight="700" letterSpacing="1">{label}</text>
-      {/* Abgänge oben */}
+      <rect x={x} y={y} width={w} height={h} rx="3" fill={C.panel} stroke={active ? c : C.border} strokeWidth={active ? 2 : 1.2} />
+      <text x={x + w / 2} y={y + h / 2 + 4} textAnchor="middle" fill={C.textBright} fontSize="10" fontWeight="700" letterSpacing="0.5">{label}</text>
       {[0.2, 0.4, 0.6, 0.8].map((p, i) => (
         <g key={i}>
-          <line x1={x + w * p} y1={y} x2={x + w * p} y2={y - 15} stroke={C.border} strokeWidth="1.5" />
-          <Valve x={x + w * p} y={y - 15} rot={90} />
+          <line x1={x + w * p} y1={y} x2={x + w * p} y2={y - 12} stroke={C.border} strokeWidth="1.2" />
+          <Valve x={x + w * p} y={y - 12} rot={90} />
         </g>
       ))}
     </g>
   );
 }
 
-/** Pipe mit optionalem Flow */
-function Pipe({ d, color, width = 3, dash, glow }: {
-  d: string; color: string; width?: number; dash?: string; glow?: string;
-}) {
-  return (
-    <g>
-      {glow && <path d={d} fill="none" stroke={glow} strokeWidth={width + 6} strokeLinecap="round" strokeLinejoin="round" opacity="0.3" />}
-      <path d={d} fill="none" stroke={color} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round"
-        strokeDasharray={dash} />
-    </g>
-  );
-}
-
-/** Animierter Flow-Punkt */
-function FlowDot({ path, color, dur = '3s', delay = '0s', size = 4 }: {
-  path: string; color: string; dur?: string; delay?: string; size?: number;
-}) {
-  return (
-    <circle r={size} fill={color} opacity="0.9">
-      <animateMotion dur={dur} repeatCount="indefinite" begin={delay} path={path} />
-    </circle>
-  );
-}
-
-/** Region-Label (Hintergrund) */
+/** Hintergrund-Region Label */
 function Region({ x, y, text }: { x: number; y: number; text: string }) {
-  return <text x={x} y={y} fill={C.textDim} fontSize="11" fontWeight="700" letterSpacing="3" opacity="0.3">{text}</text>;
+  return <text x={x} y={y} fill={C.textDim} fontSize="10" fontWeight="700" letterSpacing="2.5" opacity="0.25">{text}</text>;
 }
 
 // ═══════════════════════════════════════════════════════════════
 //  DETAIL-PANEL
 // ═══════════════════════════════════════════════════════════════
-
 interface CompInfo {
   id: string; name: string; desc: string;
   status?: string; temp?: string; tempRet?: string;
@@ -273,21 +271,22 @@ interface CompInfo {
 }
 
 function DetailPanel({ info, onClose }: { info: CompInfo; onClose: () => void }) {
-  const isOn = info.status === 'running';
+  const on = info.status === 'running';
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-30 bg-[#0f1520]/95 backdrop-blur-xl border border-[#1e2736] rounded-xl p-4 shadow-2xl">
-      <div className="flex justify-between items-start mb-3">
+    <div className="absolute bottom-3 left-3 right-3 z-30 bg-[#0f1520]/95 backdrop-blur-xl border border-[#1e2736] rounded-xl p-3.5 shadow-2xl"
+      onClick={e => e.stopPropagation()}>
+      <div className="flex justify-between items-start mb-2">
         <div>
           <h3 className="text-white font-bold text-sm">{info.name}</h3>
           <p className="text-slate-400 text-xs">{info.desc}</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-slate-400 hover:text-white -mt-1 -mr-1"><X className="w-4 h-4" /></Button>
+        <button onClick={onClose} className="text-slate-500 hover:text-white p-1"><X className="w-4 h-4" /></button>
       </div>
-      <div className="flex flex-wrap gap-2 text-xs">
+      <div className="flex flex-wrap gap-1.5 text-xs">
         <Chip label="ID" value={info.id} mono />
         <Chip label="Status" badge={
-          <Badge className={`text-[10px] ${isOn ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
-            {isOn ? 'Laufend' : 'Bereit'}
+          <Badge className={`text-[10px] ${on ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+            {on ? 'Laufend' : 'Bereit'}
           </Badge>
         } />
         {info.temp && <Chip label="VL" value={info.temp} color="text-orange-400" />}
@@ -304,8 +303,8 @@ function Chip({ label, value, badge, color = 'text-slate-300', mono }: {
   label: string; value?: string; badge?: React.ReactNode; color?: string; mono?: boolean;
 }) {
   return (
-    <div className="bg-[#0a0e14] rounded-lg px-3 py-1.5 inline-flex items-center gap-2">
-      <span className="text-[9px] text-slate-500 uppercase">{label}</span>
+    <div className="bg-[#0a0e14] rounded-md px-2.5 py-1 inline-flex items-center gap-1.5">
+      <span className="text-[8px] text-slate-500 uppercase">{label}</span>
       {badge || <span className={`font-semibold text-xs ${color} ${mono ? 'font-mono' : ''}`}>{value}</span>}
     </div>
   );
@@ -314,27 +313,23 @@ function Chip({ label, value, badge, color = 'text-slate-300', mono }: {
 // ═══════════════════════════════════════════════════════════════
 //  HAUPTKOMPONENTE
 // ═══════════════════════════════════════════════════════════════
-
-interface PIDDiagramProps {
-  data: HeatingData | null;
-}
-
-export function PIDDiagram({ data }: PIDDiagramProps) {
+export function PIDDiagram({ data }: { data: HeatingData | null }) {
   const [selected, setSelected] = useState<CompInfo | null>(null);
   const [showFlow, setShowFlow] = useState(true);
   const [zoom, setZoom] = useState(1);
 
-  const heating = data?.status === 'heizen';
-  const sel = (info: CompInfo) => setSelected(info);
+  const on = data?.status === 'heizen';
+  const sel = (i: CompInfo) => setSelected(i);
 
-  // Live temps
   const vl = data?.vorlauftemperatur?.toFixed(0) ?? '--';
   const rl = data?.ruecklauftemperatur?.toFixed(0) ?? '--';
   const po = data?.puffer_oben?.toFixed(0) ?? '--';
   const pm = data?.puffer_mitte?.toFixed(0) ?? '--';
   const pu = data?.puffer_unten?.toFixed(0) ?? '--';
   const cop = data?.cop?.toFixed(1) ?? '--';
-  const aussen = data?.aussentemperatur?.toFixed(1) ?? '--';
+  const aus = data?.aussentemperatur?.toFixed(1) ?? '--';
+
+  const W = 1500, H = 580;
 
   return (
     <div className="space-y-3">
@@ -342,360 +337,360 @@ export function PIDDiagram({ data }: PIDDiagramProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-white">P&ID-Diagramm</h2>
-          <p className="text-sm text-slate-400">② Hauptstation + Anschluss Satellitenhaus – Detail</p>
+          <p className="text-sm text-slate-400">② Hauptstation + Anschluss Satellitenhaus</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowFlow(!showFlow)}
             className={`border-[#1e2736] text-xs ${showFlow ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400'}`}>
             <Droplets className="w-3.5 h-3.5 mr-1" />
-            Strömung {showFlow ? 'AN' : 'AUS'}
+            {showFlow ? 'Strömung AN' : 'Strömung AUS'}
           </Button>
           <div className="flex items-center gap-1 bg-[#111620] rounded-lg border border-[#1e2736] p-0.5">
-            <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(0.5, zoom - 0.1))} className="text-slate-400 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
+            <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(0.5, zoom - 0.15))} className="text-slate-400 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
             <span className="text-xs text-slate-400 w-10 text-center">{Math.round(zoom * 100)}%</span>
-            <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(2, zoom + 0.1))} className="text-slate-400 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
+            <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(2, zoom + 0.15))} className="text-slate-400 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
             <Button variant="ghost" size="sm" onClick={() => setZoom(1)} className="text-slate-400 h-7 w-7 p-0"><RotateCcw className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
       </div>
 
       {/* Status-Bar */}
-      <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-xs">
+      <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-xs font-mono">
         <span className="flex items-center gap-1.5">
-          <span className={`w-2 h-2 rounded-full ${heating ? 'bg-orange-400 animate-pulse' : 'bg-slate-600'}`} />
-          <span className={heating ? 'text-orange-400 font-medium' : 'text-slate-500'}>
-            {data?.status === 'heizen' ? 'Heizen' : data?.status === 'abtauen' ? 'Abtauen' : 'Standby'}
+          <span className={`w-2 h-2 rounded-full ${on ? 'bg-orange-400 animate-pulse' : 'bg-slate-600'}`} />
+          <span className={on ? 'text-orange-400 font-semibold' : 'text-slate-500'}>
+            {data?.status === 'heizen' ? 'HEIZEN' : data?.status === 'abtauen' ? 'ABTAUEN' : 'STANDBY'}
           </span>
         </span>
-        <span className="text-slate-700">|</span>
-        <span className="text-slate-400 font-mono">VL <span className="text-orange-400">{vl}°C</span></span>
-        <span className="text-slate-400 font-mono">RL <span className="text-sky-400">{rl}°C</span></span>
-        <span className="text-slate-400 font-mono">COP <span className="text-emerald-400">{cop}</span></span>
-        <span className="text-slate-400 font-mono">Außen <span className="text-teal-400">{aussen}°C</span></span>
-        <span className="text-slate-400 font-mono">Puffer <span className="text-orange-400">{po}</span>/<span className="text-amber-400">{pm}</span>/<span className="text-sky-400">{pu}°C</span></span>
+        <span className="text-slate-700">│</span>
+        <span className="text-slate-500">VL <span className="text-orange-400 font-semibold">{vl}°C</span></span>
+        <span className="text-slate-500">RL <span className="text-sky-400 font-semibold">{rl}°C</span></span>
+        <span className="text-slate-500">COP <span className="text-emerald-400 font-semibold">{cop}</span></span>
+        <span className="text-slate-500">Außen <span className="text-teal-400 font-semibold">{aus}°C</span></span>
       </div>
 
-      {/* ══════ SVG DIAGRAMM ══════ */}
-      <div className="relative overflow-auto rounded-xl border border-[#1e2736]" style={{ background: C.bg }}
+      {/* ══════════════════════════════════════════════════
+           SVG DIAGRAMM
+         ══════════════════════════════════════════════════ */}
+      <div className="relative overflow-auto rounded-xl border border-[#1e2736]"
+        style={{ background: C.bg, maxHeight: 640 }}
         onClick={() => setSelected(null)}>
-        <div style={{ transform: `scale(${zoom})`, transformOrigin: '0 0', width: 1700 / zoom, minHeight: 620 / zoom }}>
-          <svg viewBox="0 0 1700 620" style={{ width: 1700, height: 620, display: 'block' }}>
+
+        <div style={{ transform: `scale(${zoom})`, transformOrigin: '0 0' }}>
+          <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ display: 'block' }}>
             <Defs />
 
-            {/* Hintergrund-Grid */}
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <circle cx="1" cy="1" r="0.5" fill={C.textDim} opacity="0.15" />
+            {/* Grid-Punkte */}
+            <pattern id="g" width="30" height="30" patternUnits="userSpaceOnUse">
+              <circle cx="1" cy="1" r="0.4" fill="#334155" opacity="0.12" />
             </pattern>
-            <rect width="100%" height="100%" fill="url(#grid)" />
+            <rect width="100%" height="100%" fill="url(#g)" />
 
-            {/* ══════ REGION LABELS ══════ */}
-            <Region x={60} y={100} text="QUELLEN" />
-            <Region x={350} y={550} text="ERZEUGUNG" />
-            <Region x={850} y={100} text="SPEICHER" />
-            <Region x={1060} y={270} text="VERTEILUNG" />
-            <Region x={1360} y={270} text="KÄLTE" />
+            {/* Region Labels */}
+            <Region x={50} y={48} text="QUELLEN" />
+            <Region x={380} y={520} text="ERZEUGUNG" />
+            <Region x={700} y={175} text="SPEICHER" />
+            <Region x={870} y={220} text="VERTEILUNG" />
+            <Region x={1200} y={175} text="KÄLTE" />
 
-            {/* Trennlinie Heizung / Kälte */}
-            <line x1="1300" y1="80" x2="1300" y2="580" stroke={C.border} strokeWidth="1" strokeDasharray="8,4" opacity="0.5" />
+            {/* ══════ Trennlinie Heizung / Kälte ══════ */}
+            <line x1={CX.div} y1="50" x2={CX.div} y2="530" stroke={C.border} strokeWidth="1" strokeDasharray="6,4" opacity="0.4" />
 
-            {/* ═══════════════════════════════════════════
-                 QUELLEN (oben links)
-                 ═══════════════════════════════════════════ */}
+            {/* ════════════════════════════════════════════════════════════
+                 QUELLEN (oben)
+                 ════════════════════════════════════════════════════════════ */}
 
             {/* PVT-Solarkollektoren */}
-            <CompBox x={120} y={60} w={120} h={50} title="PVT-Solar" sub="6,2 kW th." active={!!heating} color={C.warmPipe}
-              onClick={() => sel({ id: 'PVT', name: 'PVT-Solarkollektoren', desc: 'Auf Dach, thermische Leistung 6,2 kW', status: 'running', temp: `${aussen}°C`, power: '6,2 kW th.' })} />
-            {/* Solar-Icon */}
-            <circle cx="165" cy="48" r="10" fill="none" stroke="#fbbf24" strokeWidth="1.5" opacity="0.5" />
-            <circle cx="165" cy="48" r="3" fill="#fbbf24" opacity="0.5" />
+            <Box x={155} y={Y.source} w={110} h={42} title="PVT-Solar" sub="6,2 kW th." active={!!on} color={C.warmPipe}
+              onClick={() => sel({ id: 'PVT', name: 'PVT-Solarkollektoren', desc: 'Auf Dach, 6,2 kW thermisch', status: 'running', temp: `${aus}°C`, power: '6,2 kW' })} />
+            {/* Sun icon */}
+            <circle cx="210" cy={Y.source - 8} r="7" fill="none" stroke="#fbbf24" strokeWidth="1.2" opacity="0.4" />
+            <circle cx="210" cy={Y.source - 8} r="2.5" fill="#fbbf24" opacity="0.4" />
 
             {/* Abluft-Wärmepumpe */}
-            <CompBox x={380} y={60} w={130} h={50} title="Abluft-WP" sub="Dach + Rohrbegl." active={!!heating} color={C.warmPipe}
-              onClick={() => sel({ id: 'ABWP', name: 'Abluft-Wärmepumpe', desc: 'Auf Dach mit Rohrbegleitheizung', status: heating ? 'running' : 'standby', temp: '40°C', tempRet: '35°C' })} />
+            <Box x={345} y={Y.source} w={120} h={42} title="Abluft-WP" sub="Rohrbegleitheizung" active={!!on} color={C.warmPipe}
+              onClick={() => sel({ id: 'ABWP', name: 'Abluft-Wärmepumpe', desc: 'Auf Dach + Rohrbegleitheizung', status: on ? 'running' : 'standby', temp: '40°C', tempRet: '35°C' })} />
 
             {/* Erdwärmefeld */}
-            <CompBox x={30} y={380} w={110} h={50} title="Erdwärmefeld" sub="FVU Nahwärme" active={!!heating} color={C.geoPipe}
-              onClick={() => sel({ id: 'ERD', name: 'Erdwärmefeld', desc: 'Zuleitung FVU Nahwärme', status: heating ? 'running' : 'standby', flow: '42,1 m³/h', dn: 'DN 80' })} />
+            <Box x={20} y={Y.vl - 20} w={100} h={42} title="Erdwärmefeld" sub="FVU Nahwärme" active={!!on} color={C.geoPipe}
+              onClick={() => sel({ id: 'ERD', name: 'Erdwärmefeld', desc: 'Zuleitung FVU Nahwärme', status: on ? 'running' : 'standby', flow: '42,1 m³/h', dn: 'DN 80' })} />
 
-            {/* ═══ ROHRLEITUNGEN QUELLEN → PUFFER PVT ═══ */}
+            {/* ════════════════════════════════════════════════════════════
+                 ROHRLEITUNGEN – Quellen → Puffer PVT
+                 ════════════════════════════════════════════════════════════ */}
 
-            {/* PVT → Puffer PVT VL */}
-            <Pipe d="M180,110 L180,180 L265,180 L265,260" color={C.warmPipe} glow={C.warmGlow} />
-            <DN x={188} y={160} text="DN 65" />
+            {/* PVT → runter → Puffer PVT oben (VL) */}
+            <Pipe d={`M210,${Y.source + 42} L210,${Y.srcPipe} L${CX.pvt - 15},${Y.srcPipe} L${CX.pvt - 15},${Y.tankTop}`}
+              color={C.warmPipe} glow={C.warmGlow} />
+            <Label x={215} y={Y.srcPipe - 4} text="DN 65" />
 
-            {/* Abluft-WP → Puffer PVT */}
-            <Pipe d="M445,110 L445,150 L340,150 L340,180 L340,260" color={C.warmPipe} glow={C.warmGlow} />
-            <TempBadge x={450} y={132} temp="35°C" color={C.warmPipe} />
-            <TempBadge x={450} y={152} temp="40°C" color={C.hotPipe} />
+            {/* Abluft-WP → runter → Puffer PVT oben */}
+            <Pipe d={`M405,${Y.source + 42} L405,${Y.srcPipe + 20} L${CX.pvt + 15},${Y.srcPipe + 20} L${CX.pvt + 15},${Y.tankTop}`}
+              color={C.warmPipe} glow={C.warmGlow} />
+            {/* P02 auf der Leitung */}
+            <Pump x={405} y={Y.srcPipe - 10} id="P02" on={!!on}
+              onClick={() => sel({ id: 'P02', name: 'Pumpe P02', desc: 'Umwälzpumpe Abluft-WP', status: on ? 'running' : 'off', flow: '15,2 m³/h', dn: 'DN 65' })} />
 
-            {/* P02 */}
-            <Pump x={390} y={180} id="P02" on={!!heating}
-              onClick={() => sel({ id: 'P02', name: 'Pumpe P02', desc: 'Umwälzpumpe Abluft-WP', status: heating ? 'running' : 'off', flow: '15,2 m³/h', dn: 'DN 65' })} />
+            {/* Erdwärme → rechts → WT (Vorlauf auf Y.vl) */}
+            <Pipe d={`M120,${Y.vl} L${CX.p01 - 14},${Y.vl}`} color={C.geoPipe} glow={C.geoGlow} w={3.5} />
+            <Pump x={CX.p01} y={Y.vl} id="P01" on={!!on}
+              onClick={() => sel({ id: 'P01', name: 'Pumpe P01', desc: 'Umwälzpumpe Erdwärme', status: on ? 'running' : 'off', flow: '42,1 m³/h', dn: 'DN 80' })} />
+            <Pipe d={`M${CX.p01 + 14},${Y.vl} L${CX.wt - 12},${Y.vl}`} color={C.geoPipe} glow={C.geoGlow} w={3.5} />
+            <Label x={CX.p01 - 10} y={Y.vl - 18} text="DN 80" />
 
-            {/* Erdwärme → WT */}
-            <Pipe d="M140,400 L200,400 L200,440 L390,440" color={C.geoPipe} glow={C.geoGlow} width={3.5} />
-            <Pipe d="M390,500 L200,500 L200,480 L140,480 L80,480 L80,430" color={C.geoPipe} glow={C.geoGlow} width={3.5} dash="6,3" />
-            <DN x={148} y={395} text="DN 80" />
-
-            {/* P01 */}
-            <Pump x={170} y={400} id="P01" on={!!heating}
-              onClick={() => sel({ id: 'P01', name: 'Pumpe P01', desc: 'Umwälzpumpe Erdwärmefeld', status: heating ? 'running' : 'off', flow: '42,1 m³/h', dn: 'DN 80' })} />
+            {/* Erdwärme ← Rücklauf auf Y.rl */}
+            <Pipe d={`M${CX.wt - 12},${Y.rl} L120,${Y.rl} L70,${Y.rl} L70,${Y.vl + 20}`}
+              color={C.geoPipe} w={2.5} dash="5,3" />
 
             {/* Auslegungsdaten */}
-            <g transform="translate(220,445)">
-              <rect x="0" y="0" width="100" height="52" rx="3" fill={C.panel} stroke={C.border} strokeWidth="1" opacity="0.8" />
-              <text x="50" y="13" textAnchor="middle" fill={C.textDim} fontSize="7" fontWeight="600">Auslegung:</text>
-              <text x="50" y="24" textAnchor="middle" fill={C.text} fontSize="7">ΔT: 3K · Glycol: 30%</text>
-              <text x="50" y="35" textAnchor="middle" fill={C.text} fontSize="7">Massenstrom: 42,1 m³/h</text>
-              <text x="50" y="46" textAnchor="middle" fill={C.text} fontSize="7">SV: 3,5 bar · 400V</text>
+            <g transform={`translate(${CX.p01 - 30},${Y.rl + 25})`}>
+              <rect width="100" height="46" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.8" opacity="0.7" />
+              <text x="50" y="12" textAnchor="middle" fill={C.textDim} fontSize="7" fontWeight="600">Auslegung Erdwärme</text>
+              <text x="50" y="22" textAnchor="middle" fill={C.text} fontSize="6.5">ΔT 3K · Glycol 30%</text>
+              <text x="50" y="31" textAnchor="middle" fill={C.text} fontSize="6.5">42,1 m³/h · DN 80</text>
+              <text x="50" y="40" textAnchor="middle" fill={C.text} fontSize="6.5">SV 3,5 bar · 400V</text>
             </g>
 
-            {/* ═══════════════════════════════════════════
-                 PUFFERSPEICHER PVT (2000 Liter)
-                 ═══════════════════════════════════════════ */}
-            <Tank x={275} y={230} w={60} h={220} label="Puffer PVT" vol="2000 Liter"
-              temps={{ top: `${po}°`, mid: `${pm}°`, bot: `${pu}°` }}
-              grad="tankHot"
-              onClick={() => sel({ id: 'PS1', name: 'Pufferspeicher PVT', desc: 'Hydr. Trennung/PVT, 2000 Liter', status: heating ? 'running' : 'standby', temp: `${po}°C`, power: '2000 L', dn: 'DN 100' })} />
-            <DN x={265} y={275} text="DN 63" />
+            {/* ════════════════════════════════════════════════════════════
+                 PUFFER PVT  (2000 L)
+                 ════════════════════════════════════════════════════════════ */}
+            <Tank cx={CX.pvt} y={Y.tankTop} w={50} h={Y.tankBot - Y.tankTop} label="Puffer PVT" vol="2000 L"
+              temps={[`${po}°`, `${pm}°`, `${pu}°`]} grad="tankHot"
+              onClick={() => sel({ id: 'PS1', name: 'Pufferspeicher PVT', desc: 'Hydr. Trennung, 2000 L', status: on ? 'running' : 'standby', temp: `${po}°C`, power: '2000 L', dn: 'DN 100' })} />
+            <Label x={CX.pvt - 30} y={Y.tankTop + 15} text="DN 63" />
 
-            {/* P03 (rechts vom Puffer) */}
-            <Pump x={380} y={310} id="P03" on={!!heating}
-              onClick={() => sel({ id: 'P03', name: 'Pumpe P03', desc: 'Umwälzpumpe Puffer PVT', status: heating ? 'running' : 'off', flow: '28,5 m³/h', dn: 'DN 100' })} />
+            {/* Puffer PVT → P03 → WT  (VL auf Y.vl) */}
+            <Pipe d={`M${CX.pvt + 25},${Y.vl} L${CX.p03 - 14},${Y.vl}`} color={C.warmPipe} glow={C.warmGlow} />
+            <Pump x={CX.p03} y={Y.vl} id="P03" on={!!on}
+              onClick={() => sel({ id: 'P03', name: 'Pumpe P03', desc: 'Umwälzpumpe Puffer PVT', status: on ? 'running' : 'off', flow: '28,5 m³/h', dn: 'DN 100' })} />
+            <Pipe d={`M${CX.p03 + 14},${Y.vl} L${CX.wt - 12},${Y.vl}`} color={C.warmPipe} glow={C.warmGlow} />
+            <Label x={CX.p03 - 5} y={Y.vl - 18} text="DN 100" />
 
-            {/* Puffer PVT → WT (Vorlauf) */}
-            <Pipe d="M335,310 L366,310" color={C.warmPipe} width={3} />
-            <Pipe d="M394,310 L440,310 L440,370" color={C.warmPipe} glow={C.warmGlow} width={3} />
-            <DN x={345} y={305} text="DN 100" />
+            {/* Puffer PVT ← WT  (RL auf Y.rl) */}
+            <Pipe d={`M${CX.pvt + 25},${Y.rl} L${CX.wt - 12},${Y.rl}`} color={C.coldPipe} w={2.5} dash="5,3" />
 
-            {/* Puffer PVT → WT (Rücklauf) */}
-            <Pipe d="M335,420 L360,420 L360,500 L440,500" color={C.coldPipe} width={2.5} dash="6,3" />
-            <DN x={345} y={415} text="DN 80" />
-
-            {/* ═══════════════════════════════════════════
-                 WÄRMETAUSCHER (47 kW)
-                 ═══════════════════════════════════════════ */}
-            <g className="cursor-pointer" onClick={() => sel({ id: 'WT1', name: 'Wärmetauscher', desc: 'Plattenwärmetauscher 47 kW', status: heating ? 'running' : 'standby', power: '47 kW', dn: 'DN 80' })}>
-              <rect x={430} y={370} width={35} height={140} rx="3" fill="url(#wtGrad)" stroke={C.textDim} strokeWidth="2" opacity="0.9" />
-              {/* Platten */}
-              {[0, 1, 2, 3, 4, 5].map(i => (
-                <line key={i} x1={434} y1={385 + i * 20} x2={461} y2={385 + i * 20} stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" />
+            {/* ════════════════════════════════════════════════════════════
+                 WÄRMETAUSCHER  (47 kW)
+                 ════════════════════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel({ id: 'WT1', name: 'Wärmetauscher', desc: 'Plattenwärmetauscher 47 kW', status: on ? 'running' : 'standby', power: '47 kW', dn: 'DN 80' })}>
+              <rect x={CX.wt - 12} y={Y.vl - 10} width={24} height={Y.rl - Y.vl + 20} rx="3"
+                fill="url(#wtGrad)" stroke={C.tankStroke} strokeWidth="1.5" />
+              {[0, 1, 2, 3, 4].map(i => (
+                <line key={i} x1={CX.wt - 9} y1={Y.vl + 5 + i * 18} x2={CX.wt + 9} y2={Y.vl + 5 + i * 18}
+                  stroke="rgba(255,255,255,0.15)" strokeWidth="0.7" />
               ))}
-              <text x={448} y={545} textAnchor="middle" fill={C.textDim} fontSize="9">Wärme-</text>
-              <text x={448} y={556} textAnchor="middle" fill={C.textDim} fontSize="9">tauscher</text>
-              <text x={448} y={568} textAnchor="middle" fill={C.accent} fontSize="9" fontWeight="600">47 kW</text>
             </g>
+            <text x={CX.wt} y={Y.rl + 30} textAnchor="middle" fill={C.textDim} fontSize="8">WT · 47 kW</text>
 
-            {/* WT → WP Vorlauf */}
-            <Pipe d="M465,400 L560,400" color={C.warmPipe} glow={C.warmGlow} width={3.5} />
-            {/* WT → WP Rücklauf */}
-            <Pipe d="M465,480 L560,480" color={C.coldPipe} glow={C.coldGlow} width={3} dash="6,3" />
-            <DN x={490} y={395} text="DN 80" />
-            <DN x={490} y={495} text="DN 80" />
+            {/* WT → WP (VL auf Y.vl) */}
+            <Pipe d={`M${CX.wt + 12},${Y.vl} L${CX.wp - 60},${Y.vl}`} color={C.warmPipe} glow={C.warmGlow} w={3.5} />
+            <Label x={CX.wt + 20} y={Y.vl - 8} text="DN 80" />
 
-            {/* ═══════════════════════════════════════════
-                 WÄRMEPUMPE (175 kW)
-                 ═══════════════════════════════════════════ */}
-            <g className="cursor-pointer" onClick={() => sel({ id: 'WP1', name: 'Wärmepumpe', desc: '175 kW th. / 38,9 kW el.', status: heating ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '175 kW', dn: 'DN 100' })}>
-              {heating && <rect x={558} y={358} width={144} height={154} rx="8" fill={C.hotPipe} opacity="0.06" filter="url(#glowRed)" />}
-              <rect x={560} y={360} width={140} height={150} rx="6" fill={C.panel} stroke={heating ? C.hotPipe : C.border} strokeWidth={heating ? 2.5 : 1.5} />
-              <text x={630} y={390} textAnchor="middle" fill={C.textBright} fontSize="12" fontWeight="700">Wärmepumpe</text>
-              <text x={630} y={408} textAnchor="middle" fill={C.textDim} fontSize="9">175 kW th. · 38,9 kW el.</text>
-              {/* COP Display */}
-              <rect x={590} y={420} width={80} height={30} rx="4" fill={C.bg} stroke={C.border} strokeWidth="1" />
-              <text x={630} y={432} textAnchor="middle" fill={C.textDim} fontSize="8">COP</text>
-              <text x={630} y={445} textAnchor="middle" fill={C.accent} fontSize="14" fontWeight="800" className="temp-badge">{cop}</text>
+            {/* WT ← WP (RL auf Y.rl) */}
+            <Pipe d={`M${CX.wt + 12},${Y.rl} L${CX.wp - 60},${Y.rl}`} color={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
+            <Label x={CX.wt + 20} y={Y.rl + 12} text="DN 80" />
+
+            {/* ════════════════════════════════════════════════════════════
+                 WÄRMEPUMPE  (175 kW th. / 38,9 kW el.)
+                 ════════════════════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel({ id: 'WP1', name: 'Wärmepumpe', desc: '175 kW th. / 38,9 kW el.', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '175 kW', dn: 'DN 100' })}>
+              {on && <rect x={CX.wp - 62} y={Y.vl - 35} width={124} height={Y.rl - Y.vl + 70} rx="8" fill={C.hotPipe} opacity="0.05" filter="url(#glow)" />}
+              <rect x={CX.wp - 60} y={Y.vl - 33} width={120} height={Y.rl - Y.vl + 66} rx="6"
+                fill={C.panel} stroke={on ? C.hotPipe : C.border} strokeWidth={on ? 2 : 1.2} />
+              <text x={CX.wp} y={Y.vl - 12} textAnchor="middle" fill={C.textBright} fontSize="11" fontWeight="700">Wärmepumpe</text>
+              <text x={CX.wp} y={Y.vl + 2} textAnchor="middle" fill={C.textDim} fontSize="8">175 kW th · 38,9 kW el</text>
+              {/* COP Box */}
+              <rect x={CX.wp - 35} y={Y.mid - 15} width={70} height={30} rx="4" fill={C.bg} stroke={C.border} strokeWidth="0.8" />
+              <text x={CX.wp} y={Y.mid - 2} textAnchor="middle" fill={C.textDim} fontSize="7.5">COP</text>
+              <text x={CX.wp} y={Y.mid + 12} textAnchor="middle" fill={C.accent} fontSize="14" fontWeight="800" className="temp-font">{cop}</text>
               {/* Status */}
-              <circle cx={583} cy={485} r={5} fill={heating ? C.pumpOn : C.pumpOff} className={heating ? 'pump-pulse' : ''} />
-              <text x={595} y={489} fill={heating ? C.pumpOn : C.pumpOff} fontSize="9" fontWeight="600">
-                {heating ? 'AKTIV' : 'STANDBY'}
+              <circle cx={CX.wp - 40} cy={Y.rl + 18} r={4} fill={on ? C.pumpOn : C.pumpOff} className={on ? 'pump-pulse' : ''} />
+              <text x={CX.wp - 30} y={Y.rl + 22} fill={on ? C.pumpOn : C.pumpOff} fontSize="8.5" fontWeight="600">
+                {on ? 'AKTIV' : 'STANDBY'}
               </text>
-              {/* 400V */}
-              <rect x={590} y={460} width={40} height={14} rx="2" fill="none" stroke={C.textDim} strokeWidth="1" />
-              <text x={610} y={471} textAnchor="middle" fill={C.textDim} fontSize="8" fontWeight="600">400V</text>
-              {/* SV */}
-              <text x={650} y={471} fill={C.textDim} fontSize="7">SV: 3,5 bar</text>
+              {/* 400V / SV */}
+              <text x={CX.wp + 10} y={Y.rl + 22} fill={C.textDim} fontSize="7">400V · SV 3,5 bar</text>
             </g>
 
-            {/* WP → P04 → Puffer HZ (Vorlauf) */}
-            <Pipe d="M700,400 L740,400" color={C.hotPipe} glow={C.hotGlow} width={4} />
-            <Pump x={760} y={400} id="P04" on={!!heating}
-              onClick={() => sel({ id: 'P04', name: 'Pumpe P04', desc: 'Umwälzpumpe Heizung', status: heating ? 'running' : 'off', flow: '18,3 m³/h', dn: 'DN 100' })} />
-            <Pipe d="M774,400 L830,400 L830,340 L860,340" color={C.hotPipe} glow={C.hotGlow} width={4} />
-            <TempBadge x={780} y={392} temp={`${vl}°`} color={C.hotPipe} />
-            <DN x={790} y={420} text="DN 100" />
+            {/* WP → P04 (VL auf Y.vl) */}
+            <Pipe d={`M${CX.wpR},${Y.vl} L${CX.p04 - 14},${Y.vl}`} color={C.hotPipe} glow={C.hotGlow} w={4} />
+            <Pump x={CX.p04} y={Y.vl} id="P04" on={!!on}
+              onClick={() => sel({ id: 'P04', name: 'Pumpe P04', desc: 'Umwälzpumpe Heizung', status: on ? 'running' : 'off', flow: '18,3 m³/h', dn: 'DN 100' })} />
+            <PipeTemp x={CX.p04 + 40} y={Y.vl} v={`${vl}°`} c={C.hotPipe} />
 
-            {/* WP ← Puffer HZ (Rücklauf) */}
-            <Pipe d="M700,480 L740,480 L830,480 L830,440 L860,440" color={C.coldPipe} glow={C.coldGlow} width={3} dash="6,3" />
-            <TempBadge x={780} y={472} temp={`${rl}°`} color={C.coldPipe} />
-            <DN x={790} y={498} text="DN 100" />
+            {/* P04 → Puffer HZ (VL auf Y.vl) */}
+            <Pipe d={`M${CX.p04 + 14},${Y.vl} L${CX.psHz - 28},${Y.vl}`} color={C.hotPipe} glow={C.hotGlow} w={4} />
+            <Label x={CX.p04 + 5} y={Y.vl - 18} text="DN 100" />
 
-            {/* ═══════════════════════════════════════════
-                 PUFFERSPEICHER HEIZUNG (1500 Liter)
-                 ═══════════════════════════════════════════ */}
-            <Tank x={860} y={260} w={55} h={200} label="Puffer HZ" vol="1500 Liter"
-              temps={{ top: `${vl}°`, bot: `${rl}°` }}
-              grad="tankHot"
-              onClick={() => sel({ id: 'PS2', name: 'Pufferspeicher Heizung', desc: '1500 Liter', status: heating ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '1500 L', dn: 'DN 80' })} />
-            <DN x={850} y={310} text="DN 80" />
-            <MAG x={930} y={380} />
+            {/* WP ← Puffer HZ (RL auf Y.rl) */}
+            <Pipe d={`M${CX.wpR},${Y.rl} L${CX.psHz - 28},${Y.rl}`} color={C.coldPipe} glow={C.coldGlow} w={3} dash="5,3" />
+            <PipeTemp x={CX.p04 + 40} y={Y.rl} v={`${rl}°`} c={C.coldPipe} />
+            <Label x={CX.p04 + 5} y={Y.rl + 14} text="DN 100" />
 
-            {/* P05 */}
-            <Pump x={980} y={340} id="P05" on={!!heating}
-              onClick={() => sel({ id: 'P05', name: 'Pumpe P05', desc: 'Umwälzpumpe Puffer HZ', status: heating ? 'running' : 'off', flow: '22,1 m³/h', dn: 'DN 80' })} />
+            {/* ════════════════════════════════════════════════════════════
+                 PUFFER HEIZUNG  (1500 L)
+                 ════════════════════════════════════════════════════════════ */}
+            <Tank cx={CX.psHz} y={Y.tankTop} w={48} h={Y.tankBot - Y.tankTop} label="Puffer HZ" vol="1500 L"
+              temps={[`${vl}°`, undefined, `${rl}°`]} grad="tankHot"
+              onClick={() => sel({ id: 'PS2', name: 'Pufferspeicher HZ', desc: '1500 Liter', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '1500 L', dn: 'DN 80' })} />
+            <MAG x={CX.psHz + 42} y={Y.mid + 10} />
+            <Label x={CX.psHz - 32} y={Y.tankTop + 12} text="DN 80" />
 
-            {/* Puffer HZ → P05 → Verteiler */}
-            <Pipe d="M915,340 L966,340" color={C.hotPipe} glow={C.hotGlow} width={3.5} />
-            <Pipe d="M994,340 L1060,340 L1060,355" color={C.hotPipe} glow={C.hotGlow} width={3.5} />
-            {/* Rücklauf */}
-            <Pipe d="M1060,405 L1060,440 L915,440" color={C.coldPipe} glow={C.coldGlow} width={2.5} dash="6,3" />
-            <DN x={1000} y={335} text="DN 65" />
+            {/* Puffer HZ → P05 (VL auf Y.vl) */}
+            <Pipe d={`M${CX.psHz + 24},${Y.vl} L${CX.p05 - 14},${Y.vl}`} color={C.hotPipe} glow={C.hotGlow} w={3.5} />
+            <Pump x={CX.p05} y={Y.vl} id="P05" on={!!on}
+              onClick={() => sel({ id: 'P05', name: 'Pumpe P05', desc: 'Umwälzpumpe Puffer HZ', status: on ? 'running' : 'off', flow: '22,1 m³/h', dn: 'DN 80' })} />
+            <Label x={CX.p05 - 5} y={Y.vl - 18} text="DN 65" />
 
-            {/* ═══════════════════════════════════════════
+            {/* P05 → Verteiler HZ (VL auf Y.vl) */}
+            <Pipe d={`M${CX.p05 + 14},${Y.vl} L${CX.vert - 80},${Y.vl}`} color={C.hotPipe} glow={C.hotGlow} w={3.5} />
+
+            {/* Verteiler HZ ← Rücklauf (RL auf Y.rl) */}
+            <Pipe d={`M${CX.psHz + 24},${Y.rl} L${CX.vert - 80},${Y.rl}`} color={C.coldPipe} glow={C.coldGlow} w={2.5} dash="5,3" />
+
+            {/* ════════════════════════════════════════════════════════════
                  VERTEILER HEIZUNG
-                 ═══════════════════════════════════════════ */}
-            <Verteiler x={1060} y={355} w={180} h={50} label="VERTEILER HEIZUNG" active={!!heating} color={C.hotPipe}
-              onClick={() => sel({ id: 'VH', name: 'Verteiler Heizung', desc: 'Heizungsverteiler', status: heating ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, dn: 'DN 80' })} />
+                 ════════════════════════════════════════════════════════════ */}
+            <Dist x={CX.vert - 80} y={Y.vl - 5} w={160} h={40} label="VERTEILER HEIZUNG" active={!!on} color={C.hotPipe}
+              onClick={() => sel({ id: 'VH', name: 'Verteiler Heizung', desc: 'Heizungsverteiler', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, dn: 'DN 80' })} />
 
-            {/* Anschluss Stockwerke oben */}
-            <line x1="1120" y1="340" x2="1120" y2="280" stroke={C.hotPipe} strokeWidth="2" />
-            <line x1="1170" y1="340" x2="1170" y2="280" stroke={C.coldPipe} strokeWidth="2" strokeDasharray="4,2" />
-            <path d="M1108,275 Q1120,260 1132,275 Q1144,290 1156,275 Q1168,260 1180,275" fill="none" stroke={C.textDim} strokeWidth="1.5" />
-            <text x="1145" y="258" textAnchor="middle" fill={C.textDim} fontSize="8">Anschluss weitere</text>
-            <text x="1145" y="268" textAnchor="middle" fill={C.textDim} fontSize="8">Stockwerke</text>
+            {/* Stockwerks-Anschluss (oben) */}
+            <line x1={CX.vert - 20} y1={Y.vl - 20} x2={CX.vert - 20} y2={Y.vl - 50} stroke={C.hotPipe} strokeWidth="1.5" />
+            <line x1={CX.vert + 20} y1={Y.vl - 20} x2={CX.vert + 20} y2={Y.vl - 50} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+            <text x={CX.vert} y={Y.vl - 58} textAnchor="middle" fill={C.textDim} fontSize="7.5">↑ Stockwerke</text>
 
             {/* Satellitenhaus HZ (rechts) */}
-            <Pipe d="M1240,370 L1290,370" color={C.hotPipe} glow={C.hotGlow} width={3} />
-            <Pipe d="M1240,395 L1290,395" color={C.coldPipe} glow={C.coldGlow} width={2} dash="6,3" />
-            <CompBox x={1200} y={420} w={90} h={35} title="Satellitenhaus" sub="Heizung E" color={C.hotPipe}
-              onClick={() => sel({ id: 'SAT-H', name: 'Satellitenhaus E', desc: 'Zuleitung Heizung', dn: 'DN 65' })} />
-            <DN x={1250} y={365} text="DN 65" />
+            <Pipe d={`M${CX.vert + 80},${Y.vl + 5} L${CX.sat},${Y.vl + 5}`} color={C.hotPipe} glow={C.hotGlow} w={2.5} />
+            <Pipe d={`M${CX.vert + 80},${Y.vl + 25} L${CX.sat},${Y.vl + 25}`} color={C.coldPipe} w={2} dash="4,2" />
+            <Box x={CX.sat} y={Y.vl - 8} w={55} h={50} title="Sat.-" sub="Haus E" active={!!on} color={C.hotPipe}
+              onClick={() => sel({ id: 'SAT-H', name: 'Satellitenhaus E', desc: 'Heizung-Zuleitung', dn: 'DN 65' })} />
+            <Label x={CX.sat + 5} y={Y.vl - 2} text="DN 65" />
 
-            {/* Druckhaltestation */}
-            <g transform="translate(1060,470)">
-              <rect x="0" y="0" width="140" height="30" rx="3" fill={C.panel} stroke={C.border} strokeWidth="1" strokeDasharray="4,2" />
-              <text x="70" y="13" textAnchor="middle" fill={C.textDim} fontSize="7">Druckhalte- / Entgasungs-</text>
-              <text x="70" y="23" textAnchor="middle" fill={C.textDim} fontSize="7">und Nachspeisestation</text>
+            {/* Druckhaltestation (unter Verteiler) */}
+            <g transform={`translate(${CX.vert - 65},${Y.rl + 20})`}>
+              <rect width="130" height="25" rx="3" fill={C.panel} stroke={C.border} strokeWidth="0.8" strokeDasharray="4,2" />
+              <text x="65" y="10" textAnchor="middle" fill={C.textDim} fontSize="7">Druckhalte-/Entgasungs-</text>
+              <text x="65" y="20" textAnchor="middle" fill={C.textDim} fontSize="7">und Nachspeisestation</text>
             </g>
 
-            {/* ═══════════════════════════════════════════
-                 KÄLTE-BEREICH (rechts)
-                 ═══════════════════════════════════════════ */}
+            {/* ════════════════════════════════════════════════════════════
+                 KÄLTE-BEREICH  (rechts der Trennlinie)
+                 ════════════════════════════════════════════════════════════ */}
 
-            {/* Pufferspeicher Kälte */}
-            <Tank x={1360} y={300} w={50} h={180} label="Puffer Kälte" vol="1000 Liter"
-              temps={{ top: '22°', bot: '18°' }}
-              grad="tankCold"
-              onClick={() => sel({ id: 'PS3', name: 'Pufferspeicher Kälte', desc: '1000 Liter', status: 'standby', temp: '22°C', power: '1000 L', dn: 'DN 80' })} />
-            <DN x={1350} y={350} text="DN 80" />
+            {/* Puffer Kälte */}
+            <Tank cx={CX.psK} y={Y.tankTop + 10} w={44} h={Y.tankBot - Y.tankTop - 30}
+              label="Puffer Kälte" vol="1000 L" temps={['22°', undefined, '18°']} grad="tankCold"
+              onClick={() => sel({ id: 'PS3', name: 'Pufferspeicher Kälte', desc: '1000 L', status: 'standby', temp: '22°C', power: '1000 L', dn: 'DN 80' })} />
+            <Label x={CX.psK - 28} y={Y.tankTop + 25} text="DN 80" />
 
-            {/* Pendelleitung DN 20 */}
-            <line x1="1355" y1="320" x2="1340" y2="320" stroke={C.coolPipe} strokeWidth="1" opacity="0.5" />
-            <line x1="1340" y1="320" x2="1340" y2="470" stroke={C.coolPipe} strokeWidth="1" opacity="0.5" strokeDasharray="3,2" />
-            <text x="1335" y="400" textAnchor="end" fill={C.coolPipe} fontSize="7" opacity="0.5" transform="rotate(-90,1335,400)">Pendelleitung DN20</text>
+            {/* Pendelleitung */}
+            <Pipe d={`M${CX.psK - 22},${Y.vl + 10} L${CX.psK - 40},${Y.vl + 10} L${CX.psK - 40},${Y.rl + 60}`}
+              color={C.coolPipe} w={1} dash="3,2" />
+            <text x={CX.psK - 48} y={Y.mid + 10} fill={C.coolPipe} fontSize="6" opacity="0.5"
+              transform={`rotate(-90,${CX.psK - 48},${Y.mid + 10})`}>Pendelltg. DN20</text>
 
-            {/* P07 */}
-            <Pump x={1470} y={380} id="P07" on={false}
+            {/* Puffer Kälte → P07 → Verteiler (VL) */}
+            <Pipe d={`M${CX.psK + 22},${Y.vl + 15} L${CX.p07 - 14},${Y.vl + 15}`} color={C.coolPipe} w={2.5} />
+            <Pump x={CX.p07} y={Y.vl + 15} id="P07" on={false}
               onClick={() => sel({ id: 'P07', name: 'Pumpe P07', desc: 'Umwälzpumpe Kältepuffer', status: 'standby', flow: '8,7 m³/h', dn: 'DN 50' })} />
-            <Pipe d="M1410,380 L1456,380" color={C.coolPipe} width={2.5} />
-            <Pipe d="M1484,380 L1520,380 L1520,430" color={C.coolPipe} width={2.5} />
-            <DN x={1430} y={375} text="DN 50" />
-            <Valve x={1440} y={380} />
+            <Pipe d={`M${CX.p07 + 14},${Y.vl + 15} L${CX.vertK - 60},${Y.vl + 15} L${CX.vertK - 60},${Y.vl + 30}`}
+              color={C.coolPipe} w={2.5} />
+            <Label x={CX.p07 - 5} y={Y.vl + 2} text="DN 50" />
 
             {/* Rücklauf Kälte */}
-            <Pipe d="M1520,490 L1520,530 L1390,530 L1390,480" color={C.coolPipe} width={2} dash="5,3" />
-
-            {/* P06 */}
-            <Pump x={1390} y={540} id="P06" on={false}
-              onClick={() => sel({ id: 'P06', name: 'Pumpe P06', desc: 'Umwälzpumpe Kühlung', status: 'standby', flow: '12,4 m³/h', dn: 'DN 80' })} />
+            <Pipe d={`M${CX.vertK - 60},${Y.rl + 20} L${CX.vertK - 60},${Y.rl + 50} L${CX.psK + 22},${Y.rl + 50} L${CX.psK + 22},${Y.rl}`}
+              color={C.coolPipe} w={2} dash="4,3" />
 
             {/* Verteiler Kühlung */}
-            <Verteiler x={1450} y={450} w={160} h={40} label="VERTEILER KÜHLUNG" active={false} color={C.coolPipe}
+            <Dist x={CX.vertK - 60} y={Y.vl + 30} w={120} h={35} label="VERTEILER KÜHLUNG" color={C.coolPipe}
               onClick={() => sel({ id: 'VK', name: 'Verteiler Kühlung', desc: 'Kühlverteiler', status: 'standby', temp: '22°C', tempRet: '18°C', dn: 'DN 50' })} />
 
+            {/* P06 */}
+            <Pump x={CX.psK} y={Y.rl + 50} id="P06" on={false}
+              onClick={() => sel({ id: 'P06', name: 'Pumpe P06', desc: 'Umwälzpumpe Kühlung', status: 'standby', flow: '12,4 m³/h', dn: 'DN 80' })} />
+
             {/* Satellitenhaus Kühlung */}
-            <CompBox x={1530} y={510} w={90} h={35} title="Satellitenhaus" sub="Kühlung E" color={C.coolPipe}
-              onClick={() => sel({ id: 'SAT-K', name: 'Satellitenhaus E', desc: 'Zuleitung Kühlung', dn: 'DN 50' })} />
-            <Pipe d="M1610,490 L1610,510" color={C.coolPipe} width={2} />
-            <DN x={1575} y={505} text="DN 50" />
+            <Box x={CX.vertK + 65} y={Y.vl + 25} w={55} h={45} title="Sat.-" sub="Haus K" color={C.coolPipe}
+              onClick={() => sel({ id: 'SAT-K', name: 'Satellitenhaus E', desc: 'Kühlung-Zuleitung', dn: 'DN 50' })} />
+            <Pipe d={`M${CX.vertK + 60},${Y.vl + 45} L${CX.vertK + 65},${Y.vl + 45}`} color={C.coolPipe} w={2} />
+            <Label x={CX.vertK + 65} y={Y.vl + 22} text="DN 50" />
 
             {/* MAG Kälte */}
-            <MAG x={1430} y={530} />
+            <MAG x={CX.vertK - 20} y={Y.rl + 50} />
 
-            {/* ═══════════════════════════════════════════
+            {/* ════════════════════════════════════════════════════════════
                  ANIMIERTE STRÖMUNG
-                 ═══════════════════════════════════════════ */}
-            {showFlow && heating && (
+                 ════════════════════════════════════════════════════════════ */}
+            {showFlow && on && (
               <g>
                 {/* Erdwärme → WT */}
-                <FlowDot path="M140,400 L200,400 L200,440 L430,440" color={C.geoPipe} dur="3s" />
-                <FlowDot path="M140,400 L200,400 L200,440 L430,440" color={C.geoPipe} dur="3s" delay="1.5s" />
+                <Flow path={`M120,${Y.vl} L${CX.wt - 12},${Y.vl}`} color={C.geoPipe} dur="2.5s" />
+                <Flow path={`M120,${Y.vl} L${CX.wt - 12},${Y.vl}`} color={C.geoPipe} dur="2.5s" delay="1.2s" />
 
                 {/* PVT → Puffer */}
-                <FlowDot path="M180,110 L180,180 L265,180 L265,260" color={C.warmPipe} dur="2.5s" />
+                <Flow path={`M210,${Y.source + 42} L210,${Y.srcPipe} L${CX.pvt - 15},${Y.srcPipe} L${CX.pvt - 15},${Y.tankTop}`}
+                  color={C.warmPipe} dur="2s" />
+
+                {/* Abluft → Puffer */}
+                <Flow path={`M405,${Y.source + 42} L405,${Y.srcPipe + 20} L${CX.pvt + 15},${Y.srcPipe + 20} L${CX.pvt + 15},${Y.tankTop}`}
+                  color={C.warmPipe} dur="2.5s" />
 
                 {/* Puffer PVT → WT */}
-                <FlowDot path="M335,310 L440,310 L440,370" color={C.warmPipe} dur="2s" />
+                <Flow path={`M${CX.pvt + 25},${Y.vl} L${CX.wt - 12},${Y.vl}`} color={C.warmPipe} dur="1.5s" />
 
                 {/* WT → WP */}
-                <FlowDot path="M465,400 L560,400" color={C.warmPipe} dur="1.5s" />
-                <FlowDot path="M465,400 L560,400" color={C.warmPipe} dur="1.5s" delay="0.7s" />
+                <Flow path={`M${CX.wt + 12},${Y.vl} L${CX.wp - 60},${Y.vl}`} color={C.warmPipe} dur="1.5s" />
+                <Flow path={`M${CX.wt + 12},${Y.vl} L${CX.wp - 60},${Y.vl}`} color={C.warmPipe} dur="1.5s" delay="0.7s" />
 
-                {/* WP → P04 → Puffer HZ */}
-                <FlowDot path="M700,400 L830,400 L830,340 L860,340" color={C.hotPipe} dur="2.5s" size={5} />
-                <FlowDot path="M700,400 L830,400 L830,340 L860,340" color={C.hotPipe} dur="2.5s" delay="1.2s" size={5} />
+                {/* WP → Puffer HZ (VL) */}
+                <Flow path={`M${CX.wpR},${Y.vl} L${CX.psHz - 28},${Y.vl}`} color={C.hotPipe} dur="2s" r={5} />
+                <Flow path={`M${CX.wpR},${Y.vl} L${CX.psHz - 28},${Y.vl}`} color={C.hotPipe} dur="2s" delay="1s" r={5} />
 
                 {/* Puffer HZ → Verteiler */}
-                <FlowDot path="M915,340 L1060,340 L1060,355" color={C.hotPipe} dur="2s" size={4} />
+                <Flow path={`M${CX.psHz + 24},${Y.vl} L${CX.vert - 80},${Y.vl}`} color={C.hotPipe} dur="2s" r={4} />
 
                 {/* Rücklauf WP */}
-                <FlowDot path="M860,440 L830,440 L830,480 L700,480" color={C.coldPipe} dur="2.5s" size={4} />
+                <Flow path={`M${CX.psHz - 28},${Y.rl} L${CX.wpR},${Y.rl}`} color={C.coldPipe} dur="2.5s" r={4} />
 
-                {/* Abluft-WP → Puffer */}
-                <FlowDot path="M445,110 L445,150 L340,150 L340,260" color={C.warmPipe} dur="2s" />
+                {/* Rücklauf Erdwärme */}
+                <Flow path={`M${CX.wt - 12},${Y.rl} L120,${Y.rl}`} color={C.geoPipe} dur="2.5s" r={3} />
               </g>
             )}
 
-            {/* ═══════════════════════════════════════════
-                 TITLE BLOCK
-                 ═══════════════════════════════════════════ */}
-            <text x="850" y="600" textAnchor="middle" fill={C.textDim} fontSize="10">
-              ② Hauptstation + Anschluss an Satellitenhaus - Detail · Darmstadt 2026
+            {/* Titelzeile */}
+            <text x={W / 2} y={Y.title} textAnchor="middle" fill={C.textDim} fontSize="9">
+              ② Hauptstation + Anschluss an Satellitenhaus – Detail · Darmstadt 2026
             </text>
 
           </svg>
         </div>
 
-        {/* Detail-Panel */}
+        {/* Detail-Panel Overlay */}
         {selected && <DetailPanel info={selected} onClose={() => setSelected(null)} />}
       </div>
 
       {/* Legende */}
-      <div className="flex flex-wrap items-center gap-5 px-4 py-2.5 bg-[#111620]/60 rounded-xl border border-[#1e2736] text-[11px]">
-        <span className="text-slate-500 font-medium">Legende:</span>
+      <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-[10px]">
+        <span className="text-slate-500 font-medium text-[11px]">Legende</span>
+        {[
+          { c: C.hotPipe, l: 'Vorlauf (heiß)' },
+          { c: C.coldPipe, l: 'Rücklauf (kalt)', dash: true },
+          { c: C.geoPipe, l: 'Erdwärme' },
+          { c: C.warmPipe, l: 'Quelle (warm)' },
+          { c: C.coolPipe, l: 'Kältekreis' },
+        ].map(({ c, l, dash }) => (
+          <span key={l} className="flex items-center gap-1.5">
+            <span className="w-5 h-0.5 rounded-full" style={{ background: c, borderBottom: dash ? `1px dashed ${c}` : undefined }} />
+            <span className="text-slate-400">{l}</span>
+          </span>
+        ))}
         <span className="flex items-center gap-1.5">
-          <span className="w-4 h-1 rounded-full" style={{ background: C.hotPipe }} /><span className="text-slate-400">Vorlauf (heiß)</span>
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-4 h-0.5 rounded-full" style={{ background: C.coldPipe, border: `1px dashed ${C.coldPipe}` }} /><span className="text-slate-400">Rücklauf (kalt)</span>
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-4 h-1 rounded-full" style={{ background: C.geoPipe }} /><span className="text-slate-400">Erdwärme</span>
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-4 h-1 rounded-full" style={{ background: C.coolPipe }} /><span className="text-slate-400">Kältekreis</span>
-        </span>
-        <span className="flex items-center gap-1.5">
-          <svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="none" stroke={C.pumpOn} strokeWidth="1.5" /><polygon points="7,4 10,9 4,9" fill={C.pumpOn} /></svg>
+          <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOn} strokeWidth="1.2" /><polygon points="6,3 9,8 3,8" fill={C.pumpOn} /></svg>
           <span className="text-slate-400">Pumpe aktiv</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="none" stroke={C.pumpOff} strokeWidth="1.5" /><polygon points="7,4 10,9 4,9" fill={C.pumpOff} /></svg>
+          <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOff} strokeWidth="1.2" /><polygon points="6,3 9,8 3,8" fill={C.pumpOff} /></svg>
           <span className="text-slate-400">Pumpe aus</span>
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-gradient-to-b from-red-500 via-purple-500 to-blue-500" />
-          <span className="text-slate-400">Wärmetauscher</span>
         </span>
       </div>
     </div>
