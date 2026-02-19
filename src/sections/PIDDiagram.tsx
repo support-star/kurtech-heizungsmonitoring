@@ -130,6 +130,42 @@ function V({ x, y, r = 0 }: { x: number; y: number; r?: number }) {
   </g>;
 }
 
+/** Rückschlagventil (Check Valve) – DIN: Dreieck + Sperrlinie */
+function RV({ x, y, rot = 0 }: { x: number; y: number; rot?: number }) {
+  return <g transform={`translate(${x},${y}) rotate(${rot})`}>
+    <polygon points="-4,-5 -4,5 4,0" fill="none" stroke={C.tankStroke} strokeWidth="1.2" />
+    <line x1="4" y1="-5" x2="4" y2="5" stroke={C.tankStroke} strokeWidth="1.5" />
+  </g>;
+}
+
+/** Sicherheitsventil (Safety Valve) – DIN */
+function SV({ x, y, label = 'SV' }: { x: number; y: number; label?: string }) {
+  return <g>
+    <line x1={x} y1={y - 8} x2={x} y2={y - 2} stroke={C.dim} strokeWidth="1" />
+    <polygon points={`${x - 5},${y - 2} ${x + 5},${y - 2} ${x},${y + 6}`} fill="none" stroke="#f59e0b" strokeWidth="1.2" />
+    <line x1={x - 4} y1={y + 8} x2={x + 4} y2={y + 8} stroke="#f59e0b" strokeWidth="1" />
+    <text x={x} y={y + 16} textAnchor="middle" fill="#f59e0b" fontSize="5.5" fontWeight="600">{label}</text>
+  </g>;
+}
+
+/** Überströmventil zwischen VL und RL */
+function USV({ x, y1v, y2r }: { x: number; y1v: number; y2r: number }) {
+  const mid = (y1v + y2r) / 2;
+  return <g>
+    <line x1={x} y1={y1v} x2={x} y2={y2r} stroke={C.dim} strokeWidth="1" strokeDasharray="3,2" />
+    <V x={x} y={mid} r={90} />
+    <text x={x + 8} y={mid + 3} fill={C.dim} fontSize="5">ÜSV</text>
+  </g>;
+}
+
+/** Temperaturfühler-Symbol (kleiner Kreis mit T) */
+function TF({ x, y, c = C.dim }: { x: number; y: number; c?: string }) {
+  return <g>
+    <circle cx={x} cy={y} r="4" fill={C.tankFill} stroke={c} strokeWidth="0.8" />
+    <text x={x} y={y + 2.5} textAnchor="middle" fill={c} fontSize="5.5" fontWeight="700">T</text>
+  </g>;
+}
+
 function MAG({ x, y }: { x: number; y: number }) {
   return <g>
     <line x1={x} y1={y - 14} x2={x} y2={y - 6} stroke={C.dim} strokeWidth="1" />
@@ -178,28 +214,51 @@ function Mischer({ x, y, rot = 0, on }: { x: number; y: number; rot?: number; on
   </g>;
 }
 
-/** Heizkreis-Abgang: VL-Pipe + Mischer + RL-Pipe + Temp-Labels */
+/** Heizkreis-Abgang KOMPLETT: Absperr-V → RV → Mischer → T-Sensor → FBH  |  RL: Absperr-V → Strangregulier → T-Sensor */
 function HKAbgang({ vlX, y, rlY, nr, vlTemp, rlTemp, on, dn }: {
   vlX: number; y: number; rlY?: number; nr: number; vlTemp: string; rlTemp: string; on?: boolean; dn: string;
 }) {
   const rlX = vlX + 22;
-  const topY = y - 68;
+  const topY = y - 80;
   const rlStart = rlY ?? y + 24;
   return <g>
-    {/* VL hoch (aus VL-Balken) */}
-    <line x1={vlX} y1={y} x2={vlX} y2={topY + 28} stroke={C.hotPipe} strokeWidth="1.8" />
-    {/* Mischer auf VL-Leitung */}
-    <Mischer x={vlX} y={topY + 20} rot={0} on={on} />
+    {/* ── VL-Leitung (von unten nach oben) ── */}
+    {/* VL aus Balken hoch */}
+    <line x1={vlX} y1={y} x2={vlX} y2={y - 6} stroke={C.hotPipe} strokeWidth="1.8" />
+    {/* Absperrventil VL */}
+    <V x={vlX} y={y - 10} r={90} />
+    <line x1={vlX} y1={y - 14} x2={vlX} y2={y - 20} stroke={C.hotPipe} strokeWidth="1.8" />
+    {/* Rückschlagventil VL */}
+    <RV x={vlX} y={y - 24} rot={-90} />
+    <line x1={vlX} y1={y - 28} x2={vlX} y2={topY + 34} stroke={C.hotPipe} strokeWidth="1.8" />
+    {/* T-Sensor VL */}
+    <TF x={vlX + 7} y={topY + 38} c={C.hotPipe} />
+    {/* Mischer */}
+    <Mischer x={vlX} y={topY + 24} rot={0} on={on} />
     {/* VL weiter hoch */}
-    <line x1={vlX} y1={topY + 6} x2={vlX} y2={topY} stroke={C.hotPipe} strokeWidth="1.5" />
-    {/* RL hoch (aus RL-Balken) */}
-    <line x1={rlX} y1={rlStart} x2={rlX} y2={topY} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
-    {/* Temp VL */}
-    <T x={vlX + 12} y={topY + 38} v={vlTemp} c={C.hotPipe} />
-    {/* Temp RL */}
-    <T x={rlX + 12} y={topY + 52} v={rlTemp} c={C.coldPipe} />
+    <line x1={vlX} y1={topY + 10} x2={vlX} y2={topY} stroke={C.hotPipe} strokeWidth="1.5" />
+
+    {/* ── RL-Leitung (von unten nach oben) ── */}
+    {/* RL aus Balken hoch */}
+    <line x1={rlX} y1={rlStart} x2={rlX} y2={rlStart - 6} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+    {/* Absperrventil RL */}
+    <V x={rlX} y={rlStart - 10} r={90} />
+    <line x1={rlX} y1={rlStart - 14} x2={rlX} y2={rlStart - 22} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+    {/* Strangregulierventil RL */}
+    <g transform={`translate(${rlX},${rlStart - 26})`}>
+      <polygon points="-4,-3 0,0 -4,3" fill="none" stroke={C.coldPipe} strokeWidth="1" />
+      <polygon points="4,-3 0,0 4,3" fill={C.coldPipe} stroke={C.coldPipe} strokeWidth="1" />
+    </g>
+    <line x1={rlX} y1={rlStart - 30} x2={rlX} y2={topY + 38} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+    {/* T-Sensor RL */}
+    <TF x={rlX + 7} y={topY + 44} c={C.coldPipe} />
+    <line x1={rlX} y1={topY + 38} x2={rlX} y2={topY} stroke={C.coldPipe} strokeWidth="1.5" strokeDasharray="3,2" />
+
+    {/* Temp-Anzeigen */}
+    <T x={vlX - 30} y={topY + 52} v={vlTemp} c={C.hotPipe} />
+    <T x={rlX + 12} y={topY + 60} v={rlTemp} c={C.coldPipe} />
     {/* DN Label */}
-    <L x={vlX - 3} y={y - 4} t={dn} />
+    <L x={vlX - 3} y={y - 36} t={dn} />
     {/* HK Nummer */}
     <text x={vlX + 11} y={topY - 5} textAnchor="middle" fill={C.dim} fontSize="6.5" fontWeight="600">HK{nr}</text>
   </g>;
@@ -207,6 +266,23 @@ function HKAbgang({ vlX, y, rlY, nr, vlTemp, rlTemp, on, dn }: {
 
 /** Unused - kept for reference */
 // Dist component removed - replaced by inline Verteiler bars with HKAbgang
+
+/** Wärmemengenzähler (WMZ / Σ-Symbol) */
+function WMZ({ x, y, c = C.dim }: { x: number; y: number; c?: string }) {
+  return <g>
+    <rect x={x - 5} y={y - 5} width={10} height={10} rx="1.5" fill={C.coldPipe} fillOpacity="0.15" stroke={c} strokeWidth="0.8" />
+    <text x={x} y={y + 3} textAnchor="middle" fill={c} fontSize="7" fontWeight="700">Σ</text>
+  </g>;
+}
+
+/** Entlüftungs-/Entleerungs-Box */
+function EBox({ x, y, label }: { x: number; y: number; label: string }) {
+  return <g>
+    <line x1={x} y1={y - 8} x2={x} y2={y - 3} stroke={C.dim} strokeWidth="0.8" />
+    <rect x={x - 12} y={y - 3} width={24} height={10} rx="1.5" fill={C.panel} stroke={C.border} strokeWidth="0.5" />
+    <text x={x} y={y + 4} textAnchor="middle" fill={C.dim} fontSize="4.5">{label}</text>
+  </g>;
+}
 
 function Rgn({ x, y, t }: { x: number; y: number; t: string }) {
   return <text x={x} y={y} fill={C.dim} fontSize="10" fontWeight="700" letterSpacing="2.5" opacity="0.22">{t}</text>;
@@ -331,16 +407,30 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             onClick={() => s({ id: 'ABWP', name: 'Abluft-Wärmepumpe', desc: 'Auf Dach mit Rohrbegleitheizung', status: on ? 'running' : 'standby', temp: '40°C', tempRet: '35°C' })} />
           {/* Rohrbegleitheizung-Zickzack */}
           <path d="M528,68 L536,60 L544,68 L552,60 L560,68" fill="none" stroke="#fb923c" strokeWidth="1" strokeDasharray="2,1" opacity="0.5" />
+          {/* "in: Lüftung 400V" */}
+          <text x={455} y={108} textAnchor="middle" fill={C.dim} fontSize="6">in: Lüftung 400V</text>
 
           {/* PVT-Solar (oben links) */}
           <Box x={155} y={55} w={105} h={45} title="PVT-Solar" sub="6,2 kW th." active={!!on} color={C.warmPipe}
             onClick={() => s({ id: 'PVT', name: 'PVT-Solarkollektoren', desc: 'Auf Dach, 6,2 kW thermisch', status: 'running', temp: `${aus}°C`, power: '6,2 kW' })} />
           <circle cx="208" cy={46} r="7" fill="none" stroke="#fbbf24" strokeWidth="1.2" opacity="0.35" />
           <circle cx="208" cy={46} r="2.5" fill="#fbbf24" opacity="0.35" />
+          {/* PVT Detail-Label */}
+          <g transform="translate(155,108)">
+            <rect width="92" height="22" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" opacity="0.7" />
+            <text x="46" y="9" textAnchor="middle" fill={C.dim} fontSize="5.5">Rohrfeldstation</text>
+            <text x="46" y="18" textAnchor="middle" fill={C.text} fontSize="5.5">6,5°C opt. · DN 65</text>
+          </g>
 
           {/* Erdwärmefeld (links) */}
           <Box x={20} y={VL - 20} w={95} h={42} title="Erdwärme" sub="FVU Nahwärme" active={!!on} color={C.geoPipe}
             onClick={() => s({ id: 'ERD', name: 'Erdwärmefeld', desc: 'Zuleitung FVU Nahwärme', status: on ? 'running' : 'standby', flow: '42,1 m³/h', dn: 'DN 80' })} />
+          {/* Erdwärme-Sonden Zigzag (unterirdisch) */}
+          <g opacity="0.35">
+            <path d={`M30,${VL + 25} L38,${VL + 35} L46,${VL + 25} L54,${VL + 35} L62,${VL + 25}`} fill="none" stroke={C.geoPipe} strokeWidth="1.2" />
+            <path d={`M55,${VL + 30} L63,${VL + 40} L71,${VL + 30} L79,${VL + 40} L87,${VL + 30}`} fill="none" stroke={C.geoPipe} strokeWidth="1.2" />
+            <text x="58" y={VL + 50} textAnchor="middle" fill={C.geoPipe} fontSize="5">Sondernfeld</text>
+          </g>
 
           {/* ════════════════════════════════════════
                ROHRE QUELLEN → PUFFER PVT
@@ -363,7 +453,10 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M138,${VL} L147,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
           <Pump x={162} y={VL} id="P01" on={!!on}
             onClick={() => s({ id: 'P01', name: 'Pumpe P01', desc: 'Umwälzpumpe Erdwärme', status: on ? 'running' : 'off', flow: '42,1 m³/h', dn: 'DN 80' })} />
-          <Pipe d={`M176,${VL} L195,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
+          <Pipe d={`M176,${VL} L188,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
+          {/* Rückschlagventil nach P01 */}
+          <RV x={192} y={VL} />
+          <Pipe d={`M196,${VL} L198,${VL}`} c={C.geoPipe} glow={C.geoGlow} w={3.5} />
           {/* Schmutzfänger (Y-Filter Symbol) */}
           <g transform={`translate(202,${VL})`}>
             <polygon points="-5,-5 5,-5 0,5" fill="none" stroke={C.geoPipe} strokeWidth="1.2" />
@@ -375,6 +468,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <L x={142} y={VL - 16} t="DN 80" />
           {/* VL Temperatur-Fühler */}
           <PT x={298} y={VL - 18} v={`${aus}°`} c={C.geoPipe} />
+          <TF x={275} y={VL - 8} c={C.geoPipe} />
 
           {/* Erdwärme ← Absperrventil ← RL */}
           <Pipe d={`M350,${RL} L228,${RL}`} c={C.geoPipe} w={2.5} dash="5,3" />
@@ -382,6 +476,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M216,${RL} L115,${RL} L65,${RL} L65,${VL + 20}`} c={C.geoPipe} w={2.5} dash="5,3" />
           {/* RL Temperatur-Fühler */}
           <PT x={298} y={RL + 18} v={`${rl}°`} c={C.coldPipe} />
+          <TF x={275} y={RL + 10} c={C.coldPipe} />
 
           {/* Auslegungsdaten Erdwärme */}
           <g transform={`translate(120,${RL + 22})`}>
@@ -400,6 +495,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             onClick={() => s({ id: 'PS1', name: 'Pufferspeicher PVT', desc: 'Hydr. Trennung, 2000 L', status: on ? 'running' : 'standby', temp: `${po}°C`, power: '2000 L', dn: 'DN 100' })} />
           {/* MAG am Puffer PVT */}
           <MAG x={195} y={VL + 35} />
+          {/* Sicherheitsventil Puffer PVT */}
+          <SV x={195} y={RL + 20} label="SV 3bar" />
 
           {/* Puffer PVT Info-Box */}
           <g transform={`translate(175,${RL + 50})`}>
@@ -415,13 +512,16 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M302,${VL} L316,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
           <Pump x={330} y={VL} id="P03" on={!!on}
             onClick={() => s({ id: 'P03', name: 'Pumpe P03', desc: 'Umwälzpumpe Puffer PVT', status: on ? 'running' : 'off', flow: '28,5 m³/h', dn: 'DN 100' })} />
-          <Pipe d={`M344,${VL} L352,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
+          <RV x={346} y={VL} />
+          <Pipe d={`M350,${VL} L352,${VL}`} c={C.warmPipe} glow={C.warmGlow} />
           <L x={286} y={VL - 16} t="DN 100" />
+          <TF x={270} y={VL - 8} c={C.warmPipe} />
 
           {/* Puffer PVT ← Absperrventil ← WT (RL) */}
           <Pipe d={`M259,${RL} L302,${RL}`} c={C.coldPipe} w={2.5} dash="5,3" />
           <V x={296} y={RL} />
           <Pipe d={`M290,${RL} L352,${RL}`} c={C.coldPipe} w={2.5} dash="5,3" />
+          <TF x={270} y={RL + 10} c={C.coldPipe} />
 
           {/* ════════════════════════════════════════
                WÄRMETAUSCHER  (47 kW) – Halbkreis
@@ -434,9 +534,14 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           </g>
           <text x={380} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="7.5">WT 47 kW</text>
           <L x={362} y={VL - 12} t="DN 80" />
-          {/* WT VL/RL Temps (Primär/Sekundär) */}
+          {/* WT VL/RL Temps */}
           <PT x={370} y={VL - 24} v={`${aus}°`} c={C.geoPipe} />
           <PT x={370} y={RL + 35} v={`${rl}°`} c={C.coldPipe} />
+          {/* TF sensors at WT (4 total) */}
+          <TF x={358} y={VL + 8} c={C.warmPipe} />
+          <TF x={358} y={RL - 8} c={C.coldPipe} />
+          <TF x={395} y={VL + 8} c={C.hotPipe} />
+          <TF x={395} y={RL - 8} c={C.coldPipe} />
 
           {/* WT → Absperrventil → WP (VL) */}
           <Pipe d={`M400,${VL} L422,${VL}`} c={C.warmPipe} glow={C.warmGlow} w={3.5} />
@@ -462,6 +567,26 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <rect x={460} y={VL - 55} width={180} height={RL - VL + 110} rx="5"
             fill="none" stroke={C.enclosure} strokeWidth="1.5" strokeDasharray="8,4" />
           <text x={550} y={VL - 62} textAnchor="middle" fill={C.enclosure} fontSize="7.5" fontWeight="600">Maschinenraum WP</text>
+
+          {/* Soleanbindung Label */}
+          <g transform={`translate(462,${RL + 30})`}>
+            <rect width="78" height="22" rx="2" fill={C.panel} stroke={C.enclosure} strokeWidth="0.6" opacity="0.8" />
+            <text x="39" y="9" textAnchor="middle" fill={C.dim} fontSize="5.5">Soleanbindung</text>
+            <text x="39" y="18" textAnchor="middle" fill={C.text} fontSize="5.5">DN 65 · SV 3 bar</text>
+          </g>
+
+          {/* SC (Sole Circuit) Label innerhalb Einhausung */}
+          <text x={510} y={RL + 8} textAnchor="middle" fill={C.enclosure} fontSize="6" opacity="0.5">SC</text>
+
+          {/* DN 25 interne Leitung (Zuleitung Wärmerückgewinnung) */}
+          <line x1={530} y1={VL - 50} x2={530} y2={VL - 30} stroke={C.dim} strokeWidth="0.7" strokeDasharray="2,2" />
+          <text x={538} y={VL - 40} fill={C.dim} fontSize="4.5">DN 25</text>
+
+          {/* SV (Sicherheitsventil) im WP-Bereich */}
+          <SV x={580} y={VL - 42} label="SV 3,5" />
+
+          {/* 400V Label */}
+          <text x={550} y={RL + 54} textAnchor="middle" fill={C.dim} fontSize="6" opacity="0.4">400V · 3~ · 50Hz</text>
 
           {/* ════════════════════════════════════════
                WÄRMEPUMPE  (175 kW)
@@ -489,9 +614,11 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M618,${VL} L640,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
           <Pump x={660} y={VL} id="P04" on={!!on}
             onClick={() => s({ id: 'P04', name: 'Pumpe P04', desc: 'Umwälzpumpe Heizung', status: on ? 'running' : 'off', flow: '18,3 m³/h', dn: 'DN 100' })} />
-          <Pipe d={`M674,${VL} L720,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
+          <RV x={678} y={VL} />
+          <Pipe d={`M682,${VL} L720,${VL}`} c={C.hotPipe} glow={C.hotGlow} w={4} />
           <PT x={700} y={VL - 20} v={`${vl}°`} c={C.hotPipe} />
           <L x={620} y={VL - 16} t="DN 100" />
+          <TF x={710} y={VL + 10} c={C.hotPipe} />
 
           {/* WP ← Absperrventil ← RL */}
           <Pipe d={`M585,${RL} L618,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={3} dash="5,3" />
@@ -499,6 +626,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pipe d={`M632,${RL} L720,${RL}`} c={C.coldPipe} glow={C.coldGlow} w={3} dash="5,3" />
           <PT x={700} y={RL + 20} v={`${rl}°`} c={C.coldPipe} />
           <L x={620} y={RL + 14} t="DN 100" />
+          <TF x={710} y={RL - 8} c={C.coldPipe} />
 
           {/* Aufstellung Info */}
           <g transform={`translate(610,${RL + 28})`}>
@@ -515,6 +643,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             temps={[`${vl}°`, undefined, `${rl}°`]} grad="gTankHot"
             onClick={() => s({ id: 'PS2', name: 'Pufferspeicher HZ', desc: '1500 L', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '1500 L', dn: 'DN 80' })} />
           <MAG x={788} y={VL + 35} />
+          {/* SV am Puffer HZ */}
+          <SV x={726} y={VL - 52} label="SV 3" />
 
           {/* Puffer HZ info */}
           <g transform={`translate(720,${RL + 52})`}>
@@ -563,6 +693,9 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           {/* VL/RL Zuleitungen */}
           <Pipe d={`M895,${VL} L895,${VL + 20}`} c={C.hotPipe} w={3} />
           <Pipe d={`M895,${RL} L895,${VL + 58}`} c={C.coldPipe} w={2.5} dash="4,2" />
+          {/* WMZ am Verteiler-Eingang */}
+          <WMZ x={888} y={VL + 10} c={C.hotPipe} />
+          <WMZ x={888} y={VL + 50} c={C.coldPipe} />
 
           {/* ── Heizkreis 1: FBH EG ── */}
           <HKAbgang vlX={920} y={VL + 20} rlY={VL + 58} nr={1} vlTemp={`${vl}°`} rlTemp={`${rl}°`} on={on} dn="DN 56" />
@@ -589,11 +722,35 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             <text x="70" y="19" textAnchor="middle" fill={C.dim} fontSize="6.5">und Nachspeisestation</text>
           </g>
 
+          {/* USV (Überströmventil) zwischen VL und RL am Verteiler */}
+          <USV x={1090} y1v={VL + 20} y2r={VL + 58} />
+
+          {/* Wasseraufbereitung */}
+          <g transform={`translate(1050,${RL + 22})`}>
+            <rect width="85" height="22" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" />
+            <text x="42" y="9" textAnchor="middle" fill={C.dim} fontSize="5.5">Wasseraufbereitung</text>
+            <text x="42" y="18" textAnchor="middle" fill={C.text} fontSize="5.5">Enthärtung · Füllung</text>
+          </g>
+
           {/* Anschluss P04 / Kapselfeed */}
-          <g transform={`translate(895,${RL + 56})`}>
+          <g transform={`translate(895,${RL + 50})`}>
             <rect width="100" height="16" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" />
             <text x="50" y="11" textAnchor="middle" fill={C.dim} fontSize="6">Kapselfeed · Anschluss P04</text>
           </g>
+
+          {/* Entleerung/Füllung Label */}
+          <g transform={`translate(1050,${RL + 48})`}>
+            <rect width="85" height="16" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.4" />
+            <text x="42" y="11" textAnchor="middle" fill={C.dim} fontSize="5.5">Füllung Heizung · Anl.</text>
+          </g>
+
+          {/* Entleerungshähne an Tiefpunkten */}
+          <EBox x={400} y={RL + 20} label="Entl." />
+          <EBox x={720} y={RL + 42} label="Entl." />
+
+          {/* Entlüftung an Hochpunkten */}
+          <EBox x={240} y={VL - 52} label="Entlüft." />
+          <EBox x={750} y={VL - 52} label="Entlüft." />
 
           {/* ════════════════════════════════════════
                KÄLTE-BEREICH
@@ -639,6 +796,41 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Pump x={1250} y={RL + 40} id="P06" on={false}
             onClick={() => s({ id: 'P06', name: 'Pumpe P06', desc: 'Umwälzpumpe Kühlung', status: 'standby', flow: '12,4 m³/h', dn: 'DN 80' })} />
 
+          {/* Kältegestell Einhausung (cyan dashed) */}
+          <rect x={1280} y={VL - 45} width={110} height={RL - VL + 65} rx="4"
+            fill="none" stroke={C.coolPipe} strokeWidth="1.2" strokeDasharray="6,3" opacity="0.3" />
+          <text x={1335} y={VL - 50} textAnchor="middle" fill={C.coolPipe} fontSize="6.5" fontWeight="600" opacity="0.5">Kältegestell</text>
+
+          {/* WT Kälte (Halbkreis innerhalb Kältegestell) */}
+          <g className="cursor-pointer" onClick={() => s({ id: 'WT2', name: 'Wärmetauscher Kälte', desc: 'Kälte-WT · Nullenergiebrunnen', status: 'standby', power: '25 kW', dn: 'DN 65' })}>
+            <path d={`M1310,${VL} A30,30 0 0,1 1310,${VL + 50}`} fill="url(#gTankCold)" stroke={C.tankStroke} strokeWidth="1.5" />
+            {[0, 1, 2].map(i => <line key={i} x1={1313} y1={VL + 8 + i * 16} x2={1338} y2={VL + 8 + i * 16} stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />)}
+          </g>
+          <text x={1335} y={VL + 60} textAnchor="middle" fill={C.dim} fontSize="5.5">WT Kälte</text>
+
+          {/* TF-Sensoren im Kältegestell */}
+          <TF x={1295} y={VL + 10} c={C.coolPipe} />
+          <TF x={1295} y={VL + 40} c={C.coolPipe} />
+          <TF x={1360} y={VL + 10} c={C.coolPipe} />
+          <TF x={1360} y={VL + 40} c={C.coolPipe} />
+
+          {/* Absperrventile im Kältegestell */}
+          <V x={1290} y={VL + 5} />
+          <V x={1290} y={VL + 50} />
+
+          {/* Entlüftung oben am Kältegestell */}
+          <EBox x={1335} y={VL - 38} label="Entlüft." />
+
+          {/* Zuleitung Kälte / Kältewasser → rechter Rand */}
+          <g transform={`translate(1500,${VL - 30})`}>
+            <rect width="42" height="28" rx="2" fill={C.panel} stroke={C.coolPipe} strokeWidth="0.6" opacity="0.7" />
+            <text x="21" y="10" textAnchor="middle" fill={C.coolPipe} fontSize="5">Zuleitung</text>
+            <text x="21" y="19" textAnchor="middle" fill={C.coolPipe} fontSize="5">Kälte</text>
+            <text x="21" y="27" textAnchor="middle" fill={C.coolPipe} fontSize="4.5">Kältewasser</text>
+          </g>
+          {/* Pipe → rechts */}
+          <Pipe d={`M1390,${VL - 20} L1500,${VL - 20}`} c={C.coolPipe} w={1.5} />
+
           {/* Verteiler Kühlung */}
           <g className="cursor-pointer" onClick={() => s({ id: 'VK', name: 'Verteiler Kühlung', desc: 'Kühlverteiler mit 3 Kreisen', status: 'standby', temp: '37°C', tempRet: '18°C', dn: 'DN 65' })}>
             <rect x={1385} y={VL + 30} width={130} height={16} rx="3" fill={C.panel} stroke={C.coolPipe} strokeWidth="1.2" strokeOpacity="0.6" />
@@ -653,7 +845,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <FBH x={1415} y={VL - 32} label="FBH Kühl." />
 
           {/* KK2: Sat.E Kühlung */}
-          <HKAbgang vlX={1450} y={VL + 30} rlY={VL + 62} nr={2} vlTemp="37°" rlTemp="18°" on={false} dn="DN 65" />
+          <HKAbgang vlX={1450} y={VL + 30} rlY={VL + 62} nr={2} vlTemp="22°" rlTemp="18°" on={false} dn="DN 80" />
           <text x={1461} y={VL - 24} textAnchor="middle" fill={C.dim} fontSize="6">Sat.E</text>
           <text x={1461} y={VL - 16} textAnchor="middle" fill={C.dim} fontSize="6">Kühlung</text>
 
