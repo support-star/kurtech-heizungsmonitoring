@@ -5,290 +5,125 @@ import { ZoomIn, ZoomOut, RotateCcw, Eye, EyeOff, X } from 'lucide-react';
 import type { HeatingData } from '@/types/heating';
 
 // ═══════════════════════════════════════════════════════════════
-//  KONFIGURATION – Positionen hier anpassen!
+//  P&ID SYMBOLE (DIN-konform)
 // ═══════════════════════════════════════════════════════════════
 
-const LAYOUT = {
-  // Quellen (oben)
-  pvt:        { x: 120,  y: 60  },
-  abwp:       { x: 340,  y: 60  },
-  erdwaerme:  { x: 60,   y: 430 },
-
-  // Speicher & Wandler (mitte)
-  pufferPVT:  { x: 200,  y: 220 },
-  wt:         { x: 490,  y: 330 },
-  wp:         { x: 670,  y: 220 },
-
-  // Pumpen
-  p01:        { x: 130,  y: 340 },
-  p02:        { x: 360,  y: 175 },
-  p03:        { x: 400,  y: 270 },
-  p04:        { x: 830,  y: 300 },
-  p05:        { x: 1050, y: 280 },
-  p06:        { x: 830,  y: 620 },
-  p07:        { x: 1130, y: 530 },
-
-  // Verteilung (rechts)
-  pufferHZ:   { x: 910,  y: 170 },
-  pufferK:    { x: 910,  y: 490 },
-  verteilerH: { x: 1160, y: 180 },
-  verteilerK: { x: 1250, y: 490 },
-
-  // Anschlüsse
-  satHZ:      { x: 1380, y: 170 },
-  satK:       { x: 1420, y: 490 },
-} as const;
-
-// ═══════════════════════════════════════════════════════════════
-//  SVG SYMBOLE
-// ═══════════════════════════════════════════════════════════════
-
-/** Pumpen-Symbol (Kreis mit Dreieck) – DIN-nah */
-function PumpSymbol({ x, y, id, running, onClick }: {
+/** Pumpe: Kreis mit Dreieck */
+function Pump({ x, y, id, running, onClick }: {
   x: number; y: number; id: string; running: boolean; onClick: () => void;
 }) {
   return (
     <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-      <circle cx="0" cy="0" r="16" fill={running ? '#059669' : '#1e293b'} stroke={running ? '#34d399' : '#475569'} strokeWidth="2" />
-      <polygon points="0,-8 7,5 -7,5" fill={running ? '#fff' : '#64748b'} />
-      {running && (
-        <circle cx="0" cy="0" r="18" fill="none" stroke="#34d399" strokeWidth="1" opacity="0.4">
-          <animate attributeName="r" values="18;24;18" dur="2s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite" />
-        </circle>
-      )}
-      <text x="0" y="28" textAnchor="middle" fill={running ? '#34d399' : '#64748b'} fontSize="10" fontWeight="600">{id}</text>
+      <circle cx="0" cy="0" r="14" fill="none" stroke={running ? '#dc2626' : '#666'} strokeWidth="2"
+        strokeDasharray={running ? '' : '3,2'} />
+      <polygon points="0,-7 7,5 -7,5" fill={running ? '#dc2626' : '#999'} />
+      <text x="0" y="24" textAnchor="middle" fill={running ? '#dc2626' : '#888'} fontSize="10" fontWeight="700">{id}</text>
     </g>
   );
 }
 
-/** Speicher/Tank-Symbol */
-function TankSymbol({ x, y, width, height, label, sublabel, capacity, zones, color, borderColor, onClick }: {
-  x: number; y: number; width: number; height: number;
-  label: string; sublabel?: string; capacity: string;
-  zones: { value: string; color: string; label?: string }[];
-  color: string; borderColor: string; onClick: () => void;
-}) {
-  const zoneH = (height - 16) / zones.length;
+/** Absperrventil (Butterfly): Doppel-Dreieck / Bowtie */
+function Valve({ x, y, size = 8 }: { x: number; y: number; size?: number }) {
+  const s = size;
   return (
-    <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-      {/* Label oben */}
-      <text x={width / 2} y="-22" textAnchor="middle" fill="#94a3b8" fontSize="10" fontWeight="500">{label}</text>
-      {sublabel && <text x={width / 2} y="-10" textAnchor="middle" fill="#64748b" fontSize="9">{sublabel}</text>}
-
-      {/* Behälter */}
-      <rect x="0" y="0" width={width} height={height} rx="6" fill={color} stroke={borderColor} strokeWidth="2" />
-
-      {/* Temperaturzonen */}
-      {zones.map((z, i) => (
-        <g key={i}>
-          <rect x="6" y={6 + i * zoneH} width={width - 12} height={zoneH - 4} rx="3" fill={z.color} opacity="0.85" />
-          <text x={width / 2} y={6 + i * zoneH + zoneH / 2 + 4} textAnchor="middle" fill="#fff" fontSize="12" fontWeight="700">
-            {z.value}
-          </text>
-          {z.label && (
-            <text x={width - 8} y={6 + i * zoneH + 12} textAnchor="end" fill="rgba(255,255,255,0.5)" fontSize="7">{z.label}</text>
-          )}
-        </g>
-      ))}
-
-      {/* Kapazität */}
-      <text x={width / 2} y={height + 14} textAnchor="middle" fill="#64748b" fontSize="9">{capacity}</text>
+    <g transform={`translate(${x},${y})`}>
+      <polygon points={`${-s},${-s} ${s},0 ${-s},${s}`} fill="none" stroke="#555" strokeWidth="1.5" />
+      <polygon points={`${s},${-s} ${-s},0 ${s},${s}`} fill="none" stroke="#555" strokeWidth="1.5" />
     </g>
   );
 }
 
-/** Wärmetauscher-Symbol (gekreuzte Platten) */
-function HeatExchangerSymbol({ x, y, onClick }: { x: number; y: number; onClick: () => void }) {
+/** Rückschlagventil */
+function CheckValve({ x, y, rot = 0 }: { x: number; y: number; rot?: number }) {
   return (
-    <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-      <text x="30" y="-12" textAnchor="middle" fill="#94a3b8" fontSize="10">Wärmetauscher</text>
-      <rect x="0" y="0" width="60" height="80" rx="4" fill="#1e1b4b" stroke="#7c3aed" strokeWidth="2" />
-      {/* Platten-Muster */}
-      {[12, 24, 36, 48, 60].map(py => (
-        <line key={py} x1="8" y1={py} x2="52" y2={py} stroke="rgba(167,139,250,0.3)" strokeWidth="1" />
-      ))}
-      {/* Diagonal-Pfeile */}
-      <line x1="10" y1="10" x2="50" y2="70" stroke="#a78bfa" strokeWidth="1.5" strokeDasharray="4,3" />
-      <line x1="50" y1="10" x2="10" y2="70" stroke="#a78bfa" strokeWidth="1.5" strokeDasharray="4,3" />
-      <text x="30" y="95" textAnchor="middle" fill="#a78bfa" fontSize="9" fontWeight="600">47 kW</text>
-    </g>
-  );
-}
-
-/** Wärmepumpen-Symbol (großer Kasten) */
-function HeatPumpSymbol({ x, y, data, onClick }: {
-  x: number; y: number; data: HeatingData | null; onClick: () => void;
-}) {
-  const running = data?.status === 'heizen';
-  return (
-    <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-      <text x="65" y="-10" textAnchor="middle" fill="#94a3b8" fontSize="10" fontWeight="500">Wärmepumpe</text>
-      <rect x="0" y="0" width="130" height="105" rx="6"
-        fill={running ? '#7c2d12' : '#1e293b'}
-        stroke={running ? '#f97316' : '#475569'} strokeWidth="2.5" />
-
-      <text x="65" y="22" textAnchor="middle" fill="#fdba74" fontSize="9">Nenn-Wärmeleistung</text>
-      <text x="65" y="42" textAnchor="middle" fill="#fff" fontSize="18" fontWeight="800">175 kW</text>
-      <text x="65" y="60" textAnchor="middle" fill="#fdba74" fontSize="9">Elektrisch: 38,9 kW</text>
-
-      <line x1="10" y1="70" x2="120" y2="70" stroke="rgba(255,255,255,0.1)" />
-
-      <text x="36" y="85" textAnchor="middle" fill="#94a3b8" fontSize="9">COP</text>
-      <text x="36" y="100" textAnchor="middle" fill="#34d399" fontSize="14" fontWeight="700">
-        {data?.cop?.toFixed(1) ?? '--'}
-      </text>
-      <text x="98" y="85" textAnchor="middle" fill="#94a3b8" fontSize="9">Status</text>
-      <text x="98" y="100" textAnchor="middle" fill={running ? '#f59e0b' : '#60a5fa'} fontSize="10" fontWeight="600">
-        {running ? 'HEIZEN' : 'STANDBY'}
-      </text>
-
-      {running && (
-        <rect x="-2" y="-2" width="134" height="109" rx="8" fill="none" stroke="#f97316" strokeWidth="1" opacity="0.3">
-          <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite" />
-        </rect>
-      )}
-    </g>
-  );
-}
-
-/** Verteiler-Symbol */
-function DistributorSymbol({ x, y, label, color, borderColor, count, onClick }: {
-  x: number; y: number; label: string; color: string; borderColor: string; count: number; onClick: () => void;
-}) {
-  return (
-    <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-      <text x="50" y="-10" textAnchor="middle" fill={borderColor} fontSize="10" fontWeight="600">{label}</text>
-      <rect x="0" y="0" width="100" height="50" rx="4" fill={color} stroke={borderColor} strokeWidth="2" />
-      {/* Vorlauf / Rücklauf Balken */}
-      <line x1="10" y1="18" x2="90" y2="18" stroke={borderColor} strokeWidth="2" opacity="0.6" />
-      <line x1="10" y1="33" x2="90" y2="33" stroke={borderColor} strokeWidth="2" opacity="0.4" />
-      {/* Abgänge */}
-      {Array.from({ length: count }).map((_, i) => {
-        const cx = 20 + i * (60 / (count - 1));
-        return <line key={i} x1={cx} y1="0" x2={cx} y2="-8" stroke={borderColor} strokeWidth="1.5" opacity="0.7" />;
-      })}
-    </g>
-  );
-}
-
-/** Quelle/Erzeuger-Symbol */
-function SourceSymbol({ x, y, label, sublabel, icon, value, unit, onClick }: {
-  x: number; y: number; label: string; sublabel: string;
-  icon: 'sun' | 'wind' | 'earth'; value?: string; unit?: string; onClick: () => void;
-}) {
-  const icons = {
-    sun: <><circle cx="20" cy="20" r="10" fill="#fbbf24" opacity="0.8" />{[0, 45, 90, 135, 180, 225, 270, 315].map(a => (
-      <line key={a} x1={20 + 14 * Math.cos(a * Math.PI / 180)} y1={20 + 14 * Math.sin(a * Math.PI / 180)}
-        x2={20 + 18 * Math.cos(a * Math.PI / 180)} y2={20 + 18 * Math.sin(a * Math.PI / 180)}
-        stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" />))}</>,
-    wind: <><path d="M8,20 Q14,10 20,20 Q26,30 32,20" fill="none" stroke="#22d3ee" strokeWidth="2" />
-      <path d="M8,28 Q14,18 20,28 Q26,38 32,28" fill="none" stroke="#22d3ee" strokeWidth="2" opacity="0.6" /></>,
-    earth: <><circle cx="20" cy="20" r="14" fill="#166534" stroke="#22c55e" strokeWidth="2" />
-      <path d="M10,16 Q20,10 30,16 M10,24 Q20,30 30,24" fill="none" stroke="#4ade80" strokeWidth="1.5" /></>,
-  };
-
-  return (
-    <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-      <rect x="0" y="0" width="120" height="60" rx="8" fill="#0f172a" stroke="#334155" strokeWidth="1.5" />
-      <g transform="translate(8,10)">{icons[icon]}</g>
-      <text x="52" y="18" fill="#e2e8f0" fontSize="10" fontWeight="600">{label}</text>
-      <text x="52" y="30" fill="#64748b" fontSize="8">{sublabel}</text>
-      {value && (
-        <text x="52" y="48" fill="#94a3b8" fontSize="9">{value} {unit}</text>
-      )}
+    <g transform={`translate(${x},${y}) rotate(${rot})`}>
+      <polygon points="-6,-6 6,0 -6,6" fill="none" stroke="#555" strokeWidth="1.5" />
+      <line x1="6" y1="-6" x2="6" y2="6" stroke="#555" strokeWidth="1.5" />
     </g>
   );
 }
 
 /** Temperaturfühler */
-function TempSensor({ x, y, value, color = '#94a3b8' }: { x: number; y: number; value?: string; color?: string }) {
+function TSensor({ x, y, label }: { x: number; y: number; label?: string }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      <circle cx="0" cy="0" r="5" fill="#1e293b" stroke={color} strokeWidth="1.5" />
-      <text x="0" y="3" textAnchor="middle" fill={color} fontSize="6" fontWeight="600">T</text>
-      {value && <text x="12" y="3" fill={color} fontSize="8" fontWeight="500">{value}</text>}
+      <circle cx="0" cy="0" r="6" fill="none" stroke="#333" strokeWidth="1.2" />
+      <text x="0" y="3.5" textAnchor="middle" fill="#333" fontSize="8" fontWeight="600">T</text>
+      {label && <text x="12" y="4" fill="#555" fontSize="8">{label}</text>}
+    </g>
+  );
+}
+
+/** Wärmemengenzähler */
+function WMZ({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <rect x="-14" y="-8" width="28" height="16" rx="2" fill="none" stroke="#333" strokeWidth="1.2" />
+      <text x="0" y="4" textAnchor="middle" fill="#333" fontSize="6" fontWeight="600">WMZ</text>
+    </g>
+  );
+}
+
+/** Passstück */
+function Passtueck({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <rect x="-10" y="-4" width="20" height="8" rx="1" fill="none" stroke="#333" strokeWidth="1" strokeDasharray="3,2" />
+      <text x="0" y="14" textAnchor="middle" fill="#999" fontSize="7">Passstück</text>
+    </g>
+  );
+}
+
+/** MAG (Membranausdehnungsgefäß) */
+function MAG({ x, y, size = '50l' }: { x: number; y: number; size?: string }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <ellipse cx="0" cy="0" rx="14" ry="18" fill="none" stroke="#999" strokeWidth="1.5" />
+      <text x="0" y="3" textAnchor="middle" fill="#999" fontSize="7" fontWeight="600">MAG</text>
+      <text x="0" y="28" textAnchor="middle" fill="#999" fontSize="7">{size}</text>
+    </g>
+  );
+}
+
+/** Sicherheitsventil */
+function SVentil({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <polygon points="0,-8 6,4 -6,4" fill="none" stroke="#333" strokeWidth="1.2" />
+      <line x1="0" y1="4" x2="0" y2="10" stroke="#333" strokeWidth="1.2" />
     </g>
   );
 }
 
 /** DN-Label */
-function DNLabel({ x, y, text }: { x: number; y: number; text: string }) {
-  return <text x={x} y={y} fill="#475569" fontSize="8" fontWeight="500">{text}</text>;
+function DN({ x, y, text }: { x: number; y: number; text: string }) {
+  return <text x={x} y={y} fill="#888" fontSize="9" fontWeight="500">{text}</text>;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  ROHRLEITUNGEN (Paths)
-// ═══════════════════════════════════════════════════════════════
+/** Temperatur-Annotation */
+function TempLabel({ x, y, temp, color = '#dc2626' }: { x: number; y: number; temp: string; color?: string }) {
+  return <text x={x} y={y} fill={color} fontSize="10" fontWeight="600">{temp}</text>;
+}
 
-function Pipes({ data, showFlow }: { data: HeatingData | null; showFlow: boolean }) {
-  const heating = data?.status === 'heizen';
-  const standby = data?.status === 'standby';
-
-  // Hilfsfunktion: L-förmige Rohrleitung
-  const pipe = (d: string, color: string, w = 4) => (
-    <path d={d} fill="none" stroke={color} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" />
-  );
-
-  // Animierter Strömungspfeil
-  const flowDot = (d: string, color: string, active: boolean) => active && (
-    <circle r="3" fill={color}>
-      <animateMotion dur="3s" repeatCount="indefinite" path={d} />
-    </circle>
-  );
-
+/** Beschriftung */
+function Label({ x, y, lines, size = 9, anchor = 'start', color = '#555' }: {
+  x: number; y: number; lines: string[]; size?: number; anchor?: 'start' | 'middle' | 'end'; color?: string;
+}) {
   return (
     <g>
-      {/* ── Quellenkreis: PVT → Puffer PVT ── */}
-      {pipe(`M 180 120 L 180 155 L 240 155 L 240 220`, '#eab308', 5)}
-      {showFlow && flowDot(`M 180 120 L 180 155 L 240 155 L 240 220`, '#fbbf24', !!heating)}
+      {lines.map((line, i) => (
+        <text key={i} x={x} y={y + i * (size + 3)} textAnchor={anchor} fill={color} fontSize={size}>{line}</text>
+      ))}
+    </g>
+  );
+}
 
-      {/* ── Quellenkreis: Abluft-WP → P02 → Puffer PVT ── */}
-      {pipe(`M 400 120 L 400 155 L 360 175`, '#22d3ee', 4)}
-      {pipe(`M 360 175 L 310 195 L 310 220`, '#22d3ee', 4)}
-
-      {/* ── Erdwärme → P01 → Wärmetauscher ── */}
-      {pipe(`M 120 430 L 130 390 L 130 340`, '#22c55e', 5)}
-      {pipe(`M 130 340 L 130 300 L 200 300 L 200 370 L 490 370`, '#22c55e', 5)}
-      {showFlow && flowDot(`M 120 430 L 130 390 L 130 340 L 130 300 L 200 300 L 200 370 L 490 370`, '#4ade80', !!heating)}
-
-      {/* ── Puffer PVT → P03 → WT (Primär-Seite) ── */}
-      {pipe(`M 310 310 L 400 310 L 400 270`, '#f97316', 5)}
-      {pipe(`M 400 270 L 400 250 L 460 250 L 460 340 L 490 340`, '#f97316', 4)}
-
-      {/* ── WT → WP (Sekundär) ── */}
-      {pipe(`M 550 370 L 620 370 L 620 290 L 670 290`, '#ef4444', 5)}
-      {showFlow && flowDot(`M 550 370 L 620 370 L 620 290 L 670 290`, '#f87171', !!heating)}
-
-      {/* ── WP → P04 → Puffer HZ ── */}
-      {pipe(`M 800 270 L 830 300`, '#ef4444', 5)}
-      {pipe(`M 830 300 L 870 270 L 910 270`, '#ef4444', 5)}
-      {showFlow && flowDot(`M 800 270 L 830 300 L 870 270 L 910 270`, '#f87171', !!heating)}
-
-      {/* ── Puffer HZ → P05 → Verteiler HZ ── */}
-      {pipe(`M 1010 260 L 1050 280`, '#ef4444', 4)}
-      {pipe(`M 1050 280 L 1100 260 L 1160 260`, '#ef4444', 4)}
-
-      {/* ── Verteiler HZ → Satellitenhaus ── */}
-      {pipe(`M 1260 200 L 1310 200 L 1310 200 L 1380 200`, '#f97316', 3)}
-
-      {/* ── Rücklauf HZ (kalt, blau gestrichelt) ── */}
-      <path d="M 1380 230 L 1310 230 L 1310 230 L 1260 230" fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="8,4" />
-      <path d="M 1160 230 L 1080 230 L 1080 350 L 990 350 L 990 340" fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="8,4" />
-      <path d="M 940 340 L 940 395 L 735 395 L 735 325" fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="8,4" />
-
-      {/* ── Kältekreis: WP → P06 → Puffer Kälte ── */}
-      {pipe(`M 735 325 L 735 550 L 770 600 L 830 620`, '#06b6d4', 4)}
-      {pipe(`M 830 620 L 880 600 L 910 580`, '#06b6d4', 4)}
-      {showFlow && flowDot(`M 735 325 L 735 550 L 770 600 L 830 620 L 880 600 L 910 580`, '#22d3ee', !!standby)}
-
-      {/* ── Puffer Kälte → P07 → Verteiler Kühlung ── */}
-      {pipe(`M 1010 540 L 1070 540 L 1130 530`, '#06b6d4', 4)}
-      {pipe(`M 1130 530 L 1190 520 L 1250 520`, '#06b6d4', 4)}
-
-      {/* ── Verteiler Kühlung → Satellitenhaus ── */}
-      {pipe(`M 1350 510 L 1420 510`, '#06b6d4', 3)}
-      <path d="M 1420 530 L 1350 530" fill="none" stroke="#0ea5e9" strokeWidth="3" strokeDasharray="8,4" />
+/** Druckhaltestation */
+function Druckhaltestation({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <rect x="0" y="0" width="120" height="35" rx="2" fill="none" stroke="#999" strokeWidth="1" strokeDasharray="4,2" />
+      <Label x={5} y={12} lines={['Druckhalte-,', 'Entgasungs- und', 'Nachspeisestation']} size={7} color="#999" />
     </g>
   );
 }
@@ -304,42 +139,28 @@ interface CompInfo {
 }
 
 function DetailPanel({ comp, onClose }: { comp: CompInfo; onClose: () => void }) {
-  const statusColor = comp.status === 'running' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-    : comp.status === 'standby' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
-    : 'bg-slate-500/20 text-slate-400 border-slate-500/40';
-  const statusLabel = comp.status === 'running' ? 'Laufend' : comp.status === 'standby' ? 'Bereit' : 'Aus';
-
+  const sc = comp.status === 'running' ? 'bg-emerald-500/20 text-emerald-400'
+    : comp.status === 'standby' ? 'bg-amber-500/20 text-amber-400'
+    : 'bg-slate-500/20 text-slate-400';
+  const sl = comp.status === 'running' ? 'Laufend' : comp.status === 'standby' ? 'Bereit' : 'Aus';
   return (
     <div className="absolute bottom-4 left-4 right-4 z-20 bg-[#0f1520]/95 backdrop-blur-xl border border-[#1e2736] rounded-xl p-4 shadow-2xl">
       <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="text-white font-bold text-base">{comp.name}</h3>
+          <h3 className="text-white font-bold">{comp.name}</h3>
           <p className="text-slate-400 text-xs">{comp.desc}</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose} className="text-slate-400 hover:text-white -mt-1 -mr-1">
-          <X className="w-4 h-4" />
-        </Button>
+        <Button variant="ghost" size="sm" onClick={onClose} className="text-slate-400 hover:text-white -mt-1 -mr-1"><X className="w-4 h-4" /></Button>
       </div>
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        <InfoCell label="ID" value={comp.id} mono />
-        <InfoCell label="Status" badge={<Badge className={`text-[10px] ${statusColor}`}>{statusLabel}</Badge>} />
-        {comp.temp != null && <InfoCell label="Temperatur" value={`${comp.temp.toFixed(1)}°C`} color="text-orange-400" />}
-        {comp.tempReturn != null && <InfoCell label="Rücklauf" value={`${comp.tempReturn.toFixed(1)}°C`} color="text-sky-400" />}
-        {comp.flow != null && <InfoCell label="Durchfluss" value={`${comp.flow} m³/h`} color="text-emerald-400" />}
-        {comp.dn && <InfoCell label="Nennweite" value={comp.dn} />}
-        {comp.power && <InfoCell label="Leistung" value={comp.power} color="text-amber-400" />}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-xs">
+        <div className="bg-[#111620] rounded-lg p-2"><div className="text-[9px] text-slate-500 uppercase mb-1">ID</div><div className="text-emerald-400 font-mono">{comp.id}</div></div>
+        <div className="bg-[#111620] rounded-lg p-2"><div className="text-[9px] text-slate-500 uppercase mb-1">Status</div><Badge className={`text-[10px] ${sc}`}>{sl}</Badge></div>
+        {comp.temp != null && <div className="bg-[#111620] rounded-lg p-2"><div className="text-[9px] text-slate-500 uppercase mb-1">Temperatur</div><div className="text-orange-400 font-semibold">{comp.temp.toFixed(1)}°C</div></div>}
+        {comp.tempReturn != null && <div className="bg-[#111620] rounded-lg p-2"><div className="text-[9px] text-slate-500 uppercase mb-1">Rücklauf</div><div className="text-sky-400 font-semibold">{comp.tempReturn.toFixed(1)}°C</div></div>}
+        {comp.flow != null && <div className="bg-[#111620] rounded-lg p-2"><div className="text-[9px] text-slate-500 uppercase mb-1">Durchfluss</div><div className="text-emerald-400 font-semibold">{comp.flow} m³/h</div></div>}
+        {comp.dn && <div className="bg-[#111620] rounded-lg p-2"><div className="text-[9px] text-slate-500 uppercase mb-1">Nennweite</div><div className="text-slate-300 font-semibold">{comp.dn}</div></div>}
+        {comp.power && <div className="bg-[#111620] rounded-lg p-2"><div className="text-[9px] text-slate-500 uppercase mb-1">Leistung</div><div className="text-amber-400 font-semibold">{comp.power}</div></div>}
       </div>
-    </div>
-  );
-}
-
-function InfoCell({ label, value, badge, color = 'text-white', mono }: {
-  label: string; value?: string; badge?: React.ReactNode; color?: string; mono?: boolean;
-}) {
-  return (
-    <div className="bg-[#111620] rounded-lg p-2">
-      <div className="text-[9px] text-slate-500 uppercase tracking-wider mb-1">{label}</div>
-      {badge || <div className={`text-sm font-semibold ${color} ${mono ? 'font-mono text-xs' : ''}`}>{value}</div>}
     </div>
   );
 }
@@ -353,7 +174,7 @@ interface PIDDiagramProps {
 }
 
 export function PIDDiagram({ data }: PIDDiagramProps) {
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.85);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showFlow, setShowFlow] = useState(true);
   const [selected, setSelected] = useState<CompInfo | null>(null);
@@ -364,22 +185,14 @@ export function PIDDiagram({ data }: PIDDiagramProps) {
   const heating = data?.status === 'heizen';
   const standby = data?.status === 'standby';
 
-  const compInfo = (id: string, name: string, desc: string, extra: Partial<CompInfo> = {}): CompInfo => ({
+  const ci = (id: string, name: string, desc: string, extra: Partial<CompInfo> = {}): CompInfo => ({
     id, name, desc, status: 'standby', ...extra,
   });
+  const sel = (info: CompInfo) => setSelected(info);
 
-  const select = (info: CompInfo) => setSelected(info);
-
-  const onMouseDown = (e: React.MouseEvent) => {
-    dragging.current = true;
-    dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
-  };
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!dragging.current) return;
-    setPan({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y });
-  };
-  const onMouseUp = () => { dragging.current = false; };
-  const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
+  const onMD = (e: React.MouseEvent) => { dragging.current = true; dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y }; };
+  const onMM = (e: React.MouseEvent) => { if (!dragging.current) return; setPan({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y }); };
+  const onMU = () => { dragging.current = false; };
 
   return (
     <div className="space-y-4">
@@ -387,7 +200,7 @@ export function PIDDiagram({ data }: PIDDiagramProps) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white">P&ID-Diagramm</h2>
-          <p className="text-sm text-slate-400">Hauptstation Darmstadt 2026 – Heizung & Kühlung</p>
+          <p className="text-sm text-slate-400">② Hauptstation + Anschluss an Satellitenhaus – Detail</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowFlow(!showFlow)}
@@ -396,158 +209,485 @@ export function PIDDiagram({ data }: PIDDiagramProps) {
             Strömung
           </Button>
           <div className="flex items-center gap-1 bg-[#111620] rounded-lg border border-[#1e2736] p-0.5">
-            <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(0.4, zoom - 0.1))} className="text-slate-400 h-7 w-7 p-0">
-              <ZoomOut className="w-3.5 h-3.5" />
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(0.3, zoom - 0.1))} className="text-slate-400 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
             <span className="text-xs text-slate-400 w-10 text-center">{Math.round(zoom * 100)}%</span>
-            <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(2.5, zoom + 0.1))} className="text-slate-400 h-7 w-7 p-0">
-              <ZoomIn className="w-3.5 h-3.5" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={resetView} className="text-slate-400 h-7 w-7 p-0">
-              <RotateCcw className="w-3.5 h-3.5" />
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(2.5, zoom + 0.1))} className="text-slate-400 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
+            <Button variant="ghost" size="sm" onClick={() => { setZoom(0.85); setPan({ x: 0, y: 0 }); }} className="text-slate-400 h-7 w-7 p-0"><RotateCcw className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
       </div>
 
       {/* Diagramm */}
-      <div
-        ref={containerRef}
-        className="relative overflow-hidden rounded-xl border border-[#1e2736] bg-[#080c12] cursor-grab active:cursor-grabbing select-none"
-        style={{ height: '680px' }}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
-      >
-        <div className="absolute"
-          style={{
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-            transformOrigin: '0 0', width: '1500px', height: '700px',
-          }}>
-          <svg viewBox="0 0 1500 700" className="w-full h-full">
-            {/* Hintergrund-Grid */}
-            <defs>
-              <pattern id="pid-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#111827" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="1500" height="700" fill="url(#pid-grid)" />
+      <div ref={containerRef}
+        className="relative overflow-hidden rounded-xl border border-[#1e2736] bg-white cursor-grab active:cursor-grabbing select-none"
+        style={{ height: '700px' }}
+        onMouseDown={onMD} onMouseMove={onMM} onMouseUp={onMU} onMouseLeave={onMU}>
+        <div className="absolute" style={{
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transformOrigin: '0 0', width: '2000px', height: '1200px',
+        }}>
+          <svg viewBox="0 0 2000 1200" className="w-full h-full" style={{ background: '#fff' }}>
 
-            {/* Bereichs-Labels */}
-            <text x="180" y="35" textAnchor="middle" fill="#1e293b" fontSize="32" fontWeight="800" letterSpacing="2">QUELLEN</text>
-            <text x="600" y="195" textAnchor="middle" fill="#1e293b" fontSize="24" fontWeight="800" letterSpacing="2">ERZEUGUNG</text>
-            <text x="1100" y="135" textAnchor="middle" fill="#1e293b" fontSize="24" fontWeight="800" letterSpacing="2">VERTEILUNG</text>
+            {/* ════════════════════════════════════════════
+                 TEIL 1: HEIZUNG (oberer Bereich)
+                 ════════════════════════════════════════════ */}
 
-            {/* ═══ ROHRLEITUNGEN (hinter Symbolen) ═══ */}
-            <Pipes data={data} showFlow={showFlow} />
-
-            {/* ═══ QUELLEN ═══ */}
-            <SourceSymbol {...LAYOUT.pvt} label="PVT-Solar" sublabel="auf Dach" icon="sun" value="6,2 kW th."
-              onClick={() => select(compInfo('PVT', 'PVT-Solarkollektoren', 'Zuleitung PVT auf Dach', { temp: data?.aussentemperatur, power: '6,2 kW th.', status: 'running' }))} />
-
-            <SourceSymbol {...LAYOUT.abwp} label="Abluft-WP" sublabel="auf Dach" icon="wind" value="Rohrbegl.heizung"
-              onClick={() => select(compInfo('ABWP', 'Abluft-Wärmepumpe', 'Abluft-WP auf Dach', { temp: 40, tempReturn: 35, status: heating ? 'running' : 'standby' }))} />
-
-            <SourceSymbol {...LAYOUT.erdwaerme} label="Erdwärmefeld" sublabel="Nahwärme FVU" icon="earth" value="42,1 m³/h"
-              onClick={() => select(compInfo('ERD', 'Erdwärmefeld', 'Nahwärme aus Erdwärmefeld', { temp: 18, tempReturn: 12, flow: 42.1, status: heating ? 'running' : 'standby' }))} />
-
-            {/* ═══ PUMPEN ═══ */}
-            <PumpSymbol {...LAYOUT.p01} id="P01" running={!!heating}
-              onClick={() => select(compInfo('P01', 'Pumpe P01', 'Umwälzpumpe Erdwärmefeld', { flow: 42.1, dn: 'DN 80', status: heating ? 'running' : 'off' }))} />
-            <PumpSymbol {...LAYOUT.p02} id="P02" running={!!heating}
-              onClick={() => select(compInfo('P02', 'Pumpe P02', 'Umwälzpumpe Abluft-WP', { flow: 15.2, dn: 'DN 65', status: heating ? 'running' : 'off' }))} />
-            <PumpSymbol {...LAYOUT.p03} id="P03" running={!!heating}
-              onClick={() => select(compInfo('P03', 'Pumpe P03', 'Umwälzpumpe Puffer PVT', { flow: 28.5, dn: 'DN 100', status: heating ? 'running' : 'off' }))} />
-            <PumpSymbol {...LAYOUT.p04} id="P04" running={!!heating}
-              onClick={() => select(compInfo('P04', 'Pumpe P04', 'Umwälzpumpe Heizung', { flow: 18.3, dn: 'DN 100', status: heating ? 'running' : 'off' }))} />
-            <PumpSymbol {...LAYOUT.p05} id="P05" running={!!heating}
-              onClick={() => select(compInfo('P05', 'Pumpe P05', 'Umwälzpumpe Puffer HZ', { flow: 22.1, dn: 'DN 80', status: heating ? 'running' : 'off' }))} />
-            <PumpSymbol {...LAYOUT.p06} id="P06" running={!!standby}
-              onClick={() => select(compInfo('P06', 'Pumpe P06', 'Umwälzpumpe Kühlung', { flow: 12.4, dn: 'DN 80', status: standby ? 'running' : 'off' }))} />
-            <PumpSymbol {...LAYOUT.p07} id="P07" running={!!standby}
-              onClick={() => select(compInfo('P07', 'Pumpe P07', 'Umwälzpumpe Kältepuffer', { flow: 8.7, dn: 'DN 50', status: standby ? 'running' : 'off' }))} />
-
-            {/* ═══ SPEICHER ═══ */}
-            <TankSymbol {...LAYOUT.pufferPVT} width={100} height={100} label="Puffer PVT" sublabel="hydr. Trennung" capacity="2000 L"
-              color="#1e1b4b" borderColor="#6366f1"
-              zones={[
-                { value: `${data?.puffer_oben?.toFixed(0) ?? '--'}°C`, color: '#dc2626', label: 'oben' },
-                { value: `${data?.puffer_mitte?.toFixed(0) ?? '--'}°C`, color: '#ea580c', label: 'mitte' },
-                { value: `${data?.puffer_unten?.toFixed(0) ?? '--'}°C`, color: '#0369a1', label: 'unten' },
-              ]}
-              onClick={() => select(compInfo('PS1', 'Pufferspeicher PVT', 'Hydr. Trennung / PVT', { temp: data?.puffer_oben, power: '2000 L', dn: 'DN 100', status: heating ? 'running' : 'standby' }))} />
-
-            <TankSymbol {...LAYOUT.pufferHZ} width={100} height={140} label="Puffer Heizung" capacity="1500 L"
-              color="#7c2d12" borderColor="#f97316"
-              zones={[
-                { value: `${data?.vorlauftemperatur?.toFixed(0) ?? '--'}°C`, color: '#dc2626', label: 'VL' },
-                { value: `${data?.ruecklauftemperatur?.toFixed(0) ?? '--'}°C`, color: '#0369a1', label: 'RL' },
-              ]}
-              onClick={() => select(compInfo('PS2', 'Pufferspeicher Heizung', 'Heizungspuffer', { temp: data?.puffer_mitte, power: '1500 L', dn: 'DN 80', status: heating ? 'running' : 'standby' }))} />
-
-            <TankSymbol {...LAYOUT.pufferK} width={100} height={100} label="Puffer Kälte" capacity="1000 L"
-              color="#0c4a6e" borderColor="#06b6d4"
-              zones={[
-                { value: '22°C', color: '#0891b2', label: 'oben' },
-                { value: '18°C', color: '#164e63', label: 'unten' },
-              ]}
-              onClick={() => select(compInfo('PS3', 'Pufferspeicher Kälte', 'Kältepuffer', { temp: 22, power: '1000 L', dn: 'DN 80', status: standby ? 'running' : 'standby' }))} />
-
-            {/* ═══ WÄRMETAUSCHER ═══ */}
-            <HeatExchangerSymbol {...LAYOUT.wt}
-              onClick={() => select(compInfo('WT1', 'Wärmetauscher', 'Plattenwärmetauscher', { temp: 42, tempReturn: 39, dn: 'DN 80', power: '47 kW', status: heating ? 'running' : 'standby' }))} />
-
-            {/* ═══ WÄRMEPUMPE ═══ */}
-            <HeatPumpSymbol {...LAYOUT.wp} data={data}
-              onClick={() => select(compInfo('WP1', 'Wärmepumpe', 'Hauptwärmepumpe', { temp: data?.vorlauftemperatur, power: '175 kW', dn: 'DN 100', status: heating ? 'running' : 'standby' }))} />
-
-            {/* ═══ VERTEILER ═══ */}
-            <DistributorSymbol {...LAYOUT.verteilerH} label="VERTEILER HEIZUNG" color="#451a03" borderColor="#f97316" count={4}
-              onClick={() => select(compInfo('VH', 'Verteiler Heizung', 'Heizungsverteiler', { temp: 43, tempReturn: 30, dn: 'DN 80', status: heating ? 'running' : 'standby' }))} />
-
-            <DistributorSymbol {...LAYOUT.verteilerK} label="VERTEILER KÜHLUNG" color="#083344" borderColor="#06b6d4" count={3}
-              onClick={() => select(compInfo('VK', 'Verteiler Kühlung', 'Kühlverteiler', { temp: 22, tempReturn: 18, dn: 'DN 50', status: standby ? 'running' : 'standby' }))} />
-
-            {/* ═══ ANSCHLÜSSE SATELLITENHAUS ═══ */}
-            <g transform={`translate(${LAYOUT.satHZ.x},${LAYOUT.satHZ.y})`}>
-              <rect x="0" y="-15" width="90" height="60" rx="6" fill="none" stroke="#334155" strokeWidth="1" strokeDasharray="4,3" />
-              <text x="45" y="4" textAnchor="middle" fill="#64748b" fontSize="9">Satellitenhaus</text>
-              <text x="45" y="18" textAnchor="middle" fill="#f97316" fontSize="10" fontWeight="600">Heizung</text>
-              <text x="45" y="33" textAnchor="middle" fill="#64748b" fontSize="8">DN 65</text>
+            {/* ── Abluft-Wärmepumpe auf Dach (oben mitte) ── */}
+            <g className="cursor-pointer" onClick={() => sel(ci('ABWP', 'Abluft-Wärmepumpe', 'Abluft-WP auf Dach', { temp: 40, tempReturn: 35, status: heating ? 'running' : 'standby' }))}>
+              <rect x="470" y="30" width="80" height="40" rx="3" fill="none" stroke="#333" strokeWidth="1.5" />
+              <line x1="480" y1="50" x2="540" y2="50" stroke="#333" strokeWidth="1" />
+              <Label x={475} y={20} lines={['Abluft-Wärmepumpe', 'auf Dach']} size={8} anchor="start" />
+              <text x="575" y="55" fill="#888" fontSize="8">Rohrbegl.heizung</text>
             </g>
 
-            <g transform={`translate(${LAYOUT.satK.x},${LAYOUT.satK.y})`}>
-              <rect x="0" y="-15" width="90" height="60" rx="6" fill="none" stroke="#334155" strokeWidth="1" strokeDasharray="4,3" />
-              <text x="45" y="4" textAnchor="middle" fill="#64748b" fontSize="9">Satellitenhaus</text>
-              <text x="45" y="18" textAnchor="middle" fill="#06b6d4" fontSize="10" fontWeight="600">Kühlung</text>
-              <text x="45" y="33" textAnchor="middle" fill="#64748b" fontSize="8">DN 50</text>
+            {/* ── PVT-Solarkollektoren auf Dach (oben links) ── */}
+            <g className="cursor-pointer" onClick={() => sel(ci('PVT', 'PVT-Solarkollektoren', 'Zuleitung PVT auf Dach', { temp: data?.aussentemperatur, power: '6,2 kW th.', status: 'running' }))}>
+              <rect x="140" y="85" width="80" height="45" fill="none" stroke="#333" strokeWidth="1.5" />
+              {/* Kollektor-Linien */}
+              <line x1="155" y1="85" x2="155" y2="130" stroke="#333" strokeWidth="0.8" />
+              <line x1="170" y1="85" x2="170" y2="130" stroke="#333" strokeWidth="0.8" />
+              <line x1="185" y1="85" x2="185" y2="130" stroke="#333" strokeWidth="0.8" />
+              <line x1="200" y1="85" x2="200" y2="130" stroke="#333" strokeWidth="0.8" />
+              <Label x={140} y={78} lines={['Zuleitung', 'PVT-', 'Solarkollektoren', 'auf Dach']} size={8} />
+              <text x="240" y={108} fill="#888" fontSize="8">th. Leistung: 6,2kW</text>
             </g>
 
-            {/* ═══ TEMPERATURFÜHLER ═══ */}
-            <TempSensor x={180} y={155} value={`${data?.aussentemperatur?.toFixed(1) ?? '--'}°C`} color="#fbbf24" />
-            <TempSensor x={620} y={280} value={`${data?.vorlauftemperatur?.toFixed(1) ?? '--'}°C`} color="#f97316" />
-            <TempSensor x={870} y={240} color="#ef4444" />
-            <TempSensor x={1100} y={240} color="#ef4444" />
+            {/* ── Leitungen von Abluft-WP herunter ── */}
+            <line x1="490" y1="70" x2="490" y2="165" stroke="#000" strokeWidth="1.5" />
+            <line x1="530" y1="70" x2="530" y2="165" stroke="#000" strokeWidth="1.5" />
+            <TempLabel x={440} y={160} temp="35°C" color="#000" />
+            <TempLabel x={540} y={160} temp="40°C" color="#000" />
 
-            {/* ═══ DN-LABELS ═══ */}
-            <DNLabel x={155} y={400} text="DN 80" />
-            <DNLabel x={420} y={260} text="DN 100" />
-            <DNLabel x={620} y={310} text="DN 100" />
-            <DNLabel x={850} y={262} text="DN 100" />
-            <DNLabel x={1070} y={270} text="DN 80" />
-            <DNLabel x={1110} y={540} text="DN 80" />
+            {/* ── Zuleitung Abluft-WP Label ── */}
+            <Label x={380} y={175} lines={['Zuleitung', 'Wärme aus', 'Abluft-Wärmepumpe', 'auf Dach']} size={8} />
+            <text x="435" y="175" fill="#888" fontSize="8">35°C</text>
+            <text x="540" y="175" fill="#888" fontSize="8">40°C</text>
 
-            {/* ═══ SYSTEM-PARAMETER BOX ═══ */}
-            <g transform="translate(30, 560)">
-              <rect x="0" y="0" width="220" height="100" rx="8" fill="#0f172a" stroke="#1e293b" strokeWidth="1" />
-              <text x="15" y="20" fill="#64748b" fontSize="10" fontWeight="600">SYSTEM-PARAMETER</text>
-              <text x="15" y="38" fill="#475569" fontSize="9">Auslegung ΔT: <tspan fill="#94a3b8">3 K</tspan></text>
-              <text x="15" y="52" fill="#475569" fontSize="9">Glycol-Anteil: <tspan fill="#94a3b8">30%</tspan></text>
-              <text x="15" y="66" fill="#475569" fontSize="9">Massenstrom: <tspan fill="#94a3b8">42,1 m³/h</tspan></text>
-              <text x="15" y="80" fill="#475569" fontSize="9">Ansprechdruck SV: <tspan fill="#94a3b8">3,5 bar</tspan></text>
-              <text x="15" y="94" fill="#475569" fontSize="9">Versorgung: <tspan fill="#94a3b8">400 V / 50 Hz</tspan></text>
+            {/* ── P02 (zwischen Abluft-WP und Puffer) ── */}
+            <Pump x={360} y={200} id="P02" running={!!heating}
+              onClick={() => sel(ci('P02', 'Pumpe P02', 'Umwälzpumpe Abluft-WP', { flow: 15.2, dn: 'DN 65', status: heating ? 'running' : 'off' }))} />
+            <TSensor x={330} y={195} />
+            <TSensor x={330} y={220} />
+            <DN x={380} y={195} text="DN 65" />
+            <DN x={380} y={225} text="DN 65" />
+
+            {/* ── Leitungen P02 zu Puffer ── */}
+            <line x1="345" y1="200" x2="300" y2="200" stroke="#000" strokeWidth="1.5" />
+            <line x1="300" y1="200" x2="300" y2="260" stroke="#000" strokeWidth="1.5" />
+
+            {/* MAG oben */}
+            <MAG x={430} y={220} />
+            <DN x={490} y={225} text="DN 25" />
+
+            {/* ── PVT Leitungen herunter ── */}
+            <line x1="180" y1="130" x2="180" y2="200" stroke="#000" strokeWidth="1.5" />
+            <line x1="180" y1="200" x2="230" y2="200" stroke="#000" strokeWidth="1.5" />
+
+            {/* ══════════════════════════════════════════════
+                 PUFFERSPEICHER PVT (2000 Liter) – links
+                 ══════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel(ci('PS1', 'Pufferspeicher PVT', 'Hydr. Trennung / PVT, 2000 Liter', { temp: data?.puffer_oben, power: '2000 L', dn: 'DN 100', status: heating ? 'running' : 'standby' }))}>
+              {/* Tank Körper */}
+              <rect x="230" y="240" width="70" height="250" rx="35" fill="none" stroke="#333" strokeWidth="2" />
+              {/* Beschriftung */}
+              <Label x={155} y={250} lines={['Pufferspeicher', 'hydr. Trennung/PVT', '2000 Liter']} size={8} />
+              <DN x={200} y={285} text="DN 63" />
+
+              {/* Temperaturfühler entlang des Tanks */}
+              <TSensor x={308} y={270} />
+              <TSensor x={308} y={310} />
+              <TSensor x={308} y={350} />
+              <TSensor x={308} y={390} />
+              <TSensor x={308} y={430} />
+              <TSensor x={308} y={470} />
+
+              {/* Anschlüsse links */}
+              <line x1="230" y1="280" x2="200" y2="280" stroke="#000" strokeWidth="1.5" />
+              <line x1="230" y1="470" x2="200" y2="470" stroke="#000" strokeWidth="1.5" />
             </g>
+
+            {/* ══════════════════════════════════════════════
+                 ERDWÄRMEFELD (links unten)
+                 ══════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel(ci('ERD', 'Erdwärmefeld', 'Nahwärme aus Erdwärmefeld', { temp: 18, tempReturn: 12, flow: 42.1, status: heating ? 'running' : 'standby' }))}>
+              <Label x={30} y={318} lines={['Zuleitung FVU', 'Nahwärme aus', 'Erdwärmefeld']} size={9} />
+            </g>
+
+            {/* ── P01 (Erdwärme-Pumpe) ── */}
+            <Pump x={190} y={300} id="P01" running={!!heating}
+              onClick={() => sel(ci('P01', 'Pumpe P01', 'Umwälzpumpe Erdwärmefeld', { flow: 42.1, dn: 'DN 80', status: heating ? 'running' : 'off' }))} />
+
+            {/* Erdwärme Leitungen */}
+            <line x1="30" y1="300" x2="176" y2="300" stroke="#000" strokeWidth="1.5" />
+            <CheckValve x={150} y={300} />
+            <TSensor x={155} y={280} />
+            <text x="170" y="335" fill="#888" fontSize="8">0-10V</text>
+
+            {/* WMZ und Passstück für Erdwärme */}
+            <WMZ x={100} y={340} />
+            <Passtueck x={100} y={370} />
+
+            {/* Erdwärme zu Wärmetauscher */}
+            <line x1="190" y1="314" x2="190" y2="400" stroke="#000" strokeWidth="1.5" />
+            <line x1="30" y1="400" x2="190" y2="400" stroke="#000" strokeWidth="1.5" />
+
+            {/* ── P03 (rechts von Puffer) ── */}
+            <Pump x={400} y={300} id="P03" running={!!heating}
+              onClick={() => sel(ci('P03', 'Pumpe P03', 'Umwälzpumpe Puffer PVT', { flow: 28.5, dn: 'DN 100', status: heating ? 'running' : 'off' }))} />
+
+            {/* Puffer zu P03 */}
+            <line x1="300" y1="300" x2="386" y2="300" stroke="#000" strokeWidth="1.5" />
+            <DN x={330} y={295} text="DN 100" />
+
+            {/* Auslegungsdaten bei P03 */}
+            <Label x={420} y={335} lines={['Auslegung:', 'DeltaT: 3K', 'Glycol: 30%', 'Massenstrom: 42,1 m³/h']} size={8} color="#888" />
+            <TSensor x={430} y={285} />
+
+            {/* P03 herunter zum Wärmetauscher */}
+            <line x1="400" y1="314" x2="400" y2="440" stroke="#000" strokeWidth="1.5" />
+            <DN x={370} y={420} text="DN 100" />
+
+            {/* Rücklauf vom Puffer unten */}
+            <line x1="230" y1="470" x2="130" y2="470" stroke="#000" strokeWidth="1.5" />
+            <line x1="130" y1="470" x2="130" y2="530" stroke="#000" strokeWidth="1.5" />
+            <line x1="130" y1="530" x2="400" y2="530" stroke="#000" strokeWidth="1.5" />
+
+            <Valve x={165} y={470} />
+            <CheckValve x={200} y={420} rot={-90} />
+            <TSensor x={350} y={445} />
+            <DN x={220} y={545} text="DN 80" />
+
+            {/* ══════════════════════════════════════════════
+                 WÄRMETAUSCHER (mitte unten)
+                 ══════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel(ci('WT1', 'Wärmetauscher', 'Plattenwärmetauscher, 47 kW', { temp: 42, tempReturn: 39, dn: 'DN 80', power: '47 kW', status: heating ? 'running' : 'standby' }))}>
+              {/* WT Körper mit Gradient */}
+              <defs>
+                <linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" />
+                  <stop offset="50%" stopColor="#8b5cf6" />
+                  <stop offset="100%" stopColor="#3b82f6" />
+                </linearGradient>
+              </defs>
+              <rect x="380" y="450" width="40" height="100" fill="url(#wtGrad)" stroke="#333" strokeWidth="2" />
+              {/* Platten-Linien */}
+              <line x1="385" y1="465" x2="415" y2="465" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+              <line x1="385" y1="480" x2="415" y2="480" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+              <line x1="385" y1="495" x2="415" y2="495" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+              <line x1="385" y1="510" x2="415" y2="510" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+              <line x1="385" y1="525" x2="415" y2="525" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
+
+              <Label x={350} y={570} lines={['Wärmetauscher', 'Leistung:', '47 kW']} size={9} />
+            </g>
+
+            <TSensor x={370} y={455} />
+            <TSensor x={370} y={540} />
+            <DN x={320} y={460} text="DN 80" />
+            <DN x={320} y={540} text="DN 80" />
+            <WMZ x={340} y={530} />
+
+            {/* WT Primär-Anschlüsse (links) */}
+            <line x1="380" y1="460" x2="300" y2="460" stroke="#000" strokeWidth="1.5" />
+            <line x1="380" y1="540" x2="300" y2="540" stroke="#000" strokeWidth="1.5" />
+            <line x1="300" y1="460" x2="300" y2="540" stroke="#000" strokeWidth="1.5" />
+
+            {/* WT Sekundär (rechts) → Wärmepumpe */}
+            <line x1="420" y1="460" x2="500" y2="460" stroke="#000" strokeWidth="1.5" />
+            <line x1="420" y1="540" x2="500" y2="540" stroke="#000" strokeWidth="1.5" />
+            <DN x={440} y={455} text="DN 80" />
+            <DN x={440} y={555} text="DN 80" />
+
+            {/* ══════════════════════════════════════════════
+                 WÄRMEPUMPE (mitte)
+                 ══════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel(ci('WP1', 'Wärmepumpe', 'Hauptwärmepumpe 175 kW', { temp: data?.vorlauftemperatur, power: '175 kW th. / 38,9 kW el.', dn: 'DN 100', status: heating ? 'running' : 'standby' }))}>
+              <rect x="500" y="430" width="150" height="80" rx="3" fill="none" stroke="#333" strokeWidth="2" />
+              <text x="575" y="455" textAnchor="middle" fill="#333" fontSize="10" fontWeight="600">Wärmepumpe</text>
+
+              <Label x={508} y={468} lines={['Nenn-Wärmeleistung:', '175 kW', 'Elektrische', 'Leistungsaufn.: 38,9 kW']} size={8} />
+            </g>
+
+            <TSensor x={555} y={425} />
+            <text x="575" y="420" fill="#888" fontSize="8">Ansprechdruck</text>
+            <text x="575" y="430" fill="#888" fontSize="8">SV: 3,5 bar</text>
+
+            {/* 400V Anschluss */}
+            <rect x="560" y="520" width="40" height="16" rx="2" fill="none" stroke="#333" strokeWidth="1" />
+            <text x="580" y="532" textAnchor="middle" fill="#333" fontSize="8" fontWeight="600">400 V</text>
+
+            {/* WP Sekundär-Ausgang rechts */}
+            <line x1="650" y1="450" x2="720" y2="450" stroke="#000" strokeWidth="1.5" />
+            <line x1="650" y1="500" x2="720" y2="500" stroke="#000" strokeWidth="1.5" />
+
+            {/* ── P04 (rechts von WP) ── */}
+            <Pump x={750} y={440} id="P04" running={!!heating}
+              onClick={() => sel(ci('P04', 'Pumpe P04', 'Umwälzpumpe Heizung', { flow: 18.3, dn: 'DN 100', status: heating ? 'running' : 'off' }))} />
+
+            <TSensor x={720} y={435} />
+            <TempLabel x={770} y={440} temp="43°C" color="#dc2626" />
+            <DN x={770} y={460} text="DN 100" />
+            <Label x={690} y={405} lines={['Anschlusstutzen mit', 'Absperrorgan und', 'Storz-C Kupplung']} size={7} color="#888" />
+
+            {/* Rücklauf WP */}
+            <TempLabel x={770} y={505} temp="38°C" color="#0369a1" />
+            <DN x={770} y={520} text="DN 100" />
+            <WMZ x={720} y={520} />
+            <Passtueck x={720} y={545} />
+            <Label x={690} y={490} lines={['Anschlusstutzen mit', 'Absperrorgan und', 'Storz-C Kupplung']} size={7} color="#888" />
+
+            {/* P04 zu Puffer HZ */}
+            <line x1="764" y1="440" x2="870" y2="440" stroke="#dc2626" strokeWidth="1.5" />
+            <line x1="764" y1="500" x2="870" y2="500" stroke="#0369a1" strokeWidth="1.5" />
+
+            {/* ══════════════════════════════════════════════
+                 PUFFERSPEICHER HEIZUNG (1500 Liter)
+                 ══════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel(ci('PS2', 'Pufferspeicher Heizung', 'Heizungspuffer 1500 Liter', { temp: data?.vorlauftemperatur, power: '1500 L', dn: 'DN 80', status: heating ? 'running' : 'standby' }))}>
+              <rect x="870" y="340" width="70" height="200" rx="35" fill="none" stroke="#333" strokeWidth="2" />
+              <Label x={850} y={325} lines={['Pufferspeicher', 'Heizung', '1500 Liter']} size={8} />
+
+              <TSensor x={948} y={370} />
+              <TSensor x={948} y={410} />
+              <TSensor x={948} y={450} />
+              <TSensor x={948} y={490} />
+              <TSensor x={948} y={520} />
+
+              {/* Live-Temperaturen */}
+              <TempLabel x={960} y={375} temp={`${data?.vorlauftemperatur?.toFixed(0) ?? '--'}°C`} color="#dc2626" />
+              <TempLabel x={960} y={500} temp={`${data?.ruecklauftemperatur?.toFixed(0) ?? '--'}°C`} color="#0369a1" />
+            </g>
+
+            <DN x={850} y={395} text="DN 80" />
+
+            {/* Anschlüsse Puffer HZ */}
+            <line x1="870" y1="370" x2="870" y2="370" stroke="#000" strokeWidth="1.5" />
+            <line x1="940" y1="380" x2="990" y2="380" stroke="#dc2626" strokeWidth="1.5" />
+            <line x1="940" y1="500" x2="990" y2="500" stroke="#0369a1" strokeWidth="1.5" />
+
+            {/* MAG am Puffer HZ */}
+            <MAG x={990} y={420} />
+            <DN x={975} y={445} text="DN 80" />
+
+            {/* ── P05 (rechts von Puffer HZ) ── */}
+            <Pump x={1030} y={380} id="P05" running={!!heating}
+              onClick={() => sel(ci('P05', 'Pumpe P05', 'Umwälzpumpe Puffer HZ', { flow: 22.1, dn: 'DN 80', status: heating ? 'running' : 'off' }))} />
+            <text x="1030" y="408" textAnchor="middle" fill="#888" fontSize="8">0-10V</text>
+            <TSensor x={1060} y={370} />
+
+            {/* P05 zu Verteiler */}
+            <line x1="1044" y1="380" x2="1100" y2="380" stroke="#dc2626" strokeWidth="1.5" />
+            <line x1="1044" y1="500" x2="1100" y2="500" stroke="#0369a1" strokeWidth="1.5" />
+
+            {/* Druckhaltestation */}
+            <Druckhaltestation x={1080} y={530} />
+            <Label x={1210} y={540} lines={['Aufbereitung']} size={7} color="#888" />
+            <Label x={1210} y={555} lines={['Systemtrenner BA']} size={7} color="#888" />
+
+            {/* Anschluss TW */}
+            <Label x={1210} y={525} lines={['Anschluss TW']} size={7} color="#888" />
+
+            {/* ══════════════════════════════════════════════
+                 VERTEILER HEIZUNG (rechts)
+                 ══════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel(ci('VH', 'Verteiler Heizung', 'Heizungsverteiler', { temp: 43, tempReturn: 30, dn: 'DN 80', status: heating ? 'running' : 'standby' }))}>
+              <rect x="1130" y="400" width="200" height="50" rx="3" fill="none" stroke="#333" strokeWidth="2" />
+              <text x="1230" y="430" textAnchor="middle" fill="#333" fontSize="12" fontWeight="700">VERTEILER HEIZUNG</text>
+            </g>
+
+            {/* Verteiler-Rohre Vorlauf/Rücklauf */}
+            <line x1="1100" y1="380" x2="1130" y2="410" stroke="#dc2626" strokeWidth="1.5" />
+            <line x1="1100" y1="500" x2="1130" y2="440" stroke="#0369a1" strokeWidth="1.5" />
+
+            {/* Abgänge oben nach Stockwerke */}
+            <line x1="1180" y1="400" x2="1180" y2="330" stroke="#000" strokeWidth="1.5" />
+            <line x1="1230" y1="400" x2="1230" y2="330" stroke="#000" strokeWidth="1.5" />
+            <DN x={1160} y={325} text="DN 65" />
+            <DN x={1240} y={325} text="DN 65" />
+            <TempLabel x={1160} y={360} temp="43°C" color="#dc2626" />
+            <TempLabel x={1240} y={360} temp="30°C" color="#0369a1" />
+
+            {/* Anschluss weitere Stockwerke */}
+            <line x1="1180" y1="330" x2="1180" y2="290" stroke="#000" strokeWidth="1.5" />
+            <line x1="1230" y1="330" x2="1230" y2="290" stroke="#000" strokeWidth="1.5" />
+            {/* Wellenlinie */}
+            <path d="M1170,280 Q1180,270 1190,280 Q1200,290 1210,280 Q1220,270 1230,280 Q1240,290 1250,280" fill="none" stroke="#333" strokeWidth="1.5" />
+            <Label x={1175} y={270} lines={['Anschluss', 'weitere', 'Stockwerke']} size={8} />
+
+            {/* Abgang rechts: Zuleitung Satellitenhaus HZ */}
+            <line x1="1330" y1="410" x2="1430" y2="410" stroke="#dc2626" strokeWidth="1.5" />
+            <line x1="1330" y1="440" x2="1430" y2="440" stroke="#0369a1" strokeWidth="1.5" />
+            <DN x={1350} y={405} text="DN 65" />
+            <DN x={1410} y={405} text="DN 65" />
+            <Label x={1440} y={415} lines={['Zuleitung Heizung', 'zu Satellitenhaus E']} size={8} />
+
+            {/* Abgang unten rechts: DN 50 */}
+            <line x1="1280" y1="450" x2="1280" y2="490" stroke="#000" strokeWidth="1" />
+            <line x1="1320" y1="450" x2="1320" y2="490" stroke="#000" strokeWidth="1" />
+            <DN x={1260} y={488} text="DN 50" />
+            <DN x={1325} y={488} text="DN 50" />
+
+
+            {/* ════════════════════════════════════════════
+                 TEIL 2: KÜHLUNG (unterer Bereich)
+                 ════════════════════════════════════════════ */}
+
+            {/* Trennlinie */}
+            <line x1="0" y1="590" x2="2000" y2="590" stroke="#ddd" strokeWidth="1" strokeDasharray="10,5" />
+
+            {/* ══════════════════════════════════════════════
+                 PUFFERSPEICHER KÄLTE (1000 Liter)
+                 ══════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel(ci('PS3', 'Pufferspeicher Kälte', 'Kältepuffer 1000 Liter', { temp: 22, power: '1000 L', dn: 'DN 80', status: standby ? 'running' : 'standby' }))}>
+              <rect x="400" y="640" width="70" height="250" rx="35" fill="none" stroke="#333" strokeWidth="2" />
+              <Label x={305} y={660} lines={['Pufferspeicher', 'Kälte', '1000 Liter']} size={8} />
+
+              <TempLabel x={340} y={680} temp="22°C" color="#000" />
+              <DN x={340} y={700} text="DN 80" />
+
+              <TSensor x={478} y={670} />
+              <TSensor x={478} y={720} />
+              <TSensor x={478} y={770} />
+              <TSensor x={478} y={820} />
+              <TSensor x={478} y={870} />
+            </g>
+
+            {/* Pendelleitung DN 20 */}
+            <line x1="400" y1="760" x2="360" y2="760" stroke="#d946ef" strokeWidth="1" />
+            <line x1="360" y1="660" x2="360" y2="900" stroke="#d946ef" strokeWidth="1" />
+            <text x="345" y="780" textAnchor="end" fill="#d946ef" fontSize="7" transform="rotate(-90, 345, 780)">Pendelleitung DN 20</text>
+
+            {/* Puffer Kälte Anschlüsse oben */}
+            <line x1="435" y1="640" x2="435" y2="600" stroke="#000" strokeWidth="1.5" />
+            <line x1="435" y1="600" x2="600" y2="600" stroke="#000" strokeWidth="1.5" />
+            <DN x={500} y={615} text="DN 80" />
+
+            {/* Anschluss weitere Stockwerke Kühlung (oben) */}
+            <line x1="600" y1="600" x2="600" y2="560" stroke="#000" strokeWidth="1.5" />
+            <line x1="650" y1="600" x2="650" y2="560" stroke="#000" strokeWidth="1.5" />
+            <path d="M590,550 Q600,540 610,550 Q620,560 630,550 Q640,540 650,550 Q660,560 670,550" fill="none" stroke="#333" strokeWidth="1.5" />
+            <Label x={600} y={540} lines={['Anschluss', 'weitere', 'Stockwerke']} size={8} />
+            <DN x={580} y={580} text="DN 65" />
+            <DN x={655} y={580} text="DN 65" />
+
+            {/* MAG am Kältepuffer */}
+            <MAG x={530} y={860} />
+
+            {/* SVentil */}
+            <SVentil x={470} y={900} />
+
+            {/* Puffer unten: Anschlüsse */}
+            <line x1="435" y1="890" x2="435" y2="930" stroke="#000" strokeWidth="1.5" />
+            <line x1="435" y1="930" x2="550" y2="930" stroke="#000" strokeWidth="1.5" />
+            <DN x={460} y={920} text="DN 80" />
+
+            {/* ── P07 (rechts von Kältepuffer) ── */}
+            <Pump x={660} y={720} id="P07" running={!!standby}
+              onClick={() => sel(ci('P07', 'Pumpe P07', 'Umwälzpumpe Kältepuffer', { flow: 8.7, dn: 'DN 50', status: standby ? 'running' : 'off' }))} />
+
+            {/* Leitung Puffer → P07 */}
+            <line x1="470" y1="720" x2="550" y2="720" stroke="#000" strokeWidth="1.5" />
+            <Valve x={520} y={720} />
+            <TSensor x={550} y={705} />
+            <WMZ x={590} y={720} />
+            <Passtueck x={610} y={740} />
+
+            {/* P07 zu Verteiler Kühlung */}
+            <line x1="674" y1="720" x2="800" y2="720" stroke="#000" strokeWidth="1.5" />
+            <TSensor x={700} y={705} />
+            <TempLabel x={780} y={715} temp="22°C" color="#000" />
+            <TempLabel x={850} y={715} temp="18°C" color="#000" />
+            <DN x={780} y={700} text="DN 50" />
+            <DN x={850} y={700} text="DN 50" />
+
+            {/* Ventile zum Verteiler */}
+            <Valve x={750} y={720} />
+            <CheckValve x={780} y={720} />
+
+            {/* ══════════════════════════════════════════════
+                 VERTEILER KÜHLUNG
+                 ══════════════════════════════════════════════ */}
+            <g className="cursor-pointer" onClick={() => sel(ci('VK', 'Verteiler Kühlung', 'Kühlverteiler', { temp: 22, tempReturn: 18, dn: 'DN 50', status: standby ? 'running' : 'standby' }))}>
+              <rect x="650" y="850" width="230" height="50" rx="3" fill="none" stroke="#333" strokeWidth="2" />
+              <text x="765" y="880" textAnchor="middle" fill="#333" fontSize="12" fontWeight="700">VERTEILER KÜHLUNG</text>
+            </g>
+
+            {/* Ventile über Verteiler Kühlung */}
+            <Valve x={680} y={830} />
+            <Valve x={750} y={830} />
+            <TSensor x={810} y={810} />
+            <TSensor x={850} y={810} />
+
+            {/* Leitung runter zum Verteiler */}
+            <line x1="700" y1="750" x2="700" y2="850" stroke="#000" strokeWidth="1.5" />
+            <line x1="800" y1="750" x2="800" y2="850" stroke="#000" strokeWidth="1.5" />
+
+            {/* Ausgang Kühlung rechts */}
+            <line x1="880" y1="860" x2="1000" y2="860" stroke="#000" strokeWidth="1.5" />
+            <line x1="880" y1="890" x2="1000" y2="890" stroke="#000" strokeWidth="1.5" />
+            <Label x={1010} y={865} lines={['Zuleitung Kühlung', 'zu Satellitenhaus E']} size={8} />
+            <DN x={920} y={855} text="DN 50" />
+            <DN x={920} y={910} text="DN 50" />
+            <TempLabel x={930} y={880} temp="22°C" color="#000" />
+            <TempLabel x={970} y={880} temp="18°C" color="#000" />
+
+            {/* ── P06 (unten links) ── */}
+            <Pump x={200} y={950} id="P06" running={!!standby}
+              onClick={() => sel(ci('P06', 'Pumpe P06', 'Umwälzpumpe Kühlung', { flow: 12.4, dn: 'DN 80', status: standby ? 'running' : 'off' }))} />
+
+            <TSensor x={260} y={940} />
+            <TempLabel x={280} y={945} temp="18°C" color="#000" />
+            <DN x={280} y={960} text="DN 80" />
+
+            {/* Leitung P06 zum Puffer Kälte (Rücklauf) */}
+            <line x1="200" y1="936" x2="200" y2="930" stroke="#d946ef" strokeWidth="1.5" />
+            <line x1="100" y1="960" x2="186" y2="960" stroke="#d946ef" strokeWidth="1.5" />
+            <line x1="100" y1="640" x2="100" y2="960" stroke="#d946ef" strokeWidth="1.5" />
+            <line x1="100" y1="640" x2="400" y2="640" stroke="#d946ef" strokeWidth="1.5" />
+
+            {/* Ventile in Rücklauf */}
+            <Valve x={150} y={960} />
+            <CheckValve x={130} y={950} rot={-90} />
+
+            {/* ════════════════════════════════════════════
+                 STRÖMUNGSPFEILE (animiert)
+                 ════════════════════════════════════════════ */}
+            {showFlow && heating && (
+              <g>
+                {/* Erdwärme → WT */}
+                <circle r="3" fill="#22c55e">
+                  <animateMotion dur="4s" repeatCount="indefinite" path="M130,300 L130,400 L490,370" />
+                </circle>
+                {/* WT → WP */}
+                <circle r="3" fill="#ef4444">
+                  <animateMotion dur="3s" repeatCount="indefinite" path="M420,460 L500,460 L650,450" />
+                </circle>
+                {/* WP → Puffer HZ */}
+                <circle r="3" fill="#dc2626">
+                  <animateMotion dur="2.5s" repeatCount="indefinite" path="M764,440 L870,440" />
+                </circle>
+                {/* Puffer HZ → Verteiler */}
+                <circle r="3" fill="#dc2626">
+                  <animateMotion dur="2s" repeatCount="indefinite" path="M1044,380 L1130,410" />
+                </circle>
+              </g>
+            )}
+
+            {showFlow && standby && (
+              <g>
+                {/* Kältekreis */}
+                <circle r="3" fill="#06b6d4">
+                  <animateMotion dur="3s" repeatCount="indefinite" path="M470,720 L660,720 L800,720" />
+                </circle>
+              </g>
+            )}
+
+            {/* ════════════════════════════════════════════
+                 TITLE BLOCK
+                 ════════════════════════════════════════════ */}
+            <text x="600" y="1080" textAnchor="middle" fill="#333" fontSize="16" fontWeight="700">
+              ② Hauptstation + Anschluss an Satellitenhaus - Detail
+            </text>
+
           </svg>
         </div>
 
@@ -556,16 +696,35 @@ export function PIDDiagram({ data }: PIDDiagramProps) {
       </div>
 
       {/* Legende */}
-      <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-[#111620]/80 rounded-xl border border-[#1e2736] text-xs">
+      <div className="flex flex-wrap items-center gap-5 px-4 py-3 bg-[#111620]/80 rounded-xl border border-[#1e2736] text-xs">
         <span className="text-slate-500 font-medium">Legende:</span>
-        <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-500 border border-emerald-400" /><span className="text-slate-400">Pumpe läuft</span></span>
-        <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-slate-700 border border-slate-500" /><span className="text-slate-400">Pumpe aus</span></span>
-        <span className="flex items-center gap-2"><span className="w-6 h-1.5 rounded bg-gradient-to-r from-amber-500 to-red-500" /><span className="text-slate-400">Vorlauf (heiß)</span></span>
-        <span className="flex items-center gap-2"><span className="w-6 h-1.5 rounded bg-gradient-to-r from-cyan-500 to-blue-500" /><span className="text-slate-400">Rücklauf (kalt)</span></span>
-        <span className="flex items-center gap-2"><span className="w-6 h-0.5 rounded bg-blue-400" style={{ borderTop: '2px dashed #3b82f6' }} /><span className="text-slate-400">Rücklauf gestrichelt</span></span>
-        <span className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-slate-700 border border-slate-400 flex items-center justify-center text-[6px] text-white font-bold">T</span>
+        <span className="flex items-center gap-1.5">
+          <svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="none" stroke="#dc2626" strokeWidth="1.5" /><polygon points="7,4 10,9 4,9" fill="#dc2626" /></svg>
+          <span className="text-slate-400">Pumpe (aktiv)</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <svg width="14" height="14"><polygon points="0,0 7,3.5 0,7" fill="none" stroke="#555" strokeWidth="1" /><polygon points="7,0 0,3.5 7,7" fill="none" stroke="#555" strokeWidth="1" /></svg>
+          <span className="text-slate-400">Absperrventil</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="none" stroke="#333" strokeWidth="1" /><text x="7" y="10" textAnchor="middle" fill="#333" fontSize="7">T</text></svg>
           <span className="text-slate-400">Temperaturfühler</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <svg width="20" height="12"><rect x="0" y="0" width="20" height="12" rx="1" fill="none" stroke="#333" strokeWidth="1" /><text x="10" y="9" textAnchor="middle" fill="#333" fontSize="5">WMZ</text></svg>
+          <span className="text-slate-400">Wärmezähler</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-5 h-0.5 bg-red-600 inline-block rounded" />
+          <span className="text-slate-400">Vorlauf (heiß)</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-5 h-0.5 bg-blue-700 inline-block rounded" />
+          <span className="text-slate-400">Rücklauf (kalt)</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-5 h-0.5 bg-fuchsia-500 inline-block rounded" />
+          <span className="text-slate-400">Kältekreis</span>
         </span>
       </div>
     </div>
