@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { User } from '@/types/heating';
 
+// ═══════════════════════════════════════════════════════════════
+//  GEMEINSAMES PASSWORT – für alle Benutzer gleich
+// ═══════════════════════════════════════════════════════════════
+const SHARED_PASSWORD = 'Darmstadt2026';
+
 const USERS: Record<string, User> = {
-  'benutzer1': { username: 'benutzer1', password: '1', role: 'customer', anlageId: 'WP-001' },
-  'benutzer2': { username: 'benutzer2', password: '1', role: 'customer', anlageId: 'WP-002' },
-  'installateur': { username: 'installateur', password: '1', role: 'installer', anlageId: '*' },
-  'techniker': { username: 'techniker', password: '1', role: 'technician', anlageId: '*' },
-  'admin': { username: 'admin', password: '1', role: 'admin', anlageId: '*' },
+  'samir':       { username: 'samir',       password: SHARED_PASSWORD, role: 'admin',      anlageId: '*' },
+  'josip':       { username: 'josip',       password: SHARED_PASSWORD, role: 'customer',   anlageId: 'WP-001' },
+  'installateur':{ username: 'installateur',password: SHARED_PASSWORD, role: 'installer',  anlageId: '*' },
+  'techniker':   { username: 'techniker',   password: SHARED_PASSWORD, role: 'technician', anlageId: '*' },
+  'admin':       { username: 'admin',       password: SHARED_PASSWORD, role: 'admin',      anlageId: '*' },
 };
 
 interface AuthState {
@@ -34,13 +39,24 @@ export function useAuth(): AuthState {
   }, []);
 
   const login = useCallback((username: string, password: string): boolean => {
+    // Prüfe bekannte Benutzer
     const foundUser = USERS[username.toLowerCase()];
-    if (foundUser && foundUser.password === password) {
+    if (foundUser && password === SHARED_PASSWORD) {
       setUser(foundUser);
       setIsAuthenticated(true);
       localStorage.setItem('kurtech_user', JSON.stringify(foundUser));
       return true;
     }
+
+    // Unbekannter Name + richtiges Passwort → Gast-Zugang (nur lesen)
+    if (password === SHARED_PASSWORD) {
+      const guestUser: User = { username, password: '', role: 'customer', anlageId: 'WP-001' };
+      setUser(guestUser);
+      setIsAuthenticated(true);
+      localStorage.setItem('kurtech_user', JSON.stringify(guestUser));
+      return true;
+    }
+
     return false;
   }, []);
 

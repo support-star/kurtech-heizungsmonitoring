@@ -74,7 +74,7 @@ export function Login({ onLogin }: LoginProps) {
                 <Input
                   id="username"
                   type="text"
-                  placeholder="z.B. benutzer1"
+                  placeholder="Dein Name"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="bg-[#0a0e14] border-[#1e2736] text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-emerald-500/20"
@@ -106,12 +106,10 @@ export function Login({ onLogin }: LoginProps) {
               </Button>
             </form>
 
-            {/* Demo-Hinweis */}
+            {/* Zugangs-Hinweis */}
             <div className="mt-5 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
               <p className="text-xs text-slate-400 text-center leading-relaxed">
-                <span className="font-semibold text-emerald-400">Demo-Zugang:</span><br />
-                Benutzer: <code className="text-slate-300 bg-[#0a0e14] px-1.5 py-0.5 rounded text-[11px]">benutzer1</code>
-                {' '}Passwort: <code className="text-slate-300 bg-[#0a0e14] px-1.5 py-0.5 rounded text-[11px]">1</code>
+                <span className="font-semibold text-emerald-400">Zugang:</span> Gib deinen Namen und das Projekt-Passwort ein.
               </p>
             </div>
           </CardContent>
