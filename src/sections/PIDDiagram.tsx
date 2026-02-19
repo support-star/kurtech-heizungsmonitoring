@@ -22,7 +22,9 @@ const C = {
   geoPipe: '#22c55e',
   geoGlow: '#22c55e25',
   pumpOn: '#22c55e',
-  pumpOff: '#475569',
+  pumpOff: '#ef4444',
+  pumpOnGlow: '#22c55e20',
+  pumpOffGlow: '#ef444418',
   tankStroke: '#475569',
   tankFill: '#0f172a',
   text: '#94a3b8',
@@ -80,11 +82,13 @@ function Flow({ path, c, dur = '3s', delay = '0s', r = 2.5 }: { path: string; c:
 }
 
 function Pump({ x, y, id, on, onClick }: { x: number; y: number; id: string; on: boolean; onClick?: () => void }) {
+  const cl = on ? C.pumpOn : C.pumpOff;
+  const gw = on ? C.pumpOnGlow : C.pumpOffGlow;
   return <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-    {on && <circle r="10" fill={C.pumpOn} opacity="0.1" filter="url(#gl)" />}
-    <circle r="8" fill={C.tankFill} stroke={on ? C.pumpOn : C.pumpOff} strokeWidth="1.2" />
-    <polygon points="0,-3.5 3.5,2.5 -3.5,2.5" fill={on ? C.pumpOn : C.pumpOff} className={on ? 'pp' : ''} />
-    <text y="15" textAnchor="middle" fill={on ? C.pumpOn : C.pumpOff} fontSize="4.5" fontWeight="700">{id}</text>
+    <circle r="11" fill={gw} />
+    <circle r="8" fill={C.tankFill} stroke={cl} strokeWidth="1.2" />
+    <polygon points="0,-3.5 3.5,2.5 -3.5,2.5" fill={cl} className={on ? 'pp' : ''} />
+    <text y="14" textAnchor="middle" fill={cl} fontSize="4" fontWeight="700">{id}</text>
   </g>;
 }
 
@@ -110,13 +114,17 @@ function Tank({ cx, y, w, h, label, vol, temps, grad, onClick }: {
 }
 
 function T({ x, y, v, c }: { x: number; y: number; v: string; c: string }) {
-  return <g className="mf"><rect x={x} y={y - 7} width={22} height={9} rx="2" fill={C.panel} stroke={c} strokeWidth="0.4" strokeOpacity="0.5" />
-    <text x={x + 11} y={y + 2} textAnchor="middle" fill={c} fontSize="5" fontWeight="700">{v}</text></g>;
+  return <g>
+    <rect x={x} y={y - 4.5} width={20} height={9} rx="1.5" fill={C.bg} fillOpacity="0.85" stroke={c} strokeWidth="0.3" strokeOpacity="0.35" />
+    <text x={x + 10} y={y + 2} textAnchor="middle" fill={c} fontSize="4.5" fontWeight="600" fontFamily="monospace">{v}</text>
+  </g>;
 }
 
 function PT({ x, y, v, c }: { x: number; y: number; v: string; c: string }) {
-  return <g className="mf"><rect x={x - 12} y={y - 5} width={24} height={10} rx="2.5" fill={C.bg} stroke={c} strokeWidth="0.6" strokeOpacity="0.4" />
-    <text x={x} y={y + 3} textAnchor="middle" fill={c} fontSize="5" fontWeight="800">{v}</text></g>;
+  return <g>
+    <rect x={x - 11} y={y - 5} width={22} height={10} rx="2" fill={C.bg} fillOpacity="0.9" stroke={c} strokeWidth="0.35" strokeOpacity="0.4" />
+    <text x={x} y={y + 2.5} textAnchor="middle" fill={c} fontSize="5" fontWeight="700" fontFamily="monospace">{v}</text>
+  </g>;
 }
 
 function L({ x, y, t }: { x: number; y: number; t: string }) {
@@ -302,7 +310,7 @@ function DetailPanel({ i, onClose }: { i: CI; onClose: () => void }) {
     </div>
     <div className="flex flex-wrap gap-1.5 text-xs">
       <Ch l="ID" v={i.id} mono />
-      <Ch l="Status" badge={<Badge className={`text-[10px] ${on ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>{on ? 'Laufend' : 'Bereit'}</Badge>} />
+      <Ch l="Status" badge={<Badge className={`text-[10px] ${on ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>{on ? 'Laufend' : 'Aus'}</Badge>} />
       {i.temp && <Ch l="VL" v={i.temp} c="text-orange-400" />}
       {i.tempRet && <Ch l="RL" v={i.tempRet} c="text-sky-400" />}
       {i.flow && <Ch l="Durchfluss" v={i.flow} c="text-emerald-400" />}
@@ -422,7 +430,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     {/* Status-Bar */}
     <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-xs font-mono">
       <span className="flex items-center gap-1.5">
-        <span className={`w-2 h-2 rounded-full ${on ? 'bg-orange-400 animate-pulse' : 'bg-slate-600'}`} />
+        <span className={`w-2 h-2 rounded-full ${on ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'}`} />
         <span className={on ? 'text-orange-400 font-semibold' : 'text-slate-500'}>
           {data?.status === 'heizen' ? 'HEIZEN' : data?.status === 'abtauen' ? 'ABTAUEN' : 'STANDBY'}
         </span>
@@ -1063,7 +1071,11 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
       </span>)}
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOn} strokeWidth="0.7" /><polygon points="6,3 9,8 3,8" fill={C.pumpOn} /></svg>
-        <span className="text-slate-400">Pumpe aktiv</span>
+        <span className="text-slate-400">Pumpe AN</span>
+      </span>
+      <span className="flex items-center gap-1.5">
+        <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOff} strokeWidth="0.7" /><polygon points="6,3 9,8 3,8" fill={C.pumpOff} /></svg>
+        <span className="text-slate-400">Pumpe AUS</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><polygon points="3,2 9,6 3,10" fill="none" stroke={C.tankStroke} strokeWidth="0.7" /><polygon points="9,2 3,6 9,10" fill="none" stroke={C.tankStroke} strokeWidth="0.7" /></svg>
