@@ -1,13 +1,11 @@
 /**
  * MQTT & App-Konfiguration – KurTech Heizungs-Monitoring
  * ======================================================
- *
- * Simulationsmodus:  useSimulation = true  → Keine Broker-Verbindung nötig
- * Produktionsmodus:  useSimulation = false → Verbindet sich mit MQTT-Broker
+ * Angepasst für WAGO PFC200 Darmstadt 2026
  */
 
 // ─── Datenquelle ──────────────────────────────────────────────
-export let useSimulation = true; // true = Demo mit simulierten Daten
+export let useSimulation = false; // PRODUKTION: Echte MQTT-Daten
 
 export function setSimulationMode(enabled: boolean) {
   useSimulation = enabled;
@@ -15,37 +13,51 @@ export function setSimulationMode(enabled: boolean) {
 
 // ─── MQTT Broker ──────────────────────────────────────────────
 export const MQTT_CONFIG = {
-  broker: 'ws://187.77.75.165:9001',
-  username: 'iot',
-  password: 'darmstadt2026',
-  clientIdPrefix: 'kurtech-web',
+  // WebSocket für Browser (Mosquitto muss ws-Port 9001 haben!)
+  // Falls nicht: TCP-Bridge oder MQTT-over-WebSocket-Proxy nötig
+  broker: 'ws://187.77.75.165:9002',
+  username: '', // Anonymous auth auf Pi
+  password: '',
+  clientIdPrefix: 'kurtech-web-darmstadt',
 
   reconnectPeriod: 5000,
   connectTimeout: 10000,
   keepalive: 60,
 
+  // WAGO MQTT Topics (aus CODESYS PRG_Mqtt)
   topics: {
-    aussentemperatur:    'kurtech/wp001/aussentemperatur',
-    vorlauftemperatur:   'kurtech/wp001/vorlauftemperatur',
-    ruecklauftemperatur: 'kurtech/wp001/ruecklauftemperatur',
-    puffer_oben:         'kurtech/wp001/puffer/oben',
-    puffer_mitte:        'kurtech/wp001/puffer/mitte',
-    puffer_unten:        'kurtech/wp001/puffer/unten',
-    drehzahl_pumpe:      'kurtech/wp001/pumpe/drehzahl',
-    stromverbrauch:      'kurtech/wp001/stromverbrauch',
-    cop:                 'kurtech/wp001/cop',
-    betriebsstunden:     'kurtech/wp001/betriebsstunden',
-    status:              'kurtech/wp001/status',
-    fehlercode:          'kurtech/wp001/fehlercode',
-    alarm:               'kurtech/wp001/alarm',
+    // Temperaturen
+    aussentemperatur:    'darmstadt/temp/aussen',
+    vorlauftemperatur:   'darmstadt/temp/wp175_vl',
+    ruecklauftemperatur: 'darmstadt/temp/wp175_rl',
+    quelle_vl:           'darmstadt/temp/source_vl',
+    quelle_rl:           'darmstadt/temp/source_rl',
+    
+    // Puffer (falls vorhanden)
+    puffer_oben:         'darmstadt/temp/puffer_oben',
+    puffer_mitte:        'darmstadt/temp/puffer_mitte',
+    puffer_unten:        'darmstadt/temp/puffer_unten',
+    
+    // Pumpen / Aktoren
+    drehzahl_pumpe:      'darmstadt/pump/drehzahl',
+    
+    // Leistung / Energie
+    stromverbrauch:      'darmstadt/power/strom',
+    cop:                 'darmstadt/efficiency/cop',
+    
+    // Betrieb
+    betriebsstunden:     'darmstadt/runtime/hours',
+    status:              'darmstadt/status/mode',
+    fehlercode:          'darmstadt/alarm/code',
+    alarm:               'darmstadt/alarm/active',
   },
 } as const;
 
 // ─── Anlage ───────────────────────────────────────────────────
 export const ANLAGE_CONFIG = {
-  id: 'WP-001',
-  name: 'Wärmepumpenanlage Darmstadt',
-  address: 'Darmstadt 2026',
+  id: 'WP-Darmstadt-2026',
+  name: 'Wärmepumpenanlage Darmstadt 2026',
+  address: 'Darmstadt',
   gesamtleistung: '175 kW',
   waermepumpeElektrisch: '38,9 kW',
   pufferHeizung: '1500 L',
@@ -57,18 +69,19 @@ export const ANLAGE_CONFIG = {
   ansprechdruckSV: '3,5 bar',
 };
 
-// ─── Simulation ───────────────────────────────────────────────
+// ─── Simulation (Fallback) ────────────────────────────────────
 export const SIM_CONFIG = {
-  updateIntervalMs: 3000,
+  updateIntervalMs: 5000,
   historyResolutionMinutes: 15,
   alarmCheckIntervalMs: 30000,
   thresholds: {
     vorlaufMax: 55,
     ruecklaufMax: 50,
-    aussenMin: -10,
+    aussenMin: -15,
+    aussenMax: 35,
     copMin: 2.5,
     pufferObenMax: 65,
-    stromverbrauchMax: 8,
+    stromverbrauchMax: 40,
   },
 };
 
@@ -76,8 +89,8 @@ export const SIM_CONFIG = {
 export const BRAND = {
   name: 'KurTech',
   fullName: 'KurTech GmbH',
-  product: 'Heizungs-Monitoring',
-  version: '2.0',
+  product: 'Heizungs-Monitoring Darmstadt',
+  version: '2.1-WAGO',
   colors: {
     primary: '#00B37D',
     primaryDark: '#009966',
