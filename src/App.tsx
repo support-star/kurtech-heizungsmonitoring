@@ -8,6 +8,7 @@ import { Alarms } from '@/sections/Alarms';
 import { SystemSchema } from '@/sections/SystemSchema';
 import { PIDDiagram } from '@/sections/PIDDiagram';
 import { Settings } from '@/sections/Settings';
+import { StandorteDashboard } from '@/sections/StandorteDashboard';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { useEffect, useState, useRef } from 'react';
@@ -15,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { BRAND, ANLAGE_CONFIG } from '@/config/mqtt.config';
 
-export type ViewType = 'dashboard' | 'schema' | 'pid' | 'settings';
+export type ViewType = 'dashboard' | 'standorte' | 'schema' | 'pid' | 'settings';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
@@ -219,6 +220,10 @@ function App() {
 
         {currentView === 'settings' && (
           <Settings user={user} isSimulation={isSimulation} />
+        )}
+
+        {currentView === 'standorte' && (
+          <StandorteDashboard data={liveData} />
         )}
 
         {/* Footer */}

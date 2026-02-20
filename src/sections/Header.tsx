@@ -11,6 +11,7 @@ import {
   GitBranch,
   Settings2,
   Radio,
+  MapPin,
 } from 'lucide-react';
 import type { User as UserType } from '@/types/heating';
 import type { ViewType } from '@/App';
@@ -43,6 +44,7 @@ const roleLabels: Record<string, string> = {
 
 const navItems: { view: ViewType; label: string; icon: React.ReactNode }[] = [
   { view: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
+  { view: 'standorte', label: 'Standorte', icon: <MapPin className="w-4 h-4" /> },
   { view: 'schema', label: 'Schema', icon: <Activity className="w-4 h-4" /> },
   { view: 'pid', label: 'P&ID', icon: <GitBranch className="w-4 h-4" /> },
   { view: 'settings', label: 'Einstellungen', icon: <Settings2 className="w-4 h-4" /> },
