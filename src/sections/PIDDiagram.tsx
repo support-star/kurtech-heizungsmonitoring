@@ -13,7 +13,7 @@ const C = {
   border: '#999999',
   hotPipe: '#cc0000',
   hotGlow: 'none',
-  warmPipe: '#cc0000',
+  warmPipe: '#e65100',
   warmGlow: 'none',
   coldPipe: '#0055cc',
   coldGlow: 'none',
@@ -536,55 +536,55 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     {/* Header */}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">P&ID-Diagramm</h2>
-        <p className="text-sm text-gray-600">② Hauptstation + Anschluss Satellitenhaus – Detail</p>
+        <h2 className="text-xl font-bold text-white">P&ID-Diagramm</h2>
+        <p className="text-sm text-slate-400">② Hauptstation + Anschluss Satellitenhaus – Detail</p>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={() => setFlow(!flow)}
-          className={`border-gray-300 text-xs ${flow ? 'bg-emerald-500/10 text-green-600' : 'text-gray-600'}`}>
+          className={`border-[#1e2736] text-xs ${flow ? 'bg-emerald-500/15 text-emerald-400' : 'text-slate-400'}`}>
           <Droplets className="w-3.5 h-3.5 mr-1" />{flow ? 'Strömung AN' : 'Strömung AUS'}
         </Button>
-        <div className="flex items-center gap-1 bg-gray-50 rounded-lg border border-gray-300 p-0.5">
-          <Button variant="ghost" size="sm" onClick={zoomOut} className="text-gray-600 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
-          <span className="text-xs text-gray-600 w-12 text-center font-mono">{Math.round(zoom * 100)}%</span>
-          <Button variant="ghost" size="sm" onClick={zoomIn} className="text-gray-600 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
-          <Button variant="ghost" size="sm" onClick={resetView} className="text-gray-600 h-7 w-7 p-0"><RotateCcw className="w-3.5 h-3.5" /></Button>
+        <div className="flex items-center gap-1 bg-[#111620] rounded-lg border border-[#1e2736] p-0.5">
+          <Button variant="ghost" size="sm" onClick={zoomOut} className="text-slate-400 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
+          <span className="text-xs text-slate-400 w-12 text-center font-mono">{Math.round(zoom * 100)}%</span>
+          <Button variant="ghost" size="sm" onClick={zoomIn} className="text-slate-400 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
+          <Button variant="ghost" size="sm" onClick={resetView} className="text-slate-400 h-7 w-7 p-0"><RotateCcw className="w-3.5 h-3.5" /></Button>
         </div>
         <Button variant="outline" size="sm" onClick={() => { setEditMode(!editMode); setEditSel(null); }}
-          className={`border-gray-300 text-xs ${editMode ? 'bg-amber-500/20 text-orange-600 border-blue-500/40' : 'text-gray-600'}`}>
+          className={`border-[#1e2736] text-xs ${editMode ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'text-slate-400'}`}>
           <Pencil className="w-3.5 h-3.5 mr-1" />{editMode ? 'Edit AN' : 'Edit'}
         </Button>
         <Button variant="outline" size="sm" onClick={downloadSVG}
-          className="border-gray-300 text-xs text-gray-600">
+          className="border-[#1e2736] text-xs text-slate-400">
           <Download className="w-3.5 h-3.5 mr-1" />SVG
         </Button>
       </div>
     </div>
 
     {/* Status-Bar */}
-    <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-gray-50/50 rounded-lg border border-gray-300 text-xs font-mono">
+    <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-xs font-mono">
       <span className="flex items-center gap-1.5">
         <span className={`w-2 h-2 rounded-full ${on ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'}`} />
-        <span className={on ? 'text-red-600 font-semibold' : 'text-gray-500'}>
+        <span className={on ? 'text-emerald-400 font-semibold' : 'text-slate-500'}>
           {data?.status === 'heizen' ? 'HEIZEN' : data?.status === 'abtauen' ? 'ABTAUEN' : 'STANDBY'}
         </span>
       </span>
-      <span className="text-slate-700">│</span>
-      <span className="text-gray-500">VL <span className="text-red-600 font-semibold">{vl}°C</span></span>
-      <span className="text-gray-500">RL <span className="text-blue-600 font-semibold">{rl}°C</span></span>
-      <span className="text-gray-500">COP <span className="text-green-600 font-semibold">{cop}</span></span>
-      <span className="text-gray-500">Außen <span className="text-teal-400 font-semibold">{aus}°C</span></span>
+      <span className="text-slate-600">│</span>
+      <span className="text-slate-500">VL <span className="text-red-400 font-semibold">{vl}°C</span></span>
+      <span className="text-slate-500">RL <span className="text-blue-400 font-semibold">{rl}°C</span></span>
+      <span className="text-slate-500">COP <span className="text-emerald-400 font-semibold">{cop}</span></span>
+      <span className="text-slate-500">Außen <span className="text-teal-400 font-semibold">{aus}°C</span></span>
     </div>
 
     {/* Edit-Mode Bar */}
     {editMode && <div className="flex flex-wrap items-center gap-3 px-3 py-2 bg-amber-500/10 rounded-lg border border-amber-500/30 text-xs">
-      <span className="text-orange-600 font-bold">✏️ EDIT</span>
-      <span className="text-orange-600/60 text-[10px]">Ziehen = Verschieben · Pfeiltasten ±1 (Shift ±5) · ESC = Abwählen</span>
+      <span className="text-amber-400 font-bold">✏️ EDIT</span>
+      <span className="text-amber-400/60 text-[10px]">Ziehen = Verschieben · Pfeiltasten ±1 (Shift ±5) · ESC = Abwählen</span>
       <div className="flex-1" />
-      <span className="text-gray-500 font-mono text-[10px]">
+      <span className="text-slate-500 font-mono text-[10px]">
         <MousePointer className="w-3 h-3 inline" /> {svgMouse.x}, {svgMouse.y}
       </span>
-      {editSel && <span className="text-green-600 font-mono text-[10px]">
+      {editSel && <span className="text-emerald-400 font-mono text-[10px]">
         ▸ {editSel} {offsets[editSel] && `(Δ${offsets[editSel].dx}, Δ${offsets[editSel].dy})`}
       </span>}
       {changedItems.length > 0 && <>
@@ -601,7 +601,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     {/* ═════════════ SVG ═════════════ */}
     <EditContext.Provider value={editCtx}>
     <div ref={containerRef}
-      className={`relative rounded-xl select-none overflow-hidden border ${editMode ? 'border-blue-500/40' : 'border-gray-300'}`}
+      className={`relative rounded-xl select-none overflow-hidden border ${editMode ? 'border-blue-500/40' : 'border-[#333]'}`}
       style={{ background: C.bg, touchAction: 'none', cursor: editMode ? (dragInfo ? 'grabbing' : 'crosshair') : isPanning ? 'grabbing' : zoom > 1 ? 'grab' : 'default' }}
       onClick={() => { if (!editMode && !didPan.current) setSel(null); }}
       onWheel={onWheel}
@@ -610,7 +610,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
       onPointerUp={editMode ? onEditPointerUp : onPointerUp}
       onPointerLeave={editMode ? onEditPointerUp : onPointerUp}
       onDoubleClick={editMode ? undefined : resetView}>
-      {zoom > 1.05 && <div className="absolute top-2 left-2 z-10 text-[10px] text-gray-500 bg-gray-100/80 px-2 py-1 rounded font-mono pointer-events-none">
+      {zoom > 1.05 && <div className="absolute top-2 left-2 z-10 text-[10px] text-slate-600 bg-white/90 px-2 py-1 rounded font-mono pointer-events-none">
         {Math.round(zoom * 100)}% – Doppelklick = Reset
       </div>}
       <svg
@@ -1219,8 +1219,8 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     </EditContext.Provider>
 
     {/* Edit Changes Panel */}
-    {editMode && changedItems.length > 0 && <div className="px-3 py-2 bg-gray-50 rounded-lg border border-blue-500/20 text-[10px] font-mono">
-      <span className="text-gray-600 text-[11px] font-sans font-medium">Geänderte Positionen:</span>
+    {editMode && changedItems.length > 0 && <div className="px-3 py-2 bg-[#111620] rounded-lg border border-blue-500/20 text-[10px] font-mono">
+      <span className="text-slate-400 text-[11px] font-sans font-medium">Geänderte Positionen:</span>
       <div className="mt-1 grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-0.5">
         {changedItems.map(([id, v]) => (
           <div key={id} className="contents">
@@ -1235,37 +1235,37 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     </div>}
 
     {/* Legende */}
-    <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-gray-50/50 rounded-lg border border-gray-300 text-[10px]">
-      <span className="text-gray-500 font-medium text-[11px]">Legende</span>
+    <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-[10px]">
+      <span className="text-slate-500 font-medium text-[11px]">Legende</span>
       {[
         [C.hotPipe, 'Vorlauf (heiß)'], [C.coldPipe, 'Rücklauf (kalt)'], [C.geoPipe, 'Erdwärme'],
         [C.warmPipe, 'Quelle (warm)'], [C.coolPipe, 'Kältekreis'],
       ].map(([c, l]) => <span key={l} className="flex items-center gap-1.5">
-        <span className="w-5 h-0.5 rounded-full" style={{ background: c }} /><span className="text-gray-600">{l}</span>
+        <span className="w-5 h-0.5 rounded-full" style={{ background: c }} /><span className="text-slate-400">{l}</span>
       </span>)}
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOn} strokeWidth="0.7" /><polygon points="6,3 9,8 3,8" fill={C.pumpOn} /></svg>
-        <span className="text-gray-600">Pumpe AN</span>
+        <span className="text-slate-400">Pumpe AN</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOff} strokeWidth="0.7" /><polygon points="6,3 9,8 3,8" fill={C.pumpOff} /></svg>
-        <span className="text-gray-600">Pumpe AUS</span>
+        <span className="text-slate-400">Pumpe AUS</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><polygon points="3,2 9,6 3,10" fill="none" stroke={C.tankStroke} strokeWidth="0.7" /><polygon points="9,2 3,6 9,10" fill="none" stroke={C.tankStroke} strokeWidth="0.7" /></svg>
-        <span className="text-gray-600">Absperrventil</span>
+        <span className="text-slate-400">Absperrventil</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><polygon points="6,1 11,11 1,11" fill="none" stroke={C.geoPipe} strokeWidth="0.6" /><line x1="6" y1="11" x2="6" y2="14" stroke={C.geoPipe} strokeWidth="0.5" /></svg>
-        <span className="text-gray-600">Schmutzfänger</span>
+        <span className="text-slate-400">Schmutzfänger</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="16" height="12"><polygon points="2,2 8,6 2,10" fill="none" stroke={C.accent} strokeWidth="0.6" /><polygon points="14,2 8,6 14,10" fill={C.accent} stroke={C.accent} strokeWidth="0.6" /></svg>
-        <span className="text-gray-600">Strangregulierventil</span>
+        <span className="text-slate-400">Strangregulierventil</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="14" height="14"><polygon points="4,2 10,2 7,8" fill="none" stroke={C.pumpOn} strokeWidth="0.6" /><circle cx="7" cy="12" r="3" fill={C.tankFill} stroke={C.pumpOn} strokeWidth="0.5" /><text x="7" y="13.5" textAnchor="middle" fill={C.pumpOn} fontSize="4">M</text></svg>
-        <span className="text-gray-600">3-Wege-Mischer</span>
+        <span className="text-slate-400">3-Wege-Mischer</span>
       </span>
     </div>
   </div>;

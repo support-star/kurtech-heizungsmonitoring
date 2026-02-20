@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   MapPin, AlertTriangle, CheckCircle2, XCircle, Mail,
@@ -334,25 +334,7 @@ function EmailSettings({ config, onChange }: { config: EmailConfig; onChange: (c
     toast.success('E-Mail-Client geöffnet');
   };
 
-  const sendAlarmEmail = useCallback((standort: string, alarmText: string) => {
-    if (!config.aktiv || config.adressen.length === 0) return;
-
-    const subject = encodeURIComponent(`⚠️ ALARM: ${standort} – KurTech Monitoring`);
-    const body = encodeURIComponent(
-      `⚠️ ALARM-MELDUNG\n` +
-      `================\n\n` +
-      `Standort: ${standort}\n` +
-      `Zeit: ${new Date().toLocaleString('de-DE')}\n\n` +
-      `Alarm: ${alarmText}\n\n` +
-      `Bitte prüfen Sie die Anlage.\n\n` +
-      `--\nKurTech Heizungsmonitoring v2.0`
-    );
-
-    window.open(`mailto:${config.adressen.join(',')}?subject=${subject}&body=${body}`, '_blank');
-  }, [config]);
-
-  // Expose for parent
-  (window as any).__sendAlarmEmail = sendAlarmEmail;
+  // sendAlarmEmail could be triggered by backend webhook / MQTT alarm
 
   return (
     <div className="rounded-xl border border-[#1e2736] bg-[#111620]/80 p-4">
