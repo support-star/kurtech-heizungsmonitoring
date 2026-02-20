@@ -618,7 +618,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
         {Math.round(zoom * 100)}% – Doppelklick = Reset
       </div>}
       <svg
-        viewBox="0 0 1600 1100"
+        viewBox="0 0 2200 1500"
         style={{
           display: 'block', width: '100%',
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
@@ -626,411 +626,354 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
         }}>
           <Defs />
           {/* Grid */}
-          <pattern id="gr" width="40" height="40" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="0.3" fill="#334155" opacity="0.08" />
+          <pattern id="gr" width="50" height="50" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="0.3" fill="#334155" opacity="0.06" />
           </pattern>
           <rect width="100%" height="100%" fill="url(#gr)" />
 
-          {/* ═══════════════════ Region Labels ═══════════════════ */}
-          <Rgn x={40} y={390} t="QUELLEN" />
-          <Rgn x={230} y={620} t="WÄRMETAUSCHER" />
-          <Rgn x={480} y={555} t="ERZEUGUNG" />
-          <Rgn x={860} y={440} t="SPEICHER" />
-          <Rgn x={1120} y={555} t="VERTEILUNG" />
+          {/* ═══════════ Region Labels ═══════════ */}
+          <Rgn x={60} y={370} t="QUELLEN" />
+          <Rgn x={280} y={760} t="WÄRMETAUSCHER" />
+          <Rgn x={580} y={760} t="ERZEUGUNG" />
+          <Rgn x={1080} y={510} t="SPEICHER" />
+          <Rgn x={1530} y={600} t="VERTEILUNG" />
 
-          {/* ════════════════════════════════════════════════════════
-               ABLUFT-WÄRMEPUMPE AUF DACH (oben Mitte)
-             ════════════════════════════════════════════════════════ */}
-          <E id="BOX_ABWP"><g transform="translate(580,120)">
-            <rect x={-40} y={-30} width={80} height={60} rx={3} fill={C.panel} stroke={C.border} strokeWidth="1.5" />
-            <circle cx={0} cy={-5} r={18} fill="none" stroke={C.dim} strokeWidth="1.5" />
-            <line x1={-12} y1={-5} x2={12} y2={-5} stroke={C.dim} strokeWidth="1.5" />
-            <line x1={0} y1={-17} x2={0} y2={7} stroke={C.dim} strokeWidth="1.5" />
-            {/* Kalt/Warm Anzeige */}
-            <rect x={-23} y={-48} width={10} height={11} fill={C.coldPipe} rx={1} />
-            <rect x={-11} y={-48} width={10} height={11} fill={C.hotPipe} rx={1} />
-            <text x={0} y={45} textAnchor="middle" fill={C.bright} fontSize="4.5">Abluft-Wärmepumpe</text>
-            <text x={0} y={56} textAnchor="middle" fill={C.dim} fontSize="4">auf Dach</text>
-            <text x={-70} y={35} textAnchor="middle" fill={C.dim} fontSize="4">th. Leistung: 6,2kW</text>
+          {/* ════════════════════════════════════════════════════════════════
+               ABLUFT-WÄRMEPUMPE AUF DACH (oben Mitte, ~700,198)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="BOX_ABWP"><g transform="translate(700,210)">
+            <rect x={-32} y={-22} width={64} height={44} rx={3} fill={C.panel} stroke={C.border} strokeWidth="1.5" />
+            {/* Ventilator-Symbol */}
+            <circle cx={0} cy={0} r={16} fill="none" stroke={C.dim} strokeWidth="1.2" />
+            <line x1={-10} y1={0} x2={10} y2={0} stroke={C.dim} strokeWidth="1" />
+            <line x1={0} y1={-10} x2={0} y2={10} stroke={C.dim} strokeWidth="1" />
+            {/* Filter-Symbole */}
+            <rect x={-18} y={-38} width={8} height={10} fill={C.coldPipe} fillOpacity="0.3" rx={1} />
+            <rect x={-8} y={-38} width={8} height={10} fill={C.hotPipe} fillOpacity="0.3" rx={1} />
           </g></E>
-
+          <text x={700} y={178} textAnchor="middle" fill={C.bright} fontSize="5.5" fontWeight="600">Abluft-Wärmepumpe auf Dach</text>
+          <text x={625} y={242} fill={C.dim} fontSize="4.5">th. Leistung: 6,2kW</text>
+          <PT x={678} y={265} v="35°" c={C.coldPipe} />
+          <PT x={720} y={265} v="40°" c={C.hotPipe} />
           {/* Rohrbegleitheizung */}
-          <E id="RBHZ"><g transform="translate(680,100)">
-            <rect x={-30} y={-15} width={60} height={30} rx={2} fill={C.panel} stroke="#daa520" strokeWidth="0.8" />
-            <text x={0} y={3} textAnchor="middle" fill="#daa520" fontSize="4">Rohrbegl.heizung</text>
-          </g></E>
+          <rect x={750} y={200} width={60} height={22} rx={2} fill={C.panel} stroke="#daa520" strokeWidth="0.6" />
+          <text x={780} y={214} textAnchor="middle" fill="#daa520" fontSize="4">Rohrbegl.heizung</text>
 
-          {/* Abluft-WP Leitungen (VL rot runter, RL blau) */}
-          <Pipe d="M620,150 L620,350" c={C.hotPipe} w={2.5} />
-          <Pipe d="M580,150 L580,350" c={C.coldPipe} w={2.5} dash="4,3" />
-          <V x={620} y={220} r={90} />
-          <V x={580} y={220} r={90} />
-          <PT x={640} y={195} v="40°" c={C.hotPipe} />
-          <PT x={548} y={195} v="35°" c={C.coldPipe} />
-          <L x={635} y={230} t="DN 25" />
-          <L x={548} y={230} t="DN 25" />
-          {/* Flussrichtungspfeile */}
-          <polygon points="620,160 615,170 625,170" fill={C.hotPipe} />
-          <polygon points="580,240 575,230 585,230" fill={C.coldPipe} />
+          {/* Abluft-WP Leitungen runter */}
+          <Pipe d="M700,242 L700,340" c={C.hotPipe} w={2.5} />
+          <Pipe d="M682,242 L682,340" c={C.coldPipe} w={2.5} dash="4,3" />
+          <Pipe d="M700,340 L700,540" c={C.hotPipe} w={2.5} />
+          <Pipe d="M682,340 L682,540" c={C.coldPipe} w={2.5} dash="4,3" />
+          <text x={625} y={315} fill={C.dim} fontSize="4">Zuleitung Wärme aus</text>
+          <text x={625} y={325} fill={C.dim} fontSize="4">Abluft-Wärmepumpe auf Dach</text>
+          <L x={710} y={345} t="35°C" />
+          <L x={670} y={345} t="40°C" />
+          <L x={710} y={360} t="DN 25" />
+          <L x={670} y={360} t="DN 25" />
 
-          {/* ════════════════════════════════════════════════════════
-               PVT-SOLARKOLLEKTOREN ZULEITUNG (oben links)
-             ════════════════════════════════════════════════════════ */}
-          <E id="PVT"><text x={220} y={215} fill={C.dim} fontSize="4">Zuleitung</text>
-          <text x={220} y={227} fill={C.dim} fontSize="4">PVT –</text>
-          <text x={220} y={239} fill={C.dim} fontSize="4">Solarkollektoren</text>
-          <text x={220} y={251} fill={C.dim} fontSize="4">auf Dach</text></E>
-          <Pipe d="M280,180 L280,250" c={C.geoPipe} w={2.5} />
-          <Pipe d="M280,250 L280,270" c={C.geoPipe} w={2.5} />
-          <Pipe d="M280,294 L280,345" c={C.hotPipe} w={2.5} />
-          <Pipe d="M300,180 L300,345" c={C.coldPipe} w={2.5} dash="4,3" />
-          <V x={280} y={235} r={90} />
-          <RV x={280} y={255} rot={-90} />
-          <TF x={265} y={250} c={C.geoPipe} />
-          <TF x={312} y={250} c={C.coldPipe} />
-          <L x={305} y={240} t="DN 65" />
+          {/* ════════════════════════════════════════════════════════════════
+               PVT-SOLARKOLLEKTOREN ZULEITUNG (oben links, ~500,238)
+             ════════════════════════════════════════════════════════════════ */}
+          <text x={410} y={210} fill={C.dim} fontSize="4.5">Zuleitung PVT - Solarkollektoren auf Dach</text>
+          <Pipe d="M500,238 L500,390" c={C.geoPipe} w={2.5} />
+          <Pipe d="M482,238 L482,390" c={C.geoPipe} w={2.5} dash="4,3" />
+          <L x={465} y={310} t="DN 25" />
+          <L x={510} y={310} t="DN 25" />
 
-          {/* ════════════════════════════════════════════════════════
-               ERDWÄRMEFELD ZULEITUNG (links)
-             ════════════════════════════════════════════════════════ */}
-          <E id="ERD_ZU"><text x={40} y={405} fill={C.geoPipe} fontSize="4">Zuleitung FVU</text>
-          <text x={40} y={417} fill={C.geoPipe} fontSize="4">Niedrigtemperatur aus</text>
-          <text x={40} y={429} fill={C.geoPipe} fontSize="4">Erdwärmefeld</text></E>
-          <Pipe d="M50,420 L120,420 L120,380 L186,380" c={C.geoPipe} glow={C.geoGlow} w={2.5} />
-          <V x={135} y={380} />
-          <RV x={155} y={380} />
-          <TF x={100} y={420} c={C.geoPipe} />
-          <TF x={100} y={375} c={C.geoPipe} />
+          {/* ════════════════════════════════════════════════════════════════
+               ERDWÄRMEFELD ZULEITUNG (links, ~120,400)
+             ════════════════════════════════════════════════════════════════ */}
+          <text x={60} y={370} fill={C.geoPipe} fontSize="4.5">Zuleitung FVU</text>
+          <text x={60} y={380} fill={C.geoPipe} fontSize="4.5">Erdwärmefeld</text>
+          <Pipe d="M120,400 L270,400" c={C.geoPipe} glow={C.geoGlow} w={2.5} />
+          <TF x={130} y={390} c={C.geoPipe} />
+          <TF x={130} y={410} c={C.geoPipe} />
+          {/* Absperrventil + Rückschlagventil */}
+          <V x={240} y={400} />
+          <RV x={260} y={400} />
 
-          {/* Rücklauf Erdwärmefeld (blau) */}
-          <Pipe d="M214,750 L120,750 L120,460 L50,460" c={C.coldPipe} w={2.5} dash="4,3" />
-          <V x={135} y={460} />
-          <RV x={155} y={460} />
-          <text x={40} y={475} fill={C.coldPipe} fontSize="4">Rücklauf</text>
+          {/* ════════════════════════════════════════════════════════════════
+               P01 – Quellenkreis (300,550)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="P01"><Pump x={300} y={550} id="P01" on={!!on}
+            onClick={() => s({ id: 'P01', name: 'Pumpe P01', desc: 'Quellenkreis · 0-10V', status: on ? 'running' : 'standby', flow: '0-10V' })} /></E>
+          <TF x={282} y={540} c={C.geoPipe} />
+          <TF x={318} y={540} c={C.geoPipe} />
+          <V x={270} y={550} />
+          <RV x={330} y={550} />
+          {/* P01 Leitungen */}
+          <Pipe d="M270,400 L270,550 L286,550" c={C.geoPipe} glow={C.geoGlow} w={2.5} />
+          <Pipe d="M314,550 L450,550" c={C.geoPipe} w={2.5} />
 
-          {/* ════════════════════════════════════════════════════════
-               PUFFERSPEICHER 2000L (hydr. Trennung / PVT)
-             ════════════════════════════════════════════════════════ */}
-          <E id="PUFF2000"><g transform="translate(280,420)">
+          {/* ════════════════════════════════════════════════════════════════
+               PUFFERSPEICHER 2000L (500, 485-615)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="PUFF2000"><g transform="translate(500,550)">
             {/* Standfüße */}
-            <line x1={-35} y1={75} x2={-45} y2={95} stroke={C.dim} strokeWidth="1.5" />
-            <line x1={35} y1={75} x2={45} y2={95} stroke={C.dim} strokeWidth="1.5" />
-            <line x1={-45} y1={95} x2={-50} y2={95} stroke={C.dim} strokeWidth="1.5" />
-            <line x1={45} y1={95} x2={50} y2={95} stroke={C.dim} strokeWidth="1.5" />
-            {/* Tankform */}
-            <ellipse cx={0} cy={-75} rx={55} ry={15} fill={C.panel} stroke={C.tankStroke} strokeWidth="1.5" />
-            <rect x={-55} y={-75} width={110} height={150} fill={C.tankFill} stroke={C.tankStroke} strokeWidth="1.5" />
-            <ellipse cx={0} cy={75} rx={55} ry={15} fill={C.panel} stroke={C.tankStroke} strokeWidth="1.5" />
-            {/* Spirale/Wärmetauscher */}
-            {[-50,-35,-20,-5,10,25,40].map(dy => <path key={dy} d={`M-30,${dy} Q0,${dy-10} 30,${dy} Q0,${dy+10} -30,${dy}`} fill="none" stroke={C.coldPipe} strokeWidth="1.5" opacity="0.4" />)}
-            {/* Temperatursensoren */}
-            <TF x={0} y={-55} c={C.hotPipe} />
-            <TF x={0} y={-10} c={C.warmPipe} />
-            <TF x={0} y={35} c={C.coldPipe} />
-            <text x={0} y={-95} textAnchor="middle" fill={C.bright} fontSize="5" fontWeight="600">Pufferspeicher</text>
-            <text x={0} y={-83} textAnchor="middle" fill={C.dim} fontSize="4.5">hydr. Trennung/PVT</text>
-            <text x={0} y={105} textAnchor="middle" fill={C.dim} fontSize="4.5">2000 Liter</text>
+            <line x1={-25} y1={65} x2={-35} y2={83} stroke={C.dim} strokeWidth="1.5" />
+            <line x1={25} y1={65} x2={35} y2={83} stroke={C.dim} strokeWidth="1.5" />
+            <line x1={-35} y1={83} x2={-40} y2={83} stroke={C.dim} strokeWidth="1.5" />
+            <line x1={35} y1={83} x2={40} y2={83} stroke={C.dim} strokeWidth="1.5" />
+            {/* Tank */}
+            <ellipse cx={0} cy={-65} rx={50} ry={12} fill={C.panel} stroke={C.tankStroke} strokeWidth="1.2" />
+            <rect x={-50} y={-65} width={100} height={130} fill={C.tankFill} stroke={C.tankStroke} strokeWidth="1.2" />
+            <ellipse cx={0} cy={65} rx={50} ry={12} fill={C.panel} stroke={C.tankStroke} strokeWidth="1.2" />
+            {/* Spirale (Wärmetauscher innen) */}
+            {[-45,-34,-23,-12,-1,10,21].map(dy => <path key={dy} d={`M-22,${dy} Q0,${dy-7} 22,${dy} Q0,${dy+7} -22,${dy}`} fill="none" stroke={C.coldPipe} strokeWidth="1.2" opacity="0.3" />)}
+            {/* Temp-Sensoren */}
+            <TF x={0} y={-40} c={C.hotPipe} />
+            <TF x={0} y={-5} c={C.warmPipe} />
+            <TF x={0} y={30} c={C.coldPipe} />
           </g></E>
+          <text x={500} y={473} textAnchor="middle" fill={C.bright} fontSize="5.5" fontWeight="600">Pufferspeicher</text>
+          <text x={500} y={483} textAnchor="middle" fill={C.dim} fontSize="4.5">hydr. Trennung/PVT</text>
+          <text x={500} y={638} textAnchor="middle" fill={C.dim} fontSize="5" fontWeight="600">2000 Liter</text>
+
+          {/* TF an den Tankwänden */}
+          <TF x={420} y={490} c={C.hotPipe} />
+          <TF x={580} y={490} c={C.hotPipe} />
+          <TF x={680} y={490} c={C.warmPipe} />
+
+          {/* P02 – PVT-Solarkreis (500,400) */}
+          <E id="P02"><Pump x={500} y={400} id="P02" on={!!on}
+            onClick={() => s({ id: 'P02', name: 'Pumpe P02', desc: 'PVT-Solarkreis', status: on ? 'running' : 'standby' })} /></E>
+          <TF x={482} y={390} c={C.geoPipe} />
+          <TF x={518} y={390} c={C.geoPipe} />
+          <V x={470} y={400} />
+          <V x={530} y={400} />
+          {/* MAG am P02 */}
+          <MAG x={500} y={430} />
+          {/* P02 → Puffer VL */}
+          <Pipe d="M500,414 L500,485" c={C.hotPipe} w={2.5} />
+
+          {/* ════════════════════════════════════════════════════════════════
+               P03 – Solekreis (700,550)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="P03"><Pump x={700} y={550} id="P03" on={!!on}
+            onClick={() => s({ id: 'P03', name: 'Pumpe P03', desc: 'Solekreis · ΔT 3K · Glycol 30%', status: on ? 'running' : 'standby', flow: '42,1 m³/h' })} /></E>
+          <TF x={718} y={540} c={C.hotPipe} />
+          <V x={670} y={550} />
+          <RV x={730} y={550} />
+          <MAG x={718} y={580} />
+          <text x={755} y={545} fill={C.dim} fontSize="4">Auslegung: DeltaT: 3K, Glycol: 30%,</text>
+          <text x={755} y={556} fill={C.dim} fontSize="4">Massenstrom: 42,1 m³/h</text>
+          {/* P03 → Puffer Verbindung */}
+          <Pipe d="M550,550 L670,550" c={C.hotPipe} w={2.5} />
+          <Pipe d="M450,528 L425,528" c={C.hotPipe} w={2} />
+          <Pipe d="M450,550 L425,550" c={C.hotPipe} w={2} />
+          <Pipe d="M450,572 L425,572" c={C.hotPipe} w={2} />
+          <L x={555} y={520} t="DN 100" />
+          <L x={555} y={585} t="DN 100" />
+
+          {/* ════════════════════════════════════════════════════════════════
+               WÄRMETAUSCHER 47 kW (350, 785-855)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="WT47"><g transform="translate(350,820)">
+            <rect x={-28} y={-35} width={56} height={70} rx={2} fill={C.coolPipe} fillOpacity="0.1" stroke={C.coolPipe} strokeWidth="1.5" />
+            {/* Platten */}
+            {[-25,-15,-5,5,15,25].map(dy => <line key={dy} x1={-16} y1={dy} x2={16} y2={dy} stroke="white" strokeWidth="1" strokeOpacity="0.2" />)}
+          </g></E>
+          <text x={350} y={870} textAnchor="middle" fill={C.dim} fontSize="5">Wärmetauscher</text>
+          <text x={350} y={880} textAnchor="middle" fill={C.dim} fontSize="4.5">Leistung:</text>
+          <text x={350} y={892} textAnchor="middle" fill={C.bright} fontSize="5.5" fontWeight="600">47 kW</text>
+          <TF x={315} y={795} c={C.geoPipe} />
+          <TF x={385} y={795} c={C.hotPipe} />
+          <TF x={315} y={845} c={C.coldPipe} />
+          <TF x={385} y={845} c={C.coldPipe} />
+          <L x={295} y={785} t="DN 80" />
+          <L x={390} y={785} t="DN 80" />
+          <L x={295} y={858} t="DN 80" />
+          <L x={390} y={858} t="DN 80" />
+
+          {/* WT Leitungen → WP */}
+          <Pipe d="M378,795 L415,795 L415,808 L605,808" c={C.coldPipe} w={2.5} dash="4,3" />
+          <Pipe d="M378,845 L435,845 L435,832 L605,832" c={C.coldPipe} w={2.5} dash="4,3" />
+          {/* WT ← Puffer Leitungen */}
+          <Pipe d="M322,795 L280,795 L280,615" c={C.geoPipe} w={2.5} />
+          <Pipe d="M322,845 L260,845 L260,750" c={C.coldPipe} w={2.5} dash="4,3" />
+
+          {/* ════════════════════════════════════════════════════════════════
+               WÄRMEPUMPE 175 kW (650, 785-855)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="WP175"><g transform="translate(650,820)">
+            <rect x={-45} y={-35} width={90} height={70} rx={3} fill={C.panel} stroke={on ? C.accent : C.border} strokeWidth="2" />
+            <text x={0} y={-20} textAnchor="middle" fill={C.bright} fontSize="5.5" fontWeight="700">Wärmepumpe</text>
+            <text x={0} y={-8} textAnchor="middle" fill={C.dim} fontSize="4">Nenn-Wärmeleistung:</text>
+            <text x={0} y={4} textAnchor="middle" fill={C.accent} fontSize="5">175 kW</text>
+            <text x={0} y={18} textAnchor="middle" fill={C.dim} fontSize="4">Elektrische Leistungsaufnahme:</text>
+            <text x={0} y={30} textAnchor="middle" fill={C.accent} fontSize="5">38,9 kW</text>
+          </g></E>
+          <text x={650} y={862} textAnchor="middle" fill={C.dim} fontSize="4">400 V</text>
+          <text x={585} y={778} fill={C.dim} fontSize="4">Ansprechdruck SV: 3,5 bar</text>
+
+          {/* WP → P04 Leitungen */}
+          <Pipe d="M695,808 L735,808 L735,668 L840,668" c={C.hotPipe} glow={C.hotGlow} w={2.5} />
+          <Pipe d="M695,832 L755,832 L755,692 L840,692" c={C.hotPipe} w={2.5} />
+
+          {/* ════════════════════════════════════════════════════════════════
+               P04 – Heizkreis primär (850,680)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="P04"><Pump x={850} y={680} id="P04" on={!!on}
+            onClick={() => s({ id: 'P04', name: 'Pumpe P04', desc: 'Heizkreis primär · DN 100', status: on ? 'running' : 'standby', temp: vl + '°C' })} /></E>
+          <PT x={872} y={675} v={vl + '°'} c={C.hotPipe} />
+          <L x={872} y={688} t="DN 100" />
+          <V x={820} y={680} />
+          <RV x={920} y={680} />
+          <text x={850} y={720} textAnchor="middle" fill={C.dim} fontSize="4">Anschlussstutzen mit Absperrorgan und Storz-C Kupplung</text>
+          <PT x={820} y={725} v={rl + '°'} c={C.coldPipe} />
+          <L x={820} y={738} t="38°C" />
+
+          {/* P04 → Puffer 1500L */}
+          <Pipe d="M864,680 L1100,578" c={C.hotPipe} glow={C.hotGlow} w={2.5} />
+
+          {/* ════════════════════════════════════════════════════════════════
+               PUFFERSPEICHER 1500L HEIZUNG (1150, 535-665)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="PUFF1500"><g transform="translate(1150,600)">
+            {/* Standfüße */}
+            <line x1={-25} y1={65} x2={-35} y2={83} stroke={C.dim} strokeWidth="1.5" />
+            <line x1={25} y1={65} x2={35} y2={83} stroke={C.dim} strokeWidth="1.5" />
+            <line x1={-35} y1={83} x2={-40} y2={83} stroke={C.dim} strokeWidth="1.5" />
+            <line x1={35} y1={83} x2={40} y2={83} stroke={C.dim} strokeWidth="1.5" />
+            {/* Tank */}
+            <ellipse cx={0} cy={-65} rx={50} ry={12} fill={C.panel} stroke={C.tankStroke} strokeWidth="1.2" />
+            <rect x={-50} y={-65} width={100} height={130} fill={C.tankFill} stroke={C.tankStroke} strokeWidth="1.2" />
+            <ellipse cx={0} cy={65} rx={50} ry={12} fill={C.panel} stroke={C.tankStroke} strokeWidth="1.2" />
+            {/* Temp-Sensoren */}
+            <TF x={0} y={-40} c={C.hotPipe} />
+            <TF x={0} y={-5} c={C.warmPipe} />
+            <TF x={0} y={30} c={C.coldPipe} />
+          </g></E>
+          <text x={1150} y={523} textAnchor="middle" fill={C.bright} fontSize="5.5" fontWeight="600">Pufferspeicher</text>
+          <text x={1150} y={533} textAnchor="middle" fill={C.dim} fontSize="4.5">Heizung</text>
+          <text x={1150} y={688} textAnchor="middle" fill={C.dim} fontSize="5" fontWeight="600">1500 Liter</text>
 
           {/* Puffer Temp-Anzeigen */}
-          <PT x={360} y={365} v={po + '°'} c={C.hotPipe} />
-          <PT x={360} y={410} v={pm + '°'} c={C.warmPipe} />
-          <PT x={360} y={455} v={pu + '°'} c={C.coldPipe} />
+          <PT x={1215} y={560} v={po + '°'} c={C.hotPipe} />
+          <PT x={1215} y={595} v={pm + '°'} c={C.warmPipe} />
+          <PT x={1215} y={630} v={pu + '°'} c={C.coldPipe} />
+          <L x={1205} y={570} t="DN 80" />
+          <L x={1205} y={640} t="DN 80" />
 
-          {/* P01 – Quellenkreis */}
-          <E id="P01"><Pump x={200} y={420} id="P01" on={!!on}
-            onClick={() => s({ id: 'P01', name: 'Pumpe P01', desc: 'Quellenkreis · 0-10V', status: on ? 'running' : 'standby', flow: '0-10V' })} /></E>
-          <Pipe d="M214,420 L225,420" c={C.geoPipe} w={2} />
-          <L x={205} y={400} t="0-10V" />
+          {/* Puffer 1500 → Verteiler */}
+          <Pipe d="M1200,600 L1535,650" c={C.hotPipe} glow={C.hotGlow} w={2.5} />
 
-          {/* P02 – PVT-Solarkreis */}
-          <E id="P02"><Pump x={280} y={280} id="P02" on={!!on}
-            onClick={() => s({ id: 'P02', name: 'Pumpe P02', desc: 'PVT-Solarkreis', status: on ? 'running' : 'standby' })} /></E>
-          <MAG x={340} y={280} />
-          <L x={305} y={275} t="DN 65" />
-          <L x={350} y={275} t="DN 65" />
-
-          {/* P03 – Solekreis */}
-          <E id="P03"><Pump x={420} y={420} id="P03" on={!!on}
-            onClick={() => s({ id: 'P03', name: 'Pumpe P03', desc: 'Solekreis · ΔT 3K · Glycol 30%', status: on ? 'running' : 'standby', flow: '42,1 m³/h' })} /></E>
-          <text x={465} y={410} fill={C.dim} fontSize="3.5">Auslegung:</text>
-          <text x={465} y={420} fill={C.dim} fontSize="3.5">DeltaT: 3K</text>
-          <text x={465} y={430} fill={C.dim} fontSize="3.5">Glycol: 30%</text>
-          <text x={465} y={440} fill={C.dim} fontSize="3.5">Massenstrom: 42,1 m³/h</text>
-
-          {/* MAG bei P03 */}
-          <MAG x={380} y={380} />
-
-          {/* P03 Leitungen */}
-          <Pipe d="M335,380 L406,380" c={C.hotPipe} w={2.5} />
-          <Pipe d="M406,380 L406,406" c={C.hotPipe} w={2.5} />
-          <Pipe d="M335,420 L406,420" c={C.coldPipe} w={2.5} dash="4,3" />
-          <Pipe d="M406,420 L406,434" c={C.coldPipe} w={2.5} dash="4,3" />
-          <L x={355} y={375} t="DN 65" />
-          <L x={350} y={455} t="DN 100" />
-          <L x={350} y={495} t="DN 100" />
-
-          {/* ════════════════════════════════════════════════════════
-               WÄRMETAUSCHER 47 kW
-             ════════════════════════════════════════════════════════ */}
-          <E id="WT47"><g transform="translate(280,680)">
-            <rect x={-35} y={-50} width={70} height={100} rx={3} fill={C.coolPipe} fillOpacity="0.08" stroke={C.coolPipe} strokeWidth="1.5" />
-            {/* Platten */}
-            {[-35,-20,-5,10,25,40].map(dy => <line key={dy} x1={-20} y1={dy} x2={20} y2={dy} stroke={C.coolPipe} strokeWidth="1" strokeOpacity="0.3" />)}
-            <text x={0} y={68} textAnchor="middle" fill={C.dim} fontSize="4.5">Wärmetauscher</text>
-            <text x={0} y={80} textAnchor="middle" fill={C.dim} fontSize="4">Leistung:</text>
-            <text x={0} y={92} textAnchor="middle" fill={C.dim} fontSize="4.5">47 kW</text>
-          </g></E>
-          <TF x={235} y={645} c={C.geoPipe} />
-          <TF x={325} y={645} c={C.hotPipe} />
-          <TF x={235} y={715} c={C.coldPipe} />
-          <TF x={325} y={715} c={C.coldPipe} />
-
-          {/* Puffer → WT Leitungen */}
-          <Pipe d="M245,495 L245,630" c={C.geoPipe} w={2.5} />
-          <Pipe d="M315,495 L315,630" c={C.hotPipe} w={2.5} />
-          <L x={200} y={640} t="DN 80" />
-          <L x={325} y={640} t="DN 80" />
-
-          {/* WT → WP & Rücklauf */}
-          <Pipe d="M245,730 L245,620 L490,620" c={C.coldPipe} w={2.5} dash="4,3" />
-          <Pipe d="M315,730 L315,750 L214,750" c={C.coldPipe} w={2.5} dash="4,3" />
-          <L x={200} y={755} t="DN 80" />
-          <L x={325} y={755} t="DN 80" />
-
-          {/* ════════════════════════════════════════════════════════
-               WÄRMEPUMPE 175 kW
-             ════════════════════════════════════════════════════════ */}
-          <E id="WP175"><g transform="translate(550,620)">
-            <rect x={-60} y={-50} width={120} height={100} rx={5} fill={C.panel} stroke={on ? C.accent : C.border} strokeWidth="2" />
-            <text x={0} y={-25} textAnchor="middle" fill={C.bright} fontSize="5.5" fontWeight="700">Wärmepumpe</text>
-            <text x={0} y={-10} textAnchor="middle" fill={C.dim} fontSize="4">Nenn-Wärmeleistung:</text>
-            <text x={0} y={2} textAnchor="middle" fill={C.accent} fontSize="5">175 kW</text>
-            <text x={0} y={16} textAnchor="middle" fill={C.dim} fontSize="4">Elektrische</text>
-            <text x={0} y={28} textAnchor="middle" fill={C.dim} fontSize="4">Leistungsaufnahme:</text>
-            <text x={0} y={40} textAnchor="middle" fill={C.accent} fontSize="5">38,9 kW</text>
-            <text x={0} y={62} textAnchor="middle" fill={C.dim} fontSize="4">400 V</text>
-          </g></E>
-          <TF x={480} y={590} c={C.coldPipe} />
-          <TF x={480} y={650} c={C.coldPipe} />
-          <TF x={620} y={590} c={C.hotPipe} />
-          <TF x={620} y={650} c={C.hotPipe} />
-          <L x={500} y={465} t="DN 100" />
-          <L x={500} y={610} t="DN 100" />
-
-          {/* WP Ausgang → P04 */}
-          <Pipe d="M610,620 L700,620 L700,534" c={C.hotPipe} glow={C.hotGlow} w={2.5} />
-
-          {/* ════════════════════════════════════════════════════════
-               P04 – Heizkreis primär
-             ════════════════════════════════════════════════════════ */}
-          <E id="P04"><Pump x={700} y={520} id="P04" on={!!on}
-            onClick={() => s({ id: 'P04', name: 'Pumpe P04', desc: 'Heizkreis primär', status: on ? 'running' : 'standby', temp: vl + '°C' })} /></E>
-          <PT x={722} y={560} v={vl + '°'} c={C.hotPipe} />
-          <text x={640} y={500} fill={C.dim} fontSize="3.5">Anschlusstutzen mit</text>
-          <text x={640} y={510} fill={C.dim} fontSize="3.5">Absperrorgan und</text>
-          <text x={640} y={520} fill={C.dim} fontSize="3.5">Storz-C Kupplung</text>
-
-          {/* Ansprechdruck SV */}
-          <E id="SV_35"><g transform="translate(650,450)">
-            <line x1={0} y1={0} x2={0} y2={30} stroke={C.dim} strokeWidth="0.8" />
-            <polygon points="-4,25 4,25 0,33" fill={C.dim} />
-            <text x={10} y={15} fill={C.dim} fontSize="4">Ansprechdruck</text>
-            <text x={10} y={27} fill={C.dim} fontSize="4">SV : 3,5</text>
-            <text x={10} y={39} fill={C.dim} fontSize="4">bar</text>
-          </g></E>
-
-          {/* P04 → Pufferspeicher 1500L */}
-          <Pipe d="M700,506 L700,480 L750,480" c={C.hotPipe} glow={C.hotGlow} w={2.5} />
-          <Pipe d="M750,480 L870,480 L870,520" c={C.hotPipe} glow={C.hotGlow} w={2.5} />
-          <V x={750} y={480} />
-          <V x={780} y={480} />
-          <L x={770} y={470} t="DN 100" />
-          <PT x={832} y={507} v={vl + '°'} c={C.hotPipe} />
-
-          {/* Rücklauf WP */}
-          <Pipe d="M870,585 L870,620 L700,620" c={C.coldPipe} w={2.5} dash="4,3" />
-          <PT x={832} y={555} v={rl + '°'} c={C.coldPipe} />
-          <L x={830} y={595} t="DN 80" />
-
-          {/* ════════════════════════════════════════════════════════
-               PUFFERSPEICHER 1500L HEIZUNG
-             ════════════════════════════════════════════════════════ */}
-          <E id="PUFF1500"><g transform="translate(920,520)">
-            {/* Standfüße */}
-            <line x1={-30} y1={70} x2={-40} y2={90} stroke={C.dim} strokeWidth="1.5" />
-            <line x1={30} y1={70} x2={40} y2={90} stroke={C.dim} strokeWidth="1.5" />
-            <line x1={-40} y1={90} x2={-45} y2={90} stroke={C.dim} strokeWidth="1.5" />
-            <line x1={40} y1={90} x2={45} y2={90} stroke={C.dim} strokeWidth="1.5" />
-            {/* Tankform */}
-            <ellipse cx={0} cy={-65} rx={50} ry={12} fill={C.panel} stroke={C.tankStroke} strokeWidth="1.5" />
-            <rect x={-50} y={-65} width={100} height={130} fill={C.tankFill} stroke={C.tankStroke} strokeWidth="1.5" />
-            <ellipse cx={0} cy={65} rx={50} ry={12} fill={C.panel} stroke={C.tankStroke} strokeWidth="1.5" />
-            {/* Temperatursensoren */}
-            <TF x={0} y={-45} c={C.hotPipe} />
-            <TF x={0} y={-5} c={C.warmPipe} />
-            <TF x={0} y={35} c={C.coldPipe} />
-            <text x={0} y={-82} textAnchor="middle" fill={C.bright} fontSize="5" fontWeight="600">Pufferspeicher</text>
-            <text x={0} y={-70} textAnchor="middle" fill={C.dim} fontSize="4.5">Heizung</text>
-            <text x={0} y={90} textAnchor="middle" fill={C.dim} fontSize="4.5">1500 Liter</text>
-          </g></E>
-
-          {/* Puffer 1500 Temp-Anzeigen */}
-          <PT x={990} y={475} v={po + '°'} c={C.hotPipe} />
-          <PT x={990} y={515} v={pm + '°'} c={C.warmPipe} />
-          <PT x={990} y={555} v={pu + '°'} c={C.coldPipe} />
-
-          {/* MAG 50l */}
-          <MAG x={1020} y={520} />
-          <text x={1020} y={545} textAnchor="middle" fill={C.dim} fontSize="3.5">MAG</text>
-          <text x={1020} y={555} textAnchor="middle" fill={C.dim} fontSize="3.5">50l</text>
-
-          {/* Puffer → Verteiler Leitungen */}
-          <Pipe d="M920,455 L920,480" c={C.hotPipe} w={2.5} />
-          <Pipe d="M920,585 L920,620" c={C.coldPipe} w={2.5} dash="4,3" />
-          <Pipe d="M970,520 L1080,520" c={C.hotPipe} glow={C.hotGlow} w={2.5} />
-          <Pipe d="M970,580 L1080,580" c={C.coldPipe} w={2.5} dash="4,3" />
-          <L x={1000} y={510} t="DN 80" />
-          <L x={1000} y={595} t="DN 80" />
-
-          {/* P05 – Verteilerkreis */}
-          <E id="P05"><Pump x={1100} y={480} id="P05" on={!!on}
+          {/* ════════════════════════════════════════════════════════════════
+               P05 – Verteilerkreis (1400,580)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="P05"><Pump x={1400} y={580} id="P05" on={!!on}
             onClick={() => s({ id: 'P05', name: 'Pumpe P05', desc: 'Verteilerkreis · 0-10V', status: on ? 'running' : 'standby', flow: '0-10V' })} /></E>
-          <V x={1060} y={480} />
-          <V x={1140} y={480} />
-          <Pipe d="M1080,480 L1080,466" c={C.hotPipe} w={2} />
-          <Pipe d="M1114,480 L1180,480" c={C.hotPipe} w={2.5} />
-          <L x={1088} y={465} t="0-10V" />
-          <L x={1130} y={470} t="DN 50" />
-          <L x={1130} y={495} t="DN 50" />
+          <TF x={1400} y={600} c={C.coldPipe} />
+          <V x={1350} y={580} />
+          {/* P05 → Verteiler */}
+          <Pipe d="M1414,580 L1535,628" c={C.hotPipe} w={2.5} />
 
-          {/* Verteiler Anschlüsse */}
-          <Pipe d="M1080,595 L1080,645" c={C.hotPipe} w={2.5} />
-          <Pipe d="M1080,680 L1080,700" c={C.coldPipe} w={2.5} dash="4,3" />
-          <PT x={1040} y={595} v="30°" c={C.coldPipe} />
-
-          {/* ════════════════════════════════════════════════════════
-               VERTEILER HEIZUNG
-             ════════════════════════════════════════════════════════ */}
-          <E id="VERT"><g transform="translate(1180,620)">
-            <rect x={-100} y={-25} width={200} height={50} rx={3} fill={C.panel} stroke={C.border} strokeWidth="2" />
-            <text x={0} y={5} textAnchor="middle" fill={C.bright} fontSize="6" fontWeight="700">VERTEILER HEIZUNG</text>
+          {/* ════════════════════════════════════════════════════════════════
+               VERTEILER HEIZUNG (1600, 628-672)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="VERT"><g transform="translate(1600,650)">
+            <rect x={-65} y={-22} width={130} height={44} rx={3} fill={C.panel} stroke={C.border} strokeWidth="2" />
+            <text x={0} y={5} textAnchor="middle" fill={C.bright} fontSize="6.5" fontWeight="700">VERTEILER HEIZUNG</text>
           </g></E>
-          <TF x={1100} y={585} c={C.hotPipe} />
-          <TF x={1260} y={585} c={C.hotPipe} />
-          <TF x={1100} y={655} c={C.coldPipe} />
-          <TF x={1260} y={655} c={C.coldPipe} />
 
-          {/* ════════════════════════════════════════════════════════
-               HEIZKREISE AUS VERTEILER
-             ════════════════════════════════════════════════════════ */}
-          {/* Anschluss weitere Stockwerke (ganz rechts vom Verteiler) */}
-          <Pipe d="M1250,250 L1250,595" c={C.hotPipe} w={2.5} />
-          <Pipe d="M1280,250 L1280,645" c={C.coldPipe} w={2.5} dash="4,3" />
-          <V x={1250} y={380} r={90} />
-          <V x={1280} y={380} r={90} />
-          <TF x={1250} y={350} c={C.hotPipe} />
-          <TF x={1280} y={350} c={C.coldPipe} />
-          <TF x={1250} y={420} c={C.hotPipe} />
-          <TF x={1280} y={420} c={C.coldPipe} />
-          <L x={1235} y={325} t="DN 65" />
-          <L x={1290} y={325} t="DN 65" />
-          <text x={1305} y={280} fill={C.dim} fontSize="4">Anschluss</text>
-          <text x={1305} y={292} fill={C.dim} fontSize="4">weitere</text>
-          <text x={1305} y={304} fill={C.dim} fontSize="4">Stockwerke</text>
+          <TF x={1280} y={560} c={C.hotPipe} />
+          <TF x={1500} y={620} c={C.hotPipe} />
+          <TF x={820} y={620} c={C.coldPipe} />
+          <TF x={1050} y={620} c={C.coldPipe} />
 
-          {/* ════════════════════════════════════════════════════════
-               ZULEITUNG SATELLITENHAUS E (rechts)
-             ════════════════════════════════════════════════════════ */}
-          <E id="SAT"><text x={1400} y={505} fill={C.dim} fontSize="4">Zuleitung Heizung</text>
-          <text x={1400} y={517} fill={C.dim} fontSize="4">zu Satellitenhaus E</text></E>
-          <Pipe d="M1380,520 L1500,520 L1500,400" c={C.hotPipe} w={2.5} />
-          <Pipe d="M1380,580 L1520,580 L1520,400" c={C.coldPipe} w={2.5} dash="4,3" />
-          <TF x={1420} y={520} c={C.hotPipe} />
-          <TF x={1420} y={580} c={C.coldPipe} />
-          <L x={1440} y={535} t="DN 50" />
-          <L x={1440} y={595} t="DN 50" />
+          {/* ════════════════════════════════════════════════════════════════
+               ANSCHLUSS WEITERE STOCKWERKE (1600,260-445)
+             ════════════════════════════════════════════════════════════════ */}
+          <text x={1620} y={260} fill={C.dim} fontSize="5">Anschluss weitere Stockwerke</text>
+          <Pipe d="M1600,295 L1600,628" c={C.hotPipe} w={2.5} />
+          <Pipe d="M1620,295 L1620,628" c={C.coldPipe} w={2.5} dash="4,3" />
+          <L x={1572} y={370} t="DN 65" />
+          <L x={1625} y={370} t="DN 65" />
+          <TF x={1600} y={355} c={C.hotPipe} />
+          <TF x={1620} y={355} c={C.coldPipe} />
+          <V x={1600} y={400} r={90} />
+          <V x={1620} y={400} r={90} />
 
-          {/* ════════════════════════════════════════════════════════
-               DRUCKHALTE- UND ENTGASUNGSSTATION
-             ════════════════════════════════════════════════════════ */}
-          <E id="DRUCK"><g transform="translate(1050,680)">
-            <rect x={-50} y={-30} width={100} height={60} rx={3} fill={C.panel} stroke={C.border} strokeWidth="1" />
-            <circle cx={-25} cy={-10} r={10} fill="none" stroke={C.dim} strokeWidth="0.8" />
-            <rect x={-30} y={-15} width={10} height={10} fill={C.coolPipe} fillOpacity="0.3" stroke={C.dim} strokeWidth="0.5" />
-            <rect x={15} y={-20} width={18} height={36} rx={2} fill="none" stroke={C.dim} strokeWidth="0.8" />
-            <text x={0} y={42} textAnchor="middle" fill={C.dim} fontSize="4">Druckhalte-,</text>
-            <text x={0} y={54} textAnchor="middle" fill={C.dim} fontSize="4">Entgasungs- und</text>
-            <text x={0} y={66} textAnchor="middle" fill={C.dim} fontSize="4">Nachspeisestation</text>
+          {/* ════════════════════════════════════════════════════════════════
+               ZULEITUNG SATELLITENHAUS E (rechts, 1850,500)
+             ════════════════════════════════════════════════════════════════ */}
+          <text x={1850} y={475} fill={C.dim} fontSize="5">Zuleitung Heizung zu Satellitenhaus E</text>
+          <Pipe d="M1665,650 L1710,650 L1710,500 L1850,500" c={C.hotPipe} w={2.5} />
+          <Pipe d="M1665,672 L1730,672 L1730,512 L1850,512" c={C.coldPipe} w={2.5} dash="4,3" />
+          <L x={1795} y={494} t="DN 50" />
+          <L x={1795} y={520} t="DN 50" />
+          <TF x={1822} y={490} c={C.hotPipe} />
+          <TF x={1822} y={522} c={C.coldPipe} />
+          <V x={1808} y={500} />
+          <V x={1808} y={512} />
+
+          {/* ════════════════════════════════════════════════════════════════
+               DRUCKHALTE-/ENTGASUNGSSTATION (unten, ~1400,770)
+             ════════════════════════════════════════════════════════════════ */}
+          <E id="DRUCK"><g transform="translate(1400,800)">
+            <rect x={-45} y={-30} width={90} height={60} rx={3} fill={C.panel} stroke={C.border} strokeWidth="1" />
+            <circle cx={-20} cy={-8} r={10} fill="none" stroke={C.dim} strokeWidth="0.8" />
+            <rect x={-28} y={-14} width={8} height={10} fill={C.coolPipe} fillOpacity="0.2" stroke={C.dim} strokeWidth="0.4" />
+            <rect x={12} y={-18} width={16} height={32} rx={2} fill="none" stroke={C.dim} strokeWidth="0.8" />
           </g></E>
+          <text x={1400} y={845} textAnchor="middle" fill={C.dim} fontSize="4.5">Druckhalte-, Entgasungs- und Nachspeisestation</text>
 
           {/* Aufbereitung */}
-          <g transform="translate(1180,680)">
-            <line x1={0} y1={-12} x2={0} y2={12} stroke={C.dim} strokeWidth="1.2" />
-            <line x1={-6} y1={-8} x2={6} y2={-8} stroke={C.dim} strokeWidth="1" />
-            <line x1={-6} y1={8} x2={6} y2={8} stroke={C.dim} strokeWidth="1" />
-            <text x={0} y={25} textAnchor="middle" fill={C.dim} fontSize="4">Aufbereitung</text>
-          </g>
+          <E id="AUFB"><g transform="translate(1600,800)">
+            <rect x={-32} y={-18} width={64} height={36} rx={2} fill={C.panel} stroke={C.border} strokeWidth="0.8" />
+            <text x={0} y={5} textAnchor="middle" fill={C.dim} fontSize="4.5">Aufbereitung</text>
+          </g></E>
 
           {/* Systemtrenner BA */}
-          <g transform="translate(1250,680)">
-            <RV x={0} y={0} />
-            <RV x={15} y={0} />
-            <text x={7} y={18} textAnchor="middle" fill={C.dim} fontSize="4">Systemtrenner BA</text>
-          </g>
+          <E id="SYST"><g transform="translate(1800,800)">
+            <rect x={-22} y={-11} width={44} height={22} rx={2} fill={C.panel} stroke={C.border} strokeWidth="0.8" />
+            <text x={0} y={3} textAnchor="middle" fill={C.dim} fontSize="4">Systemtrenner BA</text>
+          </g></E>
 
           {/* Anschluss TW */}
-          <Pipe d="M1270,680 L1320,680" c={C.geoPipe} w={1.5} />
-          <text x={1330} y={683} fill={C.geoPipe} fontSize="4">Anschluss TW</text>
-          <polygon points="1315,677 1315,683 1320,680" fill={C.geoPipe} />
+          <text x={1950} y={800} fill={C.geoPipe} fontSize="4.5">Anschluss TW</text>
+          <Pipe d="M1822,800 L1920,800" c={C.geoPipe} w={1.5} />
 
-          {/* Verbindungen Druckstation */}
-          <Pipe d="M1000,650 L1000,680" c={C.coldPipe} w={1.5} />
-          <Pipe d="M1100,680 L1180,680" c={C.coldPipe} w={1.5} />
-          <Pipe d="M1180,650 L1250,650" c={C.coldPipe} w={1.5} />
-          <Pipe d="M1250,650 L1320,650" c={C.geoPipe} w={1.5} />
+          {/* Druckstation Leitungen */}
+          <Pipe d="M1710,800 L1355,800" c={C.coldPipe} w={1.5} />
+          <Pipe d="M1445,800 L1568,800" c={C.coldPipe} w={1.5} />
+          <Pipe d="M1632,800 L1778,800" c={C.coldPipe} w={1.5} />
 
-          {/* ════════════════════════════════════════════════════════
-               DREIWEGEVENTILE (Mitte)
-             ════════════════════════════════════════════════════════ */}
-          <Mischer x={500} y={380} on={on} />
-          <Mischer x={580} y={380} on={on} />
-          <Mischer x={660} y={380} on={on} />
-          <TF x={450} y={380} c={C.hotPipe} />
-          <TF x={540} y={380} c={C.hotPipe} />
-          <TF x={620} y={380} c={C.hotPipe} />
-          <Pipe d="M500,380 L660,380" c={C.hotPipe} w={1.5} />
-          <PT x={440} y={295} v="35°" c={C.coldPipe} />
-          <PT x={505} y={295} v="40°" c={C.hotPipe} />
+          {/* ════════════════════════════════════════════════════════════════
+               MAG-BEHÄLTER
+             ════════════════════════════════════════════════════════════════ */}
+          <MAG x={450} y={618} />
+          <MAG x={680} y={618} />
 
-          {/* ════════════════════════════════════════════════════════
-               PASSTÜCKE
-             ════════════════════════════════════════════════════════ */}
-          {[[150,380],[480,460],[580,480],[750,580],[850,520],[980,580]].map(([px,py]) =>
-            <g key={'ps'+px+py}>
-              <rect x={px-10} y={py-5} width={20} height={10} fill={C.panel} stroke={C.border} strokeWidth="0.4" rx="1" />
-              <text x={px} y={py+2.5} textAnchor="middle" fill={C.dim} fontSize="3">Passtück</text>
-            </g>
-          )}
+          {/* ════════════════════════════════════════════════════════════════
+               TEMPERATUREN (prominent)
+             ════════════════════════════════════════════════════════════════ */}
+          <PT x={1510} y={662} v="30°" c={C.coldPipe} />
+          <PT x={1680} y={638} v={vl + '°'} c={C.hotPipe} />
 
-          {/* ════════════════════════════════════════════════════════
+          {/* ════════════════════════════════════════════════════════════════
                FLOW ANIMATION
-             ════════════════════════════════════════════════════════ */}
+             ════════════════════════════════════════════════════════════════ */}
           {flow && on && <g>
-            <Flow path="M50,420 L120,420 L120,380 L225,380" c={C.geoPipe} dur="3s" r={3} />
-            <Flow path="M245,495 L245,630" c={C.geoPipe} dur="2s" r={3} />
-            <Flow path="M610,620 L700,620 L700,480 L870,480 L870,520" c={C.hotPipe} dur="3.5s" r={4} />
-            <Flow path="M970,520 L1080,520 L1180,480" c={C.hotPipe} dur="2s" r={4} />
-            <Flow path="M1080,580 L970,580" c={C.coldPipe} dur="2.5s" r={3} />
-            <Flow path="M870,585 L870,620 L700,620 L490,620" c={C.coldPipe} dur="3s" r={3} />
-            <Flow path="M280,180 L280,345" c={C.geoPipe} dur="2.5s" r={3} />
-            <Flow path="M620,150 L620,350" c={C.hotPipe} dur="2s" r={3} />
+            {/* Erdwärme → P01 → Puffer */}
+            <Flow path="M120,400 L270,400 L270,550 L450,550" c={C.geoPipe} dur="3s" r={4} />
+            {/* PVT → Puffer */}
+            <Flow path="M500,238 L500,485" c={C.geoPipe} dur="2.5s" r={3} />
+            {/* Abluft → Puffer */}
+            <Flow path="M700,242 L700,540" c={C.hotPipe} dur="3s" r={3} />
+            {/* WP → P04 → Puffer 1500 */}
+            <Flow path="M695,808 L735,808 L735,668 L850,680 L1100,578" c={C.hotPipe} dur="4s" r={4} />
+            {/* Puffer 1500 → Verteiler */}
+            <Flow path="M1200,600 L1535,650" c={C.hotPipe} dur="2.5s" r={4} />
+            {/* Abluft kalt */}
+            <Flow path="M682,340 L682,540" c={C.coldPipe} dur="3s" r={3} />
           </g>}
 
-          {/* Titel */}
-          <text x={800} y={1060} textAnchor="middle" fill={C.dim} fontSize="6">
-            ② Hauptstation + Anschluss an Satellitenhaus – Detail · Darmstadt 2026
-          </text>
+          {/* ═══════════ Titel ═══════════ */}
+          <circle cx={72} cy={1242} r={16} fill="none" stroke={C.dim} strokeWidth="1.5" />
+          <text x={80} y={1250} fill={C.bright} fontSize="12" fontWeight="700">2</text>
+          <text x={105} y={1250} fill={C.bright} fontSize="10" fontWeight="700">Hauptstation + Anschluss an Satellitenhaus - Detail</text>
+          <text x={105} y={1268} fill={C.dim} fontSize="5">Darmstadt 2026 · KurTech</text>
         </svg>
 
       {sel && !editMode && <DetailPanel i={sel} onClose={() => setSel(null)} />}

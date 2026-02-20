@@ -30,7 +30,7 @@ const html = renderToStaticMarkup(
 );
 
 // Find the main diagram SVG (viewBox="0 0 1560 640")
-const svgStart = html.indexOf('<svg viewBox="0 0 1560 640"');
+const svgStart = html.indexOf('<svg viewBox="0 0 1600 1100"');
 if (svgStart === -1) {
   console.log('ERROR: Main SVG not found');
   process.exit(1);
@@ -65,8 +65,8 @@ let svg = html.substring(svgStart, svgEnd);
 
 // Add namespace and fix attributes
 svg = svg.replace(
-  '<svg viewBox="0 0 1560 640"',
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 640" width="1560" height="640"'
+  '<svg viewBox="0 0 1600 1100"',
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" width="1600" height="1100"'
 );
 
 // Remove React style attribute
@@ -75,7 +75,7 @@ svg = svg.replace(/style="display:block;[^"]*"/, '');
 // Add dark background rect at the beginning
 svg = svg.replace(
   '<defs>',
-  '<rect width="1560" height="640" fill="#0c1017"/>\n<defs>'
+  '<rect width="1600" height="1100" fill="#0c1017"/>\n<defs>'
 );
 
 const output = '<?xml version="1.0" encoding="UTF-8"?>\n' + svg;
