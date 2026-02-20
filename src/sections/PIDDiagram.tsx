@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, createContext, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, ZoomIn, ZoomOut, RotateCcw, Droplets, Pencil, Copy, Check, MousePointer, Trash2 } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw, Droplets, Pencil, Copy, Check, MousePointer, Trash2, Download } from 'lucide-react';
 import type { HeatingData } from '@/types/heating';
 
 /* ═══════════════════════════════════════════════════════════
@@ -444,6 +444,30 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // ── SVG Download ──
+  const downloadSVG = () => {
+    const svg = containerRef.current?.querySelector('svg');
+    if (!svg) return;
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    // Remove animation classes, add white bg for Inkscape
+    clone.querySelectorAll('.pp').forEach(el => el.classList.remove('pp'));
+    clone.querySelectorAll('animate, animateMotion, animateTransform').forEach(el => el.remove());
+    // Set explicit size
+    clone.setAttribute('width', '1560');
+    clone.setAttribute('height', '640');
+    clone.removeAttribute('style');
+    const blob = new Blob(
+      ['<?xml version="1.0" encoding="UTF-8"?>\n', new XMLSerializer().serializeToString(clone)],
+      { type: 'image/svg+xml' }
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pid-diagram.svg';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const editCtx: EditCtx = {
     active: editMode, selected: editSel, select: setEditSel, offsets, startDrag,
   };
@@ -535,6 +559,10 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
         <Button variant="outline" size="sm" onClick={() => { setEditMode(!editMode); setEditSel(null); }}
           className={`border-[#1e2736] text-xs ${editMode ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'text-slate-400'}`}>
           <Pencil className="w-3.5 h-3.5 mr-1" />{editMode ? 'Edit AN' : 'Edit'}
+        </Button>
+        <Button variant="outline" size="sm" onClick={downloadSVG}
+          className="border-[#1e2736] text-xs text-slate-400">
+          <Download className="w-3.5 h-3.5 mr-1" />SVG
         </Button>
       </div>
     </div>
