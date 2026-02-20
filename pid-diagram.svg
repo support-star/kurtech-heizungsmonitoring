@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 640" width="1560" height="640">
+<rect width="1560" height="640" fill="#ffffff"/>
+<defs>
+  <linearGradient id="gTankHot" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#cc0000" stop-opacity="0.12"/>
+    <stop offset="100%" stop-color="#0055cc" stop-opacity="0.08"/>
+  </linearGradient>
+</defs>
+
+<!-- REGION LABELS -->
+<text x="40" y="48" fill="#ccc" font-size="5.5" font-weight="700" letter-spacing="2.5">QUELLEN</text>
+<text x="340" y="540" fill="#ccc" font-size="5.5" font-weight="700" letter-spacing="2.5">ERZEUGUNG</text>
+<text x="740" y="170" fill="#ccc" font-size="5.5" font-weight="700" letter-spacing="2.5">SPEICHER</text>
+<text x="940" y="210" fill="#ccc" font-size="5.5" font-weight="700" letter-spacing="2.5">VERTEILUNG</text>
+<text x="1230" y="170" fill="#ccc" font-size="5.5" font-weight="700" letter-spacing="2.5">KÄLTE</text>
+
+<!-- Trennlinie -->
+<line x1="1175" y1="50" x2="1175" y2="560" stroke="#ccc" stroke-width="0.6" stroke-dasharray="6,4"/>
+
+<!-- ERDWÄRME -->
+<rect x="20" y="220" width="95" height="42" rx="3" fill="white" stroke="#228b22" stroke-width="1"/>
+<text x="67" y="240" text-anchor="middle" fill="#111" font-size="5" font-weight="600">Erdwärme</text>
+<text x="67" y="250" text-anchor="middle" fill="#555" font-size="3.5">FVU Nahwärme</text>
+
+<!-- PVT Solar -->
+<rect x="155" y="55" width="105" height="45" rx="3" fill="white" stroke="#cc0000" stroke-width="1"/>
+<text x="207" y="78" text-anchor="middle" fill="#111" font-size="5" font-weight="600">PVT-Solar</text>
+<text x="207" y="90" text-anchor="middle" fill="#555" font-size="3.5">6,2 kW th.</text>
+
+<!-- Abluft WP -->
+<rect x="390" y="55" width="130" height="45" rx="3" fill="white" stroke="#cc0000" stroke-width="1"/>
+<text x="455" y="78" text-anchor="middle" fill="#111" font-size="5" font-weight="600">Abluft-WP</text>
+<text x="455" y="90" text-anchor="middle" fill="#555" font-size="3.5">auf Dach · Rohrbegl.</text>
+
+<!-- MAIN PIPES Erdwärme → WT -->
+<line x1="115" y1="240" x2="350" y2="240" stroke="#228b22" stroke-width="3"/>
+<line x1="350" y1="360" x2="115" y2="360" stroke="#228b22" stroke-width="2.5" stroke-dasharray="5,3"/>
+
+<!-- Pumps -->
+<circle cx="162" cy="240" r="10" fill="white" stroke="#cc0000" stroke-width="1.5"/>
+<polygon points="162,236 166,243 158,243" fill="#cc0000"/>
+<text x="162" y="256" text-anchor="middle" fill="#cc0000" font-size="4.5" font-weight="700">P01</text>
+
+<circle cx="330" cy="240" r="10" fill="white" stroke="#cc0000" stroke-width="1.5"/>
+<polygon points="330,236 334,243 326,243" fill="#cc0000"/>
+<text x="330" y="256" text-anchor="middle" fill="#cc0000" font-size="4.5" font-weight="700">P03</text>
+
+<!-- PUFFER PVT 2000L -->
+<rect x="211" y="195" width="48" height="210" rx="24" fill="url(#gTankHot)" stroke="#333333" stroke-width="1.2"/>
+<text x="235" y="188" text-anchor="middle" fill="#111" font-size="5" font-weight="600">Puffer PVT</text>
+<text x="235" y="178" text-anchor="middle" fill="#555" font-size="4">2000 L</text>
+
+<!-- WT 47kW -->
+<path d="M355,235 A45,45 0 0,1 355,365" fill="none" stroke="#333333" stroke-width="1.5"/>
+<text x="380" y="388" text-anchor="middle" fill="#555" font-size="4">WT 47 kW</text>
+
+<!-- WP Einhausung -->
+<rect x="460" y="185" width="180" height="230" rx="5" fill="none" stroke="#0055cc" stroke-width="0.8" stroke-dasharray="8,4" opacity="0.5"/>
+<text x="550" y="178" text-anchor="middle" fill="#0055cc" font-size="4" font-weight="600" opacity="0.7">Maschinenraum WP</text>
+
+<!-- WP 175kW -->
+<rect x="475" y="214" width="110" height="172" rx="5" fill="white" stroke="#cc0000" stroke-width="1.5"/>
+<text x="530" y="232" text-anchor="middle" fill="#111" font-size="5.5" font-weight="700">Wärmepumpe</text>
+<text x="530" y="245" text-anchor="middle" fill="#555" font-size="4">175 kW th · 38,9 kW el</text>
+
+<!-- WP→P04→Puffer HZ pipes -->
+<line x1="585" y1="240" x2="720" y2="240" stroke="#cc0000" stroke-width="3"/>
+<line x1="585" y1="360" x2="720" y2="360" stroke="#0055cc" stroke-width="2.5" stroke-dasharray="5,3"/>
+
+<circle cx="660" cy="240" r="10" fill="white" stroke="#cc0000" stroke-width="1.5"/>
+<polygon points="660,236 664,243 656,243" fill="#cc0000"/>
+<text x="660" y="256" text-anchor="middle" fill="#cc0000" font-size="4.5" font-weight="700">P04</text>
+
+<!-- PUFFER HZ 1500L -->
+<rect x="728" y="195" width="44" height="210" rx="22" fill="url(#gTankHot)" stroke="#333333" stroke-width="1.2"/>
+<text x="750" y="188" text-anchor="middle" fill="#111" font-size="5" font-weight="600">Puffer HZ</text>
+<text x="750" y="178" text-anchor="middle" fill="#555" font-size="4">1500 L</text>
+
+<!-- Puffer→P05→Verteiler -->
+<line x1="772" y1="240" x2="895" y2="240" stroke="#cc0000" stroke-width="3"/>
+<line x1="772" y1="360" x2="895" y2="360" stroke="#0055cc" stroke-width="2.5" stroke-dasharray="5,3"/>
+
+<circle cx="835" cy="240" r="10" fill="white" stroke="#cc0000" stroke-width="1.5"/>
+<polygon points="835,236 839,243 831,243" fill="#cc0000"/>
+<text x="835" y="256" text-anchor="middle" fill="#cc0000" font-size="4.5" font-weight="700">P05</text>
+
+<!-- VERTEILER HEIZUNG -->
+<rect x="895" y="260" width="180" height="18" rx="3" fill="white" stroke="#cc0000" stroke-width="1.5"/>
+<text x="985" y="273" text-anchor="middle" fill="#111" font-size="5" font-weight="700">VERTEILER HEIZUNG</text>
+<rect x="895" y="284" width="180" height="14" rx="3" fill="white" stroke="#0055cc" stroke-width="1" stroke-dasharray="4,2"/>
+<text x="985" y="294" text-anchor="middle" fill="#0055cc" font-size="3.5">Rücklauf</text>
+
+<!-- KÄLTE BEREICH -->
+<path d="M1180,228 A55,55 0 0,1 1180,372" fill="none" stroke="#333333" stroke-width="1.5"/>
+<text x="1210" y="388" text-anchor="middle" fill="#555" font-size="4" font-weight="600">Brunnen-WT</text>
+
+<rect x="1155" y="162" width="115" height="48" rx="3" fill="white" stroke="#0088aa" stroke-width="0.8"/>
+<text x="1212" y="176" text-anchor="middle" fill="#0088aa" font-size="4" font-weight="700">Nullenergiebrunnen</text>
+<text x="1212" y="188" text-anchor="middle" fill="#555" font-size="3">4/50 · 40m³ · 1000 L</text>
+
+<rect x="1170" y="400" width="240" height="85" rx="5" fill="none" stroke="#0088aa" stroke-width="1" opacity="0.5"/>
+<text x="1290" y="412" text-anchor="middle" fill="#0088aa" font-size="3.5" font-weight="600">Kältegestell · Einhausung</text>
+
+<!-- Title block -->
+<line x1="20" y1="600" x2="1540" y2="600" stroke="#999" stroke-width="0.5"/>
+<text x="40" y="620" fill="#111" font-size="7" font-weight="700">2 · Hauptstation + Anschluss an Satellitenhaus - Detail</text>
+<text x="40" y="632" fill="#555" font-size="4">Darmstadt 2026 · KurTech</text>
+</svg>

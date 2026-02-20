@@ -8,30 +8,30 @@ import type { HeatingData } from '@/types/heating';
    FARB-PALETTE
    ═══════════════════════════════════════════════════════════ */
 const C = {
-  bg: '#0c1017',
-  panel: '#111820',
-  border: '#1a2332',
-  hotPipe: '#ef4444',
-  hotGlow: '#ef444425',
-  warmPipe: '#f97316',
-  warmGlow: '#f9731625',
-  coldPipe: '#3b82f6',
-  coldGlow: '#3b82f625',
-  coolPipe: '#06b6d4',
-  coolGlow: '#06b6d425',
-  geoPipe: '#22c55e',
-  geoGlow: '#22c55e25',
-  pumpOn: '#22c55e',
-  pumpOff: '#ef4444',
-  pumpOnGlow: '#22c55e20',
-  pumpOffGlow: '#ef444418',
-  tankStroke: '#475569',
-  tankFill: '#0f172a',
-  text: '#94a3b8',
-  bright: '#e2e8f0',
-  dim: '#334155',
-  accent: '#10b981',
-  enclosure: '#3b82f680', // WP Einhausung
+  bg: '#ffffff',
+  panel: '#ffffff',
+  border: '#999999',
+  hotPipe: '#cc0000',
+  hotGlow: 'none',
+  warmPipe: '#cc0000',
+  warmGlow: 'none',
+  coldPipe: '#0055cc',
+  coldGlow: 'none',
+  coolPipe: '#0088aa',
+  coolGlow: 'none',
+  geoPipe: '#228b22',
+  geoGlow: 'none',
+  pumpOn: '#cc0000',
+  pumpOff: '#666666',
+  pumpOnGlow: 'none',
+  pumpOffGlow: 'none',
+  tankStroke: '#333333',
+  tankFill: '#f8f8f8',
+  text: '#333333',
+  bright: '#111111',
+  dim: '#555555',
+  accent: '#cc0000',
+  enclosure: '#0055cc80', // WP Einhausung
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -41,25 +41,25 @@ function Defs() {
   return (
     <defs>
       <linearGradient id="gTankHot" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.25" />
-        <stop offset="50%" stopColor="#ea580c" stopOpacity="0.08" />
-        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.15" />
+        <stop offset="0%" stopColor="#cc0000" stopOpacity="0.12" />
+        <stop offset="50%" stopColor="#ffffff" stopOpacity="0.02" />
+        <stop offset="100%" stopColor="#0055cc" stopOpacity="0.08" />
       </linearGradient>
       <linearGradient id="gTankCold" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.12" />
-        <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.2" />
+        <stop offset="0%" stopColor="#0088aa" stopOpacity="0.06" />
+        <stop offset="100%" stopColor="#005588" stopOpacity="0.1" />
       </linearGradient>
       <linearGradient id="gWt" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.7" />
-        <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.6" />
-        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.7" />
+        <stop offset="0%" stopColor="#cc0000" stopOpacity="0.15" />
+        <stop offset="50%" stopColor="#666666" stopOpacity="0.08" />
+        <stop offset="100%" stopColor="#0055cc" stopOpacity="0.15" />
       </linearGradient>
       <filter id="gl" x="-30%" y="-30%" width="160%" height="160%">
-        <feGaussianBlur stdDeviation="3" result="b" />
+        <feGaussianBlur stdDeviation="0" result="b" />
         <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
       </filter>
       <style>{`
-        @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+        @keyframes pulse{0%,100%{opacity:.7}50%{opacity:1}}
         .pp{animation:pulse 2s ease-in-out infinite}
         .mf{font-family:'JetBrains Mono','Fira Code',ui-monospace,monospace}
       `}</style>
@@ -93,7 +93,7 @@ function E({ id, children }: { id: string; children: React.ReactNode }) {
   >
     {active && isSel && <>
       {/* Selection highlight ring */}
-      <circle cx="0" cy="0" r="16" fill="#fbbf24" fillOpacity="0.06" stroke="#fbbf24" strokeWidth="0.8" strokeDasharray="3,2" />
+      <circle cx="0" cy="0" r="16" fill="#cc9900" fillOpacity="0.06" stroke="#cc9900" strokeWidth="0.8" strokeDasharray="3,2" />
     </>}
     {children}
   </g>;
@@ -102,9 +102,8 @@ function E({ id, children }: { id: string; children: React.ReactNode }) {
 /* ═══════════════════════════════════════════════════════════
    PRIMITIVES
    ═══════════════════════════════════════════════════════════ */
-function Pipe({ d, c, w = 2, dash, glow }: { d: string; c: string; w?: number; dash?: string; glow?: string }) {
+function Pipe({ d, c, w = 2, dash }: { d: string; c: string; w?: number; dash?: string; glow?: string }) {
   return <g>
-    {glow && <path d={d} fill="none" stroke={glow} strokeWidth={w + 8} strokeLinecap="round" strokeLinejoin="round" />}
     <path d={d} fill="none" stroke={c} strokeWidth={w} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dash} />
   </g>;
 }
@@ -115,12 +114,11 @@ function Flow({ path, c, dur = '3s', delay = '0s', r = 2.5 }: { path: string; c:
 
 function Pump({ x, y, id, on, onClick }: { x: number; y: number; id: string; on: boolean; onClick?: () => void }) {
   const cl = on ? C.pumpOn : C.pumpOff;
-  const gw = on ? C.pumpOnGlow : C.pumpOffGlow;
   return <g transform={`translate(${x},${y})`} className="cursor-pointer" onClick={onClick}>
-    <circle r="11" fill={gw} />
-    <circle r="8" fill={C.tankFill} stroke={cl} strokeWidth="1.2" />
-    <polygon points="0,-3.5 3.5,2.5 -3.5,2.5" fill={cl} className={on ? 'pp' : ''} />
-    <text y="14" textAnchor="middle" fill={cl} fontSize="4" fontWeight="700">{id}</text>
+    <circle r="10" fill="white" stroke={cl} strokeWidth="1.5" />
+    <circle r="7" fill="none" stroke={cl} strokeWidth="0.8" />
+    <polygon points="0,-4 4,3 -4,3" fill={cl} className={on ? 'pp' : ''} />
+    <text y="16" textAnchor="middle" fill={cl} fontSize="4.5" fontWeight="700">{id}</text>
   </g>;
 }
 
@@ -147,14 +145,14 @@ function Tank({ cx, y, w, h, label, vol, temps, grad, onClick }: {
 
 function T({ x, y, v, c }: { x: number; y: number; v: string; c: string }) {
   return <g>
-    <rect x={x} y={y - 4.5} width={20} height={9} rx="1.5" fill={C.bg} fillOpacity="0.85" stroke={c} strokeWidth="0.3" strokeOpacity="0.35" />
+    <rect x={x} y={y - 4.5} width={20} height={9} rx="1.5" fill="white" stroke={c} strokeWidth="0.5" />
     <text x={x + 10} y={y + 2} textAnchor="middle" fill={c} fontSize="4.5" fontWeight="600" fontFamily="monospace">{v}</text>
   </g>;
 }
 
 function PT({ x, y, v, c }: { x: number; y: number; v: string; c: string }) {
   return <g>
-    <rect x={x - 11} y={y - 5} width={22} height={10} rx="2" fill={C.bg} fillOpacity="0.9" stroke={c} strokeWidth="0.35" strokeOpacity="0.4" />
+    <rect x={x - 11} y={y - 5} width={22} height={10} rx="2" fill="white" stroke={c} strokeWidth="0.5" />
     <text x={x} y={y + 2.5} textAnchor="middle" fill={c} fontSize="5" fontWeight="700" fontFamily="monospace">{v}</text>
   </g>;
 }
@@ -182,9 +180,9 @@ function RV({ x, y, rot = 0 }: { x: number; y: number; rot?: number }) {
 function SV({ x, y, label = 'SV' }: { x: number; y: number; label?: string }) {
   return <g>
     <line x1={x} y1={y - 5} x2={x} y2={y - 1} stroke={C.dim} strokeWidth="0.6" />
-    <polygon points={`${x - 3},${y - 1} ${x + 3},${y - 1} ${x},${y + 4}`} fill="none" stroke="#f59e0b" strokeWidth="0.7" />
-    <line x1={x - 2.5} y1={y + 5} x2={x + 2.5} y2={y + 5} stroke="#f59e0b" strokeWidth="0.6" />
-    <text x={x} y={y + 10} textAnchor="middle" fill="#f59e0b" fontSize="3" fontWeight="600">{label}</text>
+    <polygon points={`${x - 3},${y - 1} ${x + 3},${y - 1} ${x},${y + 4}`} fill="none" stroke="#cc6600" strokeWidth="0.7" />
+    <line x1={x - 2.5} y1={y + 5} x2={x + 2.5} y2={y + 5} stroke="#cc6600" strokeWidth="0.6" />
+    <text x={x} y={y + 10} textAnchor="middle" fill="#cc6600" fontSize="3" fontWeight="600">{label}</text>
   </g>;
 }
 
@@ -201,15 +199,15 @@ function USV({ x, y1v, y2r }: { x: number; y1v: number; y2r: number }) {
 /** Temperaturfühler-Symbol (kleiner Kreis mit T) */
 function TF({ x, y, c = C.dim }: { x: number; y: number; c?: string }) {
   return <g>
-    <circle cx={x} cy={y} r="2.5" fill={C.tankFill} stroke={c} strokeWidth="0.5" />
+    <circle cx={x} cy={y} r="2.5" fill="white" stroke={c} strokeWidth="0.7" />
     <text x={x} y={y + 2.5} textAnchor="middle" fill={c} fontSize="3" fontWeight="700">T</text>
   </g>;
 }
 
 function MAG({ x, y }: { x: number; y: number }) {
   return <g>
-    <line x1={x} y1={y - 9} x2={x} y2={y - 4} stroke={C.dim} strokeWidth="0.6" />
-    <ellipse cx={x} cy={y} rx="5.5" ry="7" fill={C.tankFill} stroke={C.dim} strokeWidth="0.7" />
+    <line x1={x} y1={y - 9} x2={x} y2={y - 4} stroke={C.dim} strokeWidth="0.8" />
+    <ellipse cx={x} cy={y} rx="5.5" ry="7" fill="white" stroke={C.dim} strokeWidth="0.8" />
     <text x={x} y={y + 3} textAnchor="middle" fill={C.dim} fontSize="3" fontWeight="600">MAG</text>
   </g>;
 }
@@ -220,10 +218,9 @@ function Box({ x, y, w, h, title, sub, active, color, onClick }: {
 }) {
   const cl = color || C.accent;
   return <g className="cursor-pointer" onClick={onClick}>
-    {active && <rect x={x - 2} y={y - 2} width={w + 4} height={h + 4} rx="6" fill={cl} opacity="0.06" filter="url(#gl)" />}
-    <rect x={x} y={y} width={w} height={h} rx="4" fill={C.panel} stroke={active ? cl : C.border} strokeWidth={active ? 1.8 : 1.2} />
-    <text x={x + w / 2} y={y + (sub ? h / 2 - 2 : h / 2 + 2)} textAnchor="middle" fill={C.bright} fontSize="5" fontWeight="600">{title}</text>
-    {sub && <text x={x + w / 2} y={y + h / 2 + 5} textAnchor="middle" fill={C.dim} fontSize="3.5">{sub}</text>}
+    <rect x={x} y={y} width={w} height={h} rx="3" fill="white" stroke={active ? cl : '#999'} strokeWidth={active ? 1.5 : 1} />
+    <text x={x + w / 2} y={y + (sub ? h / 2 - 2 : h / 2 + 2)} textAnchor="middle" fill="#111" fontSize="5" fontWeight="600">{title}</text>
+    {sub && <text x={x + w / 2} y={y + h / 2 + 5} textAnchor="middle" fill="#555" fontSize="3.5">{sub}</text>}
   </g>;
 }
 
@@ -240,16 +237,13 @@ function FBH({ x, y, label }: { x: number; y: number; label: string }) {
 
 /** 3-Wege-Mischer (Dreiwegemischventil) – DIN Symbol */
 function Mischer({ x, y, rot = 0, on }: { x: number; y: number; rot?: number; on?: boolean }) {
-  const cl = on ? C.pumpOn : C.pumpOff;
+  const cl = on ? '#cc0000' : '#666';
   return <g transform={`translate(${x},${y}) rotate(${rot})`}>
-    {/* Zwei Dreiecke = Bowtie + dritter Anschluss */}
-    <polygon points="-4,-3.5 0,0 -4,3.5" fill="none" stroke={cl} strokeWidth="0.8" />
-    <polygon points="4,-3.5 0,0 4,3.5" fill="none" stroke={cl} strokeWidth="0.8" />
-    {/* Bypass-Pfeil (3. Weg) */}
+    <polygon points="-4,-3.5 0,0 -4,3.5" fill="none" stroke={cl} strokeWidth="1" />
+    <polygon points="4,-3.5 0,0 4,3.5" fill="none" stroke={cl} strokeWidth="1" />
     <line x1="0" y1="0" x2="0" y2="-6" stroke={cl} strokeWidth="1.3" />
     <polygon points="-1.5,-6 0,-9 1.5,-6" fill={cl} />
-    {/* M-Kreis (Stellantrieb) */}
-    <circle cx="0" cy="-12" r="3" fill={C.tankFill} stroke={cl} strokeWidth="0.6" />
+    <circle cx="0" cy="-12" r="3" fill="white" stroke={cl} strokeWidth="0.8" />
     <text x="0" y="-10.5" textAnchor="middle" fill={cl} fontSize="3" fontWeight="700">M</text>
   </g>;
 }
@@ -310,7 +304,7 @@ function HKAbgang({ vlX, y, rlY, nr, vlTemp, rlTemp, on, dn }: {
 /** Wärmemengenzähler (WMZ / Σ-Symbol) */
 function WMZ({ x, y, c = C.dim }: { x: number; y: number; c?: string }) {
   return <g>
-    <rect x={x - 3.5} y={y - 3.5} width={7} height={7} rx="1" fill={C.coldPipe} fillOpacity="0.15" stroke={c} strokeWidth="0.5" />
+    <rect x={x - 3.5} y={y - 3.5} width={7} height={7} rx="1" fill="white" stroke={c} strokeWidth="0.7" />
     <text x={x} y={y + 3} textAnchor="middle" fill={c} fontSize="3.5" fontWeight="700">Σ</text>
   </g>;
 }
@@ -325,7 +319,7 @@ function EBox({ x, y, label }: { x: number; y: number; label: string }) {
 }
 
 function Rgn({ x, y, t }: { x: number; y: number; t: string }) {
-  return <text x={x} y={y} fill={C.dim} fontSize="5.5" fontWeight="700" letterSpacing="2.5" opacity="0.22">{t}</text>;
+  return <text x={x} y={y} fill="#cccccc" fontSize="5.5" fontWeight="700" letterSpacing="2.5" opacity="0.5">{t}</text>;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -335,26 +329,26 @@ interface CI { id: string; name: string; desc: string; status?: string; temp?: s
 
 function DetailPanel({ i, onClose }: { i: CI; onClose: () => void }) {
   const on = i.status === 'running';
-  return <div className="absolute bottom-3 left-3 right-3 z-30 bg-[#0f1520]/95 backdrop-blur-xl border border-[#1e2736] rounded-xl p-3 shadow-2xl" onClick={e => e.stopPropagation()}>
+  return <div className="absolute bottom-3 left-3 right-3 z-30 bg-white/95 backdrop-blur-xl border border-gray-300 rounded-xl p-3 shadow-2xl" onClick={e => e.stopPropagation()}>
     <div className="flex justify-between items-start mb-2">
-      <div><h3 className="text-white font-bold text-sm">{i.name}</h3><p className="text-slate-400 text-xs">{i.desc}</p></div>
-      <button onClick={onClose} className="text-slate-500 hover:text-white p-1"><X className="w-4 h-4" /></button>
+      <div><h3 className="text-gray-900 font-bold text-sm">{i.name}</h3><p className="text-gray-600 text-xs">{i.desc}</p></div>
+      <button onClick={onClose} className="text-gray-500 hover:text-gray-900 p-1"><X className="w-4 h-4" /></button>
     </div>
     <div className="flex flex-wrap gap-1.5 text-xs">
       <Ch l="ID" v={i.id} mono />
-      <Ch l="Status" badge={<Badge className={`text-[10px] ${on ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>{on ? 'Laufend' : 'Aus'}</Badge>} />
-      {i.temp && <Ch l="VL" v={i.temp} c="text-orange-400" />}
-      {i.tempRet && <Ch l="RL" v={i.tempRet} c="text-sky-400" />}
-      {i.flow && <Ch l="Durchfluss" v={i.flow} c="text-emerald-400" />}
+      <Ch l="Status" badge={<Badge className={`text-[10px] ${on ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{on ? 'Laufend' : 'Aus'}</Badge>} />
+      {i.temp && <Ch l="VL" v={i.temp} c="text-red-600" />}
+      {i.tempRet && <Ch l="RL" v={i.tempRet} c="text-blue-600" />}
+      {i.flow && <Ch l="Durchfluss" v={i.flow} c="text-green-600" />}
       {i.dn && <Ch l="DN" v={i.dn} />}
-      {i.power && <Ch l="Leistung" v={i.power} c="text-amber-400" />}
+      {i.power && <Ch l="Leistung" v={i.power} c="text-orange-600" />}
     </div>
   </div>;
 }
 
-function Ch({ l, v, badge, c = 'text-slate-300', mono }: { l: string; v?: string; badge?: React.ReactNode; c?: string; mono?: boolean }) {
-  return <div className="bg-[#0a0e14] rounded-md px-2.5 py-1 inline-flex items-center gap-1.5">
-    <span className="text-[8px] text-slate-500 uppercase">{l}</span>
+function Ch({ l, v, badge, c = 'text-gray-700', mono }: { l: string; v?: string; badge?: React.ReactNode; c?: string; mono?: boolean }) {
+  return <div className="bg-gray-100 rounded-md px-2.5 py-1 inline-flex items-center gap-1.5">
+    <span className="text-[8px] text-gray-500 uppercase">{l}</span>
     {badge || <span className={`font-semibold text-xs ${c} ${mono ? 'font-mono' : ''}`}>{v}</span>}
   </div>;
 }
@@ -542,60 +536,60 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     {/* Header */}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 className="text-xl font-bold text-white">P&ID-Diagramm</h2>
-        <p className="text-sm text-slate-400">② Hauptstation + Anschluss Satellitenhaus – Detail</p>
+        <h2 className="text-xl font-bold text-gray-900">P&ID-Diagramm</h2>
+        <p className="text-sm text-gray-600">② Hauptstation + Anschluss Satellitenhaus – Detail</p>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={() => setFlow(!flow)}
-          className={`border-[#1e2736] text-xs ${flow ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400'}`}>
+          className={`border-gray-300 text-xs ${flow ? 'bg-emerald-500/10 text-green-600' : 'text-gray-600'}`}>
           <Droplets className="w-3.5 h-3.5 mr-1" />{flow ? 'Strömung AN' : 'Strömung AUS'}
         </Button>
-        <div className="flex items-center gap-1 bg-[#111620] rounded-lg border border-[#1e2736] p-0.5">
-          <Button variant="ghost" size="sm" onClick={zoomOut} className="text-slate-400 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
-          <span className="text-xs text-slate-400 w-12 text-center font-mono">{Math.round(zoom * 100)}%</span>
-          <Button variant="ghost" size="sm" onClick={zoomIn} className="text-slate-400 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
-          <Button variant="ghost" size="sm" onClick={resetView} className="text-slate-400 h-7 w-7 p-0"><RotateCcw className="w-3.5 h-3.5" /></Button>
+        <div className="flex items-center gap-1 bg-gray-50 rounded-lg border border-gray-300 p-0.5">
+          <Button variant="ghost" size="sm" onClick={zoomOut} className="text-gray-600 h-7 w-7 p-0"><ZoomOut className="w-3.5 h-3.5" /></Button>
+          <span className="text-xs text-gray-600 w-12 text-center font-mono">{Math.round(zoom * 100)}%</span>
+          <Button variant="ghost" size="sm" onClick={zoomIn} className="text-gray-600 h-7 w-7 p-0"><ZoomIn className="w-3.5 h-3.5" /></Button>
+          <Button variant="ghost" size="sm" onClick={resetView} className="text-gray-600 h-7 w-7 p-0"><RotateCcw className="w-3.5 h-3.5" /></Button>
         </div>
         <Button variant="outline" size="sm" onClick={() => { setEditMode(!editMode); setEditSel(null); }}
-          className={`border-[#1e2736] text-xs ${editMode ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'text-slate-400'}`}>
+          className={`border-gray-300 text-xs ${editMode ? 'bg-amber-500/20 text-orange-600 border-blue-500/40' : 'text-gray-600'}`}>
           <Pencil className="w-3.5 h-3.5 mr-1" />{editMode ? 'Edit AN' : 'Edit'}
         </Button>
         <Button variant="outline" size="sm" onClick={downloadSVG}
-          className="border-[#1e2736] text-xs text-slate-400">
+          className="border-gray-300 text-xs text-gray-600">
           <Download className="w-3.5 h-3.5 mr-1" />SVG
         </Button>
       </div>
     </div>
 
     {/* Status-Bar */}
-    <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-xs font-mono">
+    <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-gray-50/50 rounded-lg border border-gray-300 text-xs font-mono">
       <span className="flex items-center gap-1.5">
         <span className={`w-2 h-2 rounded-full ${on ? 'bg-emerald-400 animate-pulse' : 'bg-red-500'}`} />
-        <span className={on ? 'text-orange-400 font-semibold' : 'text-slate-500'}>
+        <span className={on ? 'text-red-600 font-semibold' : 'text-gray-500'}>
           {data?.status === 'heizen' ? 'HEIZEN' : data?.status === 'abtauen' ? 'ABTAUEN' : 'STANDBY'}
         </span>
       </span>
       <span className="text-slate-700">│</span>
-      <span className="text-slate-500">VL <span className="text-orange-400 font-semibold">{vl}°C</span></span>
-      <span className="text-slate-500">RL <span className="text-sky-400 font-semibold">{rl}°C</span></span>
-      <span className="text-slate-500">COP <span className="text-emerald-400 font-semibold">{cop}</span></span>
-      <span className="text-slate-500">Außen <span className="text-teal-400 font-semibold">{aus}°C</span></span>
+      <span className="text-gray-500">VL <span className="text-red-600 font-semibold">{vl}°C</span></span>
+      <span className="text-gray-500">RL <span className="text-blue-600 font-semibold">{rl}°C</span></span>
+      <span className="text-gray-500">COP <span className="text-green-600 font-semibold">{cop}</span></span>
+      <span className="text-gray-500">Außen <span className="text-teal-400 font-semibold">{aus}°C</span></span>
     </div>
 
     {/* Edit-Mode Bar */}
     {editMode && <div className="flex flex-wrap items-center gap-3 px-3 py-2 bg-amber-500/10 rounded-lg border border-amber-500/30 text-xs">
-      <span className="text-amber-400 font-bold">✏️ EDIT</span>
-      <span className="text-amber-400/60 text-[10px]">Ziehen = Verschieben · Pfeiltasten ±1 (Shift ±5) · ESC = Abwählen</span>
+      <span className="text-orange-600 font-bold">✏️ EDIT</span>
+      <span className="text-orange-600/60 text-[10px]">Ziehen = Verschieben · Pfeiltasten ±1 (Shift ±5) · ESC = Abwählen</span>
       <div className="flex-1" />
-      <span className="text-slate-500 font-mono text-[10px]">
+      <span className="text-gray-500 font-mono text-[10px]">
         <MousePointer className="w-3 h-3 inline" /> {svgMouse.x}, {svgMouse.y}
       </span>
-      {editSel && <span className="text-emerald-400 font-mono text-[10px]">
+      {editSel && <span className="text-green-600 font-mono text-[10px]">
         ▸ {editSel} {offsets[editSel] && `(Δ${offsets[editSel].dx}, Δ${offsets[editSel].dy})`}
       </span>}
       {changedItems.length > 0 && <>
-        <span className="text-amber-400 font-mono">{changedItems.length}×</span>
-        <Button variant="ghost" size="sm" onClick={exportChanges} className="h-6 px-2 text-[10px] text-amber-400">
+        <span className="text-orange-600 font-mono">{changedItems.length}×</span>
+        <Button variant="ghost" size="sm" onClick={exportChanges} className="h-6 px-2 text-[10px] text-orange-600">
           {copied ? <><Check className="w-3 h-3 mr-1" />Kopiert!</> : <><Copy className="w-3 h-3 mr-1" />Export</>}
         </Button>
         <Button variant="ghost" size="sm" onClick={() => { setOffsets({}); setEditSel(null); }} className="h-6 px-2 text-[10px] text-red-400">
@@ -607,7 +601,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     {/* ═════════════ SVG ═════════════ */}
     <EditContext.Provider value={editCtx}>
     <div ref={containerRef}
-      className={`relative rounded-xl select-none overflow-hidden border ${editMode ? 'border-amber-500/40' : 'border-[#1e2736]'}`}
+      className={`relative rounded-xl select-none overflow-hidden border ${editMode ? 'border-blue-500/40' : 'border-gray-300'}`}
       style={{ background: C.bg, touchAction: 'none', cursor: editMode ? (dragInfo ? 'grabbing' : 'crosshair') : isPanning ? 'grabbing' : zoom > 1 ? 'grab' : 'default' }}
       onClick={() => { if (!editMode && !didPan.current) setSel(null); }}
       onWheel={onWheel}
@@ -616,7 +610,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
       onPointerUp={editMode ? onEditPointerUp : onPointerUp}
       onPointerLeave={editMode ? onEditPointerUp : onPointerUp}
       onDoubleClick={editMode ? undefined : resetView}>
-      {zoom > 1.05 && <div className="absolute top-2 left-2 z-10 text-[10px] text-slate-500 bg-[#0a0e14]/80 px-2 py-1 rounded font-mono pointer-events-none">
+      {zoom > 1.05 && <div className="absolute top-2 left-2 z-10 text-[10px] text-gray-500 bg-gray-100/80 px-2 py-1 rounded font-mono pointer-events-none">
         {Math.round(zoom * 100)}% – Doppelklick = Reset
       </div>}
       <svg
@@ -629,7 +623,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <Defs />
           {/* Grid */}
           <pattern id="gr" width="30" height="30" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="0.25" fill="#334155" opacity="0.1" />
+            <circle cx="1" cy="1" r="0.25" fill="#cccccc" opacity="0.3" />
           </pattern>
           <rect width="100%" height="100%" fill="url(#gr)" />
 
@@ -649,15 +643,15 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
           <E id="BOX_ABWP"><Box x={390} y={55} w={130} h={45} title="Abluft-WP" sub="auf Dach · Rohrbegl." active={!!on} color={C.warmPipe}
             onClick={() => s({ id: 'ABWP', name: 'Abluft-Wärmepumpe', desc: 'Auf Dach mit Rohrbegleitheizung', status: on ? 'running' : 'standby', temp: '40°C', tempRet: '35°C' })} /></E>
           {/* Rohrbegleitheizung-Zickzack */}
-          <path d="M528,68 L536,60 L544,68 L552,60 L560,68" fill="none" stroke="#fb923c" strokeWidth="0.6" strokeDasharray="2,1" opacity="0.5" />
+          <path d="M528,68 L536,60 L544,68 L552,60 L560,68" fill="none" stroke="#cc6600" strokeWidth="0.6" strokeDasharray="2,1" opacity="0.5" />
           {/* "in: Lüftung 400V" */}
           <text x={455} y={108} textAnchor="middle" fill={C.dim} fontSize="3">in: Lüftung 400V</text>
 
           {/* PVT-Solar (oben links) */}
           <E id="BOX_PVT"><Box x={155} y={55} w={105} h={45} title="PVT-Solar" sub="6,2 kW th." active={!!on} color={C.warmPipe}
             onClick={() => s({ id: 'PVT', name: 'PVT-Solarkollektoren', desc: 'Auf Dach, 6,2 kW thermisch', status: 'running', temp: `${aus}°C`, power: '6,2 kW' })} /></E>
-          <circle cx="208" cy={46} r="7" fill="none" stroke="#fbbf24" strokeWidth="0.7" opacity="0.35" />
-          <circle cx="208" cy={46} r="2.5" fill="#fbbf24" opacity="0.35" />
+          <circle cx="208" cy={46} r="7" fill="none" stroke="#cc9900" strokeWidth="0.7" opacity="0.35" />
+          <circle cx="208" cy={46} r="2.5" fill="#cc9900" opacity="0.35" />
           {/* PVT Detail-Label */}
           <g transform="translate(155,108)">
             <rect width="92" height="22" rx="2" fill={C.panel} stroke={C.border} strokeWidth="0.5" opacity="0.7" />
@@ -773,7 +767,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             {/* Halbkreis-Symbol (DIN-Norm) */}
             <path d={`M355,${VL - 5} A45,45 0 0,1 355,${RL + 5}`} fill="url(#gWt)" stroke={C.tankStroke} strokeWidth="1.2" />
             {/* Platten-Linien */}
-            {[0, 1, 2, 3].map(i => <line key={i} x1={358} y1={VL + 10 + i * 22} x2={390} y2={VL + 10 + i * 22} stroke="rgba(255,255,255,0.12)" strokeWidth="0.4" />)}
+            {[0, 1, 2, 3].map(i => <line key={i} x1={358} y1={VL + 10 + i * 22} x2={390} y2={VL + 10 + i * 22} stroke="rgba(0,0,0,0.08)" strokeWidth="0.4" />)}
           </g>
           <text x={380} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="4">WT 47 kW</text>
           <L x={362} y={VL - 12} t="DN 80" />
@@ -809,7 +803,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
                ════════════════════════════════════════ */}
           <rect x={460} y={VL - 55} width={180} height={RL - VL + 110} rx="5"
             fill="none" stroke={C.enclosure} strokeWidth="0.8" strokeDasharray="8,4" />
-          <text x={550} y={VL - 62} textAnchor="middle" fill={C.enclosure} fontSize="4" fontWeight="600">Maschinenraum WP</text>
+          <text x={550} y={VL - 62} textAnchor="middle" fill="#0055cc" fontSize="4" fontWeight="600" opacity="0.7">Maschinenraum WP</text>
 
           {/* Soleanbindung Label */}
           <g transform={`translate(462,${RL + 30})`}>
@@ -835,7 +829,7 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
                WÄRMEPUMPE  (175 kW)
                ════════════════════════════════════════ */}
           <E id="WP"><g className="cursor-pointer" onClick={() => s({ id: 'WP1', name: 'Wärmepumpe', desc: '175 kW th. / 38,9 kW el.', status: on ? 'running' : 'standby', temp: `${vl}°C`, tempRet: `${rl}°C`, power: '175 kW', dn: 'DN 100' })}>
-            {on && <rect x={473} y={VL - 28} width={114} height={RL - VL + 56} rx="7" fill={C.hotPipe} opacity="0.04" filter="url(#gl)" />}
+            {on && <rect x={473} y={VL - 28} width={114} height={RL - VL + 56} rx="7" fill="none" />}
             <rect x={475} y={VL - 26} width={110} height={RL - VL + 52} rx="5"
               fill={C.panel} stroke={on ? C.hotPipe : C.border} strokeWidth={on ? 2 : 1.2} />
             <text x={530} y={VL - 8} textAnchor="middle" fill={C.bright} fontSize="5.5" fontWeight="700">Wärmepumpe</text>
@@ -1010,10 +1004,10 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
             {/* Großer Halbkreis – Brunnen-WT */}
             <path d={`M1180,${VL - 12} A55,55 0 0,1 1180,${RL + 12}`} fill="url(#gTankCold)" stroke={C.tankStroke} strokeWidth="1.5" />
             {/* Interne Platten-Linien */}
-            {[0, 1, 2, 3, 4].map(i => <line key={i} x1={1185} y1={VL + i * 18} x2={1225} y2={VL + i * 18} stroke="rgba(255,255,255,0.08)" strokeWidth="0.4" />)}
+            {[0, 1, 2, 3, 4].map(i => <line key={i} x1={1185} y1={VL + i * 18} x2={1225} y2={VL + i * 18} stroke="rgba(0,0,0,0.06)" strokeWidth="0.4" />)}
             {/* Temperatur-Schichtung */}
-            <text x={1205} y={VL + 10} textAnchor="middle" fill={C.coolPipe} fontSize="3" opacity="0.4">warm</text>
-            <text x={1205} y={RL - 5} textAnchor="middle" fill={C.coolPipe} fontSize="3" opacity="0.4">kalt</text>
+            <text x={1205} y={VL + 10} textAnchor="middle" fill="#0088aa" fontSize="3" opacity="0.5">warm</text>
+            <text x={1205} y={RL - 5} textAnchor="middle" fill="#0088aa" fontSize="3" opacity="0.5">kalt</text>
           </g>
           <text x={1210} y={RL + 28} textAnchor="middle" fill={C.dim} fontSize="4" fontWeight="600">Brunnen-WT</text>
 
@@ -1225,14 +1219,14 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     </EditContext.Provider>
 
     {/* Edit Changes Panel */}
-    {editMode && changedItems.length > 0 && <div className="px-3 py-2 bg-[#111620] rounded-lg border border-amber-500/20 text-[10px] font-mono">
-      <span className="text-slate-400 text-[11px] font-sans font-medium">Geänderte Positionen:</span>
+    {editMode && changedItems.length > 0 && <div className="px-3 py-2 bg-gray-50 rounded-lg border border-blue-500/20 text-[10px] font-mono">
+      <span className="text-gray-600 text-[11px] font-sans font-medium">Geänderte Positionen:</span>
       <div className="mt-1 grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-0.5">
         {changedItems.map(([id, v]) => (
           <div key={id} className="contents">
-            <span className={`${editSel === id ? 'text-amber-400' : 'text-emerald-400'} cursor-pointer`}
+            <span className={`${editSel === id ? 'text-orange-600' : 'text-green-600'} cursor-pointer`}
               onClick={() => setEditSel(id)}>{id}</span>
-            <span className="text-amber-400">Δx={v.dx} Δy={v.dy}</span>
+            <span className="text-orange-600">Δx={v.dx} Δy={v.dy}</span>
             <button onClick={() => setOffsets(p => { const n = { ...p }; delete n[id]; return n; })}
               className="text-red-500/60 hover:text-red-400">×</button>
           </div>
@@ -1241,37 +1235,37 @@ export function PIDDiagram({ data }: { data: HeatingData | null }) {
     </div>}
 
     {/* Legende */}
-    <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-[#111620]/50 rounded-lg border border-[#1e2736] text-[10px]">
-      <span className="text-slate-500 font-medium text-[11px]">Legende</span>
+    <div className="flex flex-wrap items-center gap-4 px-3 py-2 bg-gray-50/50 rounded-lg border border-gray-300 text-[10px]">
+      <span className="text-gray-500 font-medium text-[11px]">Legende</span>
       {[
         [C.hotPipe, 'Vorlauf (heiß)'], [C.coldPipe, 'Rücklauf (kalt)'], [C.geoPipe, 'Erdwärme'],
         [C.warmPipe, 'Quelle (warm)'], [C.coolPipe, 'Kältekreis'],
       ].map(([c, l]) => <span key={l} className="flex items-center gap-1.5">
-        <span className="w-5 h-0.5 rounded-full" style={{ background: c }} /><span className="text-slate-400">{l}</span>
+        <span className="w-5 h-0.5 rounded-full" style={{ background: c }} /><span className="text-gray-600">{l}</span>
       </span>)}
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOn} strokeWidth="0.7" /><polygon points="6,3 9,8 3,8" fill={C.pumpOn} /></svg>
-        <span className="text-slate-400">Pumpe AN</span>
+        <span className="text-gray-600">Pumpe AN</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke={C.pumpOff} strokeWidth="0.7" /><polygon points="6,3 9,8 3,8" fill={C.pumpOff} /></svg>
-        <span className="text-slate-400">Pumpe AUS</span>
+        <span className="text-gray-600">Pumpe AUS</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><polygon points="3,2 9,6 3,10" fill="none" stroke={C.tankStroke} strokeWidth="0.7" /><polygon points="9,2 3,6 9,10" fill="none" stroke={C.tankStroke} strokeWidth="0.7" /></svg>
-        <span className="text-slate-400">Absperrventil</span>
+        <span className="text-gray-600">Absperrventil</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="12" height="12"><polygon points="6,1 11,11 1,11" fill="none" stroke={C.geoPipe} strokeWidth="0.6" /><line x1="6" y1="11" x2="6" y2="14" stroke={C.geoPipe} strokeWidth="0.5" /></svg>
-        <span className="text-slate-400">Schmutzfänger</span>
+        <span className="text-gray-600">Schmutzfänger</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="16" height="12"><polygon points="2,2 8,6 2,10" fill="none" stroke={C.accent} strokeWidth="0.6" /><polygon points="14,2 8,6 14,10" fill={C.accent} stroke={C.accent} strokeWidth="0.6" /></svg>
-        <span className="text-slate-400">Strangregulierventil</span>
+        <span className="text-gray-600">Strangregulierventil</span>
       </span>
       <span className="flex items-center gap-1.5">
         <svg width="14" height="14"><polygon points="4,2 10,2 7,8" fill="none" stroke={C.pumpOn} strokeWidth="0.6" /><circle cx="7" cy="12" r="3" fill={C.tankFill} stroke={C.pumpOn} strokeWidth="0.5" /><text x="7" y="13.5" textAnchor="middle" fill={C.pumpOn} fontSize="4">M</text></svg>
-        <span className="text-slate-400">3-Wege-Mischer</span>
+        <span className="text-gray-600">3-Wege-Mischer</span>
       </span>
     </div>
   </div>;
