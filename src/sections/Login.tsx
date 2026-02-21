@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Wifi, Shield, BarChart3 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { BRAND } from '@/config/mqtt.config';
+import { BRAND, CUSTOMER } from '@/config/runtime.config';
 
 interface LoginProps {
   onLogin: (username: string, password: string) => boolean;
@@ -43,11 +43,11 @@ export function Login({ onLogin }: LoginProps) {
             <span className="text-white font-black text-xl tracking-tighter">KT</span>
           </div>
           <h1 className="text-2xl font-bold text-white mb-1 tracking-tight">
-            {BRAND.name}{' '}
-            <span className="text-emerald-400 font-normal">{BRAND.product}</span>
+            {CUSTOMER.name}{' '}
+            <span className="text-emerald-400 font-normal">Heizungs-Monitoring</span>
           </h1>
           <p className="text-sm text-slate-500">
-            Professionelle Wärmepumpen-Überwachung
+            {CUSTOMER.address}
           </p>
         </div>
 
@@ -132,7 +132,7 @@ export function Login({ onLogin }: LoginProps) {
         </div>
 
         <p className="text-center text-[11px] text-slate-600 mt-6">
-          © 2026 {BRAND.fullName} · v{BRAND.version}
+          © 2026 {CUSTOMER.name} · {BRAND.version}
         </p>
       </div>
     </div>

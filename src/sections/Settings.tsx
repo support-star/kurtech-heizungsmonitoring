@@ -11,7 +11,7 @@ import {
   Thermometer,
 } from 'lucide-react';
 import type { User as UserType } from '@/types/heating';
-import { MQTT_CONFIG, ANLAGE_CONFIG, BRAND, SIM_CONFIG } from '@/config/mqtt.config';
+import { MQTT_CONFIG, ANLAGE_CONFIG, BRAND, SIM_CONFIG } from '@/config/runtime.config';
 
 interface SettingsProps {
   user: UserType | null;

@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/useAuth';
+import { useSecureAuth } from '@/hooks/useSecureAuth';
 import { useMQTTData } from '@/hooks/useMQTTData';
 import { Login } from '@/sections/Login';
 import { Header } from '@/sections/Header';
@@ -14,13 +14,13 @@ import { toast } from 'sonner';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
-import { BRAND, ANLAGE_CONFIG } from '@/config/mqtt.config';
+import { BRAND, ANLAGE_CONFIG } from '@/config/runtime.config';
 
 export type ViewType = 'dashboard' | 'standorte' | 'schema' | 'pid' | 'settings';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
-  const { isAuthenticated, user, login, logout } = useAuth();
+  const { isAuthenticated, user, login, logout } = useSecureAuth();
   const {
     liveData, historicalData, alarms, timeRange, setTimeRange,
     acknowledgeAlarm, exportData, isConnected, connectionError,

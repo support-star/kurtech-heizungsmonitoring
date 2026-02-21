@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { HeatingData, Alarm, TimeRange } from '@/types/heating';
-import { MQTT_CONFIG, SIM_CONFIG, SIMULATION_MODE } from '@/config/mqtt.config';
+import { MQTT_CONFIG, SIM_CONFIG, getSimulationMode } from '@/config/runtime.config';
 import { generateLiveData, generateHistoricalData, generateAlarms } from '@/lib/simulation';
 
 interface UseMQTTDataReturn {
@@ -180,7 +180,8 @@ function useMQTTLiveData(): UseMQTTDataReturn {
   }, []);
 
   useEffect(() => {
-    if (SIMULATION_MODE) return; // Don't connect in simulation mode
+    const simMode = getSimulationMode();
+    if (simMode) return; // Don't connect in simulation mode
     connectMQTT();
     return () => { clientRef.current?.end(); };
   }, [connectMQTT]);
@@ -228,10 +229,9 @@ function buildCSV(data: HeatingData[]): string {
 
 // ─── Öffentlicher Hook ───────────────────────────────────────
 export function useMQTTData(): UseMQTTDataReturn {
-  // SIMULATION_MODE is a build-time constant.
-  // When true, we always return simulation data.
-  // When false, we connect to the real MQTT broker.
+  // Runtime-check for simulation mode (can be toggled without rebuild)
+  const isSim = getSimulationMode();
   const simData = useSimulationData();
   const mqttData = useMQTTLiveData();
-  return SIMULATION_MODE ? simData : mqttData;
+  return isSim ? simData : mqttData;
 }

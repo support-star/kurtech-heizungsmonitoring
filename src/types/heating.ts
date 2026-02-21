@@ -25,9 +25,9 @@ export interface Alarm {
 
 export interface User {
   username: string;
-  password: string;
-  role: 'customer' | 'installer' | 'technician' | 'admin';
-  anlageId: string;
+  role: 'customer' | 'installer' | 'technician' | 'admin' | 'viewer';
+  anlageId?: string;
+  customerId?: string;
 }
 
 export interface Anlage {
