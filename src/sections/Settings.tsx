@@ -195,7 +195,7 @@ export function Settings({ user, isSimulation }: SettingsProps) {
             <div className="mt-4 pt-4 border-t border-[#1e2736]">
               <p className="text-xs text-slate-500">
                 Um zwischen Simulation und MQTT-Live-Modus zu wechseln, ändern Sie{' '}
-                <code className="bg-[#0a0e14] px-1.5 py-0.5 rounded text-emerald-400">useSimulation</code>{' '}
+                <code className="bg-[#0a0e14] px-1.5 py-0.5 rounded text-emerald-400">SIMULATION_MODE</code>{' '}
                 in <code className="bg-[#0a0e14] px-1.5 py-0.5 rounded text-slate-300">src/config/mqtt.config.ts</code>.
               </p>
             </div>

@@ -5,10 +5,11 @@
  */
 
 // ─── Datenquelle ──────────────────────────────────────────────
-export let useSimulation = false; // PRODUKTION: Echte MQTT-Daten
+// true = Demo mit simulierten Daten, false = MQTT-Broker
+export const SIMULATION_MODE = true;
 
-export function setSimulationMode(enabled: boolean) {
-  useSimulation = enabled;
+export function getSimulationMode(): boolean {
+  return SIMULATION_MODE;
 }
 
 // ─── MQTT Broker ──────────────────────────────────────────────
