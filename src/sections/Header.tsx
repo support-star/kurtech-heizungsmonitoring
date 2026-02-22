@@ -12,6 +12,9 @@ import {
   Settings2,
   Radio,
   MapPin,
+  Thermometer,
+  Zap,
+  Shield,
 } from 'lucide-react';
 import type { User as UserType } from '@/types/heating';
 import type { ViewType } from '@/App';
@@ -47,6 +50,9 @@ const navItems: { view: ViewType; label: string; icon: React.ReactNode }[] = [
   { view: 'standorte', label: 'Standorte', icon: <MapPin className="w-4 h-4" /> },
   { view: 'schema', label: 'Schema', icon: <Activity className="w-4 h-4" /> },
   { view: 'pid', label: 'P&ID', icon: <GitBranch className="w-4 h-4" /> },
+  { view: 'control', label: 'Steuerung', icon: <Thermometer className="w-4 h-4" /> },
+  { view: 'optimization', label: 'Optimierung', icon: <Zap className="w-4 h-4" /> },
+  { view: 'monitoring', label: 'Monitoring', icon: <Shield className="w-4 h-4" /> },
   { view: 'settings', label: 'Einstellungen', icon: <Settings2 className="w-4 h-4" /> },
 ];
 

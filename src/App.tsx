@@ -9,6 +9,9 @@ import { SystemSchema } from '@/sections/SystemSchema';
 import { PIDDiagram } from '@/sections/PIDDiagram';
 import { Settings } from '@/sections/Settings';
 import { StandorteDashboard } from '@/sections/StandorteDashboard';
+import { Control } from '@/sections/Control';
+import { OptimizationPanel } from '@/sections/OptimizationPanel';
+import { MonitoringPanel } from '@/sections/MonitoringPanel';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { useEffect, useState, useRef } from 'react';
@@ -16,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { BRAND, ANLAGE_CONFIG } from '@/config/runtime.config';
 
-export type ViewType = 'dashboard' | 'standorte' | 'schema' | 'pid' | 'settings';
+export type ViewType = 'dashboard' | 'standorte' | 'schema' | 'pid' | 'settings' | 'control' | 'optimization' | 'monitoring';
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
@@ -224,6 +227,52 @@ function App() {
 
         {currentView === 'standorte' && (
           <StandorteDashboard data={liveData} />
+        )}
+
+        {/* NEUE VIEWS */}
+        {currentView === 'control' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-4">
+              <div className="sticky top-24">
+                <LiveStatus data={liveData} />
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <Control 
+                currentTemp={liveData?.puffer_mitte}
+                isHeating={liveData?.status === 'heizen'}
+              />
+            </div>
+          </div>
+        )}
+
+        {currentView === 'optimization' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-4">
+              <div className="sticky top-24">
+                <LiveStatus data={liveData} />
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <OptimizationPanel />
+            </div>
+          </div>
+        )}
+
+        {currentView === 'monitoring' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-4">
+              <div className="sticky top-24">
+                <LiveStatus data={liveData} />
+              </div>
+            </div>
+            <div className="lg:col-span-8">
+              <MonitoringPanel 
+                isMqttConnected={isConnected}
+                lastDataTimestamp={liveData?.timestamp || null}
+              />
+            </div>
+          </div>
         )}
 
         {/* Footer */}
