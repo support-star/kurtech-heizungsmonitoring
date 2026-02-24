@@ -2,7 +2,7 @@
  * MQTT & App-Konfiguration – KurTech Heizungs-Monitoring
  * ======================================================
  * Angepasst für WAGO PFC200 Darmstadt 2026
- * PATCH4: Live-Modus, VPS Mosquitto, WAGO flache Topics
+ * PATCH4: Live-Modus, VPS Mosquitto, WAGO flache Topics | Build: 2026-02-24
  */
 
 // ─── Datenquelle ──────────────────────────────────────────────
