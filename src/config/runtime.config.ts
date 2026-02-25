@@ -31,7 +31,7 @@ export function setSimulationMode(mode: boolean): void {
 
 // MQTT-Konfiguration
 export const MQTT_CONFIG = {
-    broker: import.meta.env.VITE_MQTT_BROKER || 'wss://bauverein.kurtech.shop/mqtt',
+    broker: import.meta.env.VITE_MQTT_BROKER || 'wss://bauverein.kurtech.shop:9001',
     username: import.meta.env.VITE_MQTT_USERNAME || 'wago',
     password: import.meta.env.VITE_MQTT_PASSWORD || 'wago123',
     clientIdPrefix: import.meta.env.VITE_MQTT_CLIENT_PREFIX || 'bauverein',
