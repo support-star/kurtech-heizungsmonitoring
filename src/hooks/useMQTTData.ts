@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { HeatingData, Alarm, TimeRange } from '@/types/heating';
-import { MQTT_CONFIG, SIM_CONFIG, getSimulationMode } from '@/config/runtime.config';
+import { SIM_CONFIG, getSimulationMode } from '@/config/runtime.config';
 import { generateLiveData, generateHistoricalData, generateAlarms } from '@/lib/simulation';
+
+// Backend URL - MQTT Credentials sind NUR serverseitig
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://bauverein.kurtech.shop';
+const WS_URL = BACKEND_URL.replace(/^http/, 'ws') + '/ws';
 
 interface UseMQTTDataReturn {
   liveData: HeatingData | null;
@@ -17,79 +21,36 @@ interface UseMQTTDataReturn {
   isSimulation: boolean;
 }
 
-// ─── Simulation-Modus ─────────────────────────────────────────
+// ─── Simulation (unverändert) ─────────────────────────────────
 function useSimulationData(): UseMQTTDataReturn {
   const [liveData, setLiveData] = useState<HeatingData | null>(null);
   const [historicalData, setHistoricalData] = useState<HeatingData[]>([]);
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
 
-  // Initialisierung
-  useEffect(() => {
-    setLiveData(generateLiveData());
-    setAlarms(generateAlarms());
-  }, []);
+  useEffect(() => { setLiveData(generateLiveData()); setAlarms(generateAlarms()); }, []);
+  useEffect(() => { const i = setInterval(() => setLiveData(generateLiveData()), SIM_CONFIG.updateIntervalMs); return () => clearInterval(i); }, []);
+  useEffect(() => { const h = timeRange === '24h' ? 24 : timeRange === '7d' ? 168 : 720; setHistoricalData(generateHistoricalData(h, SIM_CONFIG.historyResolutionMinutes)); }, [timeRange]);
 
-  // Live-Daten-Updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveData(generateLiveData());
-    }, SIM_CONFIG.updateIntervalMs);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Historische Daten bei Zeitbereich-Änderung
-  useEffect(() => {
-    const hours = timeRange === '24h' ? 24 : timeRange === '7d' ? 168 : 720;
-    setHistoricalData(generateHistoricalData(hours, SIM_CONFIG.historyResolutionMinutes));
-  }, [timeRange]);
-
-  // Gelegentlich neue Alarme erzeugen
-  useEffect(() => {
-    const alarmMessages = [
+    const msgs = [
       { type: 'info' as const, title: 'Abtauzyklus gestartet', message: 'Automatischer Abtauzyklus wird durchgeführt.' },
       { type: 'warning' as const, title: 'Hoher Stromverbrauch', message: 'Stromverbrauch über 7 kWh. COP prüfen.' },
-      { type: 'info' as const, title: 'Sollwert erreicht', message: 'Pufferspeicher hat Solltemperatur erreicht. Wechsel auf Standby.' },
+      { type: 'info' as const, title: 'Sollwert erreicht', message: 'Pufferspeicher hat Solltemperatur erreicht.' },
     ];
-    let msgIndex = 0;
-
-    const interval = setInterval(() => {
-      if (Math.random() > 0.6) { // 40% Chance auf neuen Alarm
-        const msg = alarmMessages[msgIndex % alarmMessages.length];
-        msgIndex++;
-        setAlarms(prev => [{
-          id: `sim-live-${Date.now()}`,
-          ...msg,
-          timestamp: new Date(),
-          acknowledged: false,
-        }, ...prev]);
-      }
-    }, SIM_CONFIG.alarmCheckIntervalMs);
-    return () => clearInterval(interval);
+    let idx = 0;
+    const i = setInterval(() => { if (Math.random() > 0.6) { const m = msgs[idx++ % msgs.length]; setAlarms(p => [{ id: `sim-${Date.now()}`, ...m, timestamp: new Date(), acknowledged: false }, ...p]); } }, SIM_CONFIG.alarmCheckIntervalMs);
+    return () => clearInterval(i);
   }, []);
 
-  const acknowledgeAlarm = useCallback((id: string) => {
-    setAlarms(prev =>
-      prev.map(a => a.id === id ? { ...a, acknowledged: true } : a)
-    );
-  }, []);
+  const acknowledgeAlarm = useCallback((id: string) => setAlarms(p => p.map(a => a.id === id ? { ...a, acknowledged: true } : a)), []);
+  const exportData = useCallback(() => buildCSV(historicalData.length ? historicalData : liveData ? [liveData] : []), [historicalData, liveData]);
 
-  const exportData = useCallback(() => {
-    return buildCSV(historicalData.length > 0 ? historicalData : liveData ? [liveData] : []);
-  }, [historicalData, liveData]);
-
-  return {
-    liveData, historicalData, alarms, timeRange, setTimeRange,
-    acknowledgeAlarm, exportData,
-    isConnected: true,
-    connectionError: null,
-    reconnect: () => {},
-    isSimulation: true,
-  };
+  return { liveData, historicalData, alarms, timeRange, setTimeRange, acknowledgeAlarm, exportData, isConnected: true, connectionError: null, reconnect: () => {}, isSimulation: true };
 }
 
-// ─── MQTT-Modus ───────────────────────────────────────────────
-function useMQTTLiveData(): UseMQTTDataReturn {
+// ─── Backend WebSocket Modus ──────────────────────────────────
+function useBackendLiveData(): UseMQTTDataReturn {
   const [liveData, setLiveData] = useState<HeatingData | null>(null);
   const [historicalData, setHistoricalData] = useState<HeatingData[]>([]);
   const [alarms, setAlarms] = useState<Alarm[]>([]);
@@ -97,141 +58,88 @@ function useMQTTLiveData(): UseMQTTDataReturn {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
-  const clientRef = useRef<ReturnType<typeof import('mqtt').connect> | null>(null);
-  const dataBufferRef = useRef<Partial<HeatingData>>({});
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const connectMQTT = useCallback(async () => {
-    try {
+  const getToken = () => localStorage.getItem('bauverein_jwt');
+
+  const connect = useCallback(() => {
+    const token = getToken();
+    if (!token) { setConnectionError('Kein Auth-Token. Bitte neu einloggen.'); return; }
+
+    if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); }
+
+    const ws = new WebSocket(`${WS_URL}?token=${encodeURIComponent(token)}`);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      setIsConnected(true);
       setConnectionError(null);
-      const mqtt = await import('mqtt');
+      pingRef.current = setInterval(() => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' })); }, 25000);
+    };
 
-      const client = mqtt.connect(MQTT_CONFIG.broker, {
-        username: MQTT_CONFIG.username,
-        password: MQTT_CONFIG.password,
-        clientId: `${MQTT_CONFIG.clientIdPrefix}-${Math.random().toString(36).substring(7)}`,
-        reconnectPeriod: MQTT_CONFIG.reconnectPeriod,
-        connectTimeout: MQTT_CONFIG.connectTimeout,
-      });
-
-      client.on('connect', () => {
-        setIsConnected(true);
-        setConnectionError(null);
-        const topics = Object.values(MQTT_CONFIG.topics);
-        client.subscribe(topics, (err) => {
-          if (err) setConnectionError('Fehler beim Abonnieren der Topics');
-        });
-      });
-
-      client.on('message', (topic, message) => {
-        const value = message.toString();
-        const topicMap: Record<string, { key: keyof HeatingData; parser: (v: string) => any }> = {
-          [MQTT_CONFIG.topics.aussentemperatur]:    { key: 'aussentemperatur', parser: parseFloat },
-          [MQTT_CONFIG.topics.vorlauftemperatur]:   { key: 'vorlauftemperatur', parser: parseFloat },
-          [MQTT_CONFIG.topics.ruecklauftemperatur]: { key: 'ruecklauftemperatur', parser: parseFloat },
-          [MQTT_CONFIG.topics.puffer_oben]:         { key: 'puffer_oben', parser: parseFloat },
-          [MQTT_CONFIG.topics.puffer_mitte]:        { key: 'puffer_mitte', parser: parseFloat },
-          [MQTT_CONFIG.topics.puffer_unten]:        { key: 'puffer_unten', parser: parseFloat },
-          [MQTT_CONFIG.topics.drehzahl_pumpe]:      { key: 'drehzahl_pumpe', parser: parseInt },
-          [MQTT_CONFIG.topics.stromverbrauch]:      { key: 'stromverbrauch', parser: parseFloat },
-          [MQTT_CONFIG.topics.cop]:                 { key: 'cop', parser: parseFloat },
-          [MQTT_CONFIG.topics.betriebsstunden]:     { key: 'betriebsstunden', parser: parseFloat },
-          [MQTT_CONFIG.topics.status]:              { key: 'status', parser: (v) => v as HeatingData['status'] },
-          [MQTT_CONFIG.topics.fehlercode]:          { key: 'fehlercode', parser: (v) => v || null },
-        };
-
-        if (topic === MQTT_CONFIG.topics.alarm) {
-          try {
-            const d = JSON.parse(value);
-            setAlarms(prev => [{
-              id: d.id || Date.now().toString(),
-              type: d.type || 'info',
-              title: d.title || 'Alarm',
-              message: d.message || '',
-              timestamp: new Date(d.timestamp || Date.now()),
-              acknowledged: false,
-            }, ...prev]);
-          } catch { /* ignore parse errors */ }
-          return;
+    ws.onmessage = (evt) => {
+      try {
+        const msg = JSON.parse(evt.data);
+        switch (msg.type) {
+          case 'data': setLiveData({ ...msg.payload, timestamp: new Date(msg.payload.timestamp) }); break;
+          case 'history': setHistoricalData(msg.payload.map((d: any) => ({ ...d, timestamp: new Date(d.timestamp) }))); break;
+          case 'alarms': setAlarms(msg.payload.map((a: any) => ({ ...a, timestamp: new Date(a.timestamp) }))); break;
+          case 'alarm': setAlarms(p => [{ ...msg.payload, timestamp: new Date(msg.payload.timestamp) }, ...p]); break;
+          case 'alarm_acked': setAlarms(p => p.map(a => a.id === msg.id ? { ...a, acknowledged: true } : a)); break;
+          case 'error': setConnectionError(msg.message); break;
         }
+      } catch { /* ignore */ }
+    };
 
-        const mapping = topicMap[topic];
-        if (mapping) {
-          dataBufferRef.current[mapping.key] = mapping.parser(value);
-          setLiveData(prev => ({
-            ...prev,
-            timestamp: new Date(),
-            [mapping.key]: mapping.parser(value),
-          } as HeatingData));
-        }
-      });
-
-      client.on('error', (err) => {
-        setConnectionError(err.message);
-        setIsConnected(false);
-      });
-      client.on('disconnect', () => setIsConnected(false));
-      client.on('offline', () => setIsConnected(false));
-
-      clientRef.current = client;
-    } catch (err) {
-      setConnectionError('Verbindung fehlgeschlagen');
+    ws.onclose = (evt) => {
       setIsConnected(false);
-    }
+      if (pingRef.current) clearInterval(pingRef.current);
+      if (evt.code === 4001) { setConnectionError('Nicht autorisiert. Bitte neu einloggen.'); return; }
+      setConnectionError('Verbindung unterbrochen. Verbinde neu...');
+      reconnectRef.current = setTimeout(connect, 5000);
+    };
+
+    ws.onerror = () => { setConnectionError('Verbindung fehlgeschlagen'); setIsConnected(false); };
   }, []);
 
   useEffect(() => {
-    const simMode = getSimulationMode();
-    if (simMode) return; // Don't connect in simulation mode
-    connectMQTT();
-    return () => { clientRef.current?.end(); };
-  }, [connectMQTT]);
+    connect();
+    return () => {
+      if (reconnectRef.current) clearTimeout(reconnectRef.current);
+      if (pingRef.current) clearInterval(pingRef.current);
+      if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); }
+    };
+  }, [connect]);
 
   useEffect(() => {
-    setHistoricalData([]); // Historische Daten müssten von einer API kommen
+    const hours = timeRange === '24h' ? 24 : timeRange === '7d' ? 168 : 720;
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'get_history', hours }));
+    }
   }, [timeRange]);
 
   const acknowledgeAlarm = useCallback((id: string) => {
-    setAlarms(prev => prev.map(a => a.id === id ? { ...a, acknowledged: true } : a));
+    if (wsRef.current?.readyState === WebSocket.OPEN) wsRef.current.send(JSON.stringify({ type: 'ack_alarm', id }));
+    setAlarms(p => p.map(a => a.id === id ? { ...a, acknowledged: true } : a));
   }, []);
 
-  const exportData = useCallback(() => {
-    return buildCSV(historicalData.length > 0 ? historicalData : liveData ? [liveData] : []);
-  }, [historicalData, liveData]);
+  const exportData = useCallback(() => buildCSV(historicalData.length ? historicalData : liveData ? [liveData] : []), [historicalData, liveData]);
+  const reconnect = useCallback(() => { if (reconnectRef.current) clearTimeout(reconnectRef.current); connect(); }, [connect]);
 
-  const reconnect = useCallback(() => {
-    clientRef.current?.end();
-    connectMQTT();
-  }, [connectMQTT]);
-
-  return {
-    liveData, historicalData, alarms, timeRange, setTimeRange,
-    acknowledgeAlarm, exportData, isConnected, connectionError, reconnect,
-    isSimulation: false,
-  };
+  return { liveData, historicalData, alarms, timeRange, setTimeRange, acknowledgeAlarm, exportData, isConnected, connectionError, reconnect, isSimulation: false };
 }
 
-// ─── CSV-Export Hilfsfunktion ─────────────────────────────────
 function buildCSV(data: HeatingData[]): string {
-  const headers = [
-    'Zeitstempel', 'Außentemp (°C)', 'Vorlauf (°C)', 'Rücklauf (°C)',
-    'Puffer oben (°C)', 'Puffer mitte (°C)', 'Puffer unten (°C)',
-    'Pumpe (U/min)', 'Strom (kWh)', 'COP', 'Betriebsstd', 'Status',
-  ];
-  const rows = data.map(d => [
-    d.timestamp.toISOString(),
-    d.aussentemperatur, d.vorlauftemperatur, d.ruecklauftemperatur,
-    d.puffer_oben, d.puffer_mitte, d.puffer_unten,
-    d.drehzahl_pumpe, d.stromverbrauch, d.cop,
-    d.betriebsstunden.toFixed(1), d.status,
-  ]);
-  return [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+  const h = ['Zeitstempel','Außentemp (°C)','Vorlauf (°C)','Rücklauf (°C)','Puffer oben (°C)','Puffer mitte (°C)','Puffer unten (°C)','Pumpe (U/min)','Strom (kWh)','COP','Betriebsstd','Status'];
+  const r = data.map(d => [d.timestamp.toISOString(),d.aussentemperatur,d.vorlauftemperatur,d.ruecklauftemperatur,d.puffer_oben,d.puffer_mitte,d.puffer_unten,d.drehzahl_pumpe,d.stromverbrauch,d.cop,d.betriebsstunden.toFixed(1),d.status]);
+  return [h.join(';'),...r.map(row => row.join(';'))].join('\n');
 }
 
-// ─── Öffentlicher Hook ───────────────────────────────────────
 export function useMQTTData(): UseMQTTDataReturn {
-  // Runtime-check for simulation mode (can be toggled without rebuild)
   const isSim = getSimulationMode();
-  const simData = useSimulationData();
-  const mqttData = useMQTTLiveData();
-  return isSim ? simData : mqttData;
+  const sim = useSimulationData();
+  const live = useBackendLiveData();
+  return isSim ? sim : live;
 }

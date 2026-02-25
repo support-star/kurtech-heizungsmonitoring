@@ -3,7 +3,7 @@ import { AlertCircle, Wifi, BarChart3, Shield } from 'lucide-react';
 import { BRAND, CUSTOMER } from '@/config/runtime.config';
 
 interface LoginProps {
-  onLogin: (username: string, password: string) => boolean;
+  onLogin: (username: string, password: string) => Promise<boolean>;
 }
 
 export function Login({ onLogin }: LoginProps) {
@@ -12,15 +12,18 @@ export function Login({ onLogin }: LoginProps) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    setTimeout(() => {
-      const ok = onLogin(username, password);
+    try {
+      const ok = await onLogin(username, password);
       if (!ok) setError('Ungültiger Benutzername oder Passwort');
+    } catch {
+      setError('Server nicht erreichbar. Bitte später versuchen.');
+    } finally {
       setIsLoading(false);
-    }, 450);
+    }
   };
 
   return (
