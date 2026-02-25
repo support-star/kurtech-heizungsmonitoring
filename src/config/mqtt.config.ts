@@ -16,7 +16,7 @@ export function getSimulationMode(): boolean {
 // ─── MQTT Broker ──────────────────────────────────────────────
 export const MQTT_CONFIG = {
       // WebSocket Port 9002 auf VPS Mosquitto
-          broker: 'wss://bauverein.kurtech.shop:9002',
+          broker: 'wss://bauverein.kurtech.shop',
       username: 'wago',
       password: 'wago123',
       clientIdPrefix: 'kurtech-web-darmstadt',
