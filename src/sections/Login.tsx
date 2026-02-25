@@ -1,10 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Wifi, Shield, BarChart3 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Wifi, BarChart3, Shield } from 'lucide-react';
 import { BRAND, CUSTOMER } from '@/config/runtime.config';
 
 interface LoginProps {
@@ -22,118 +17,163 @@ export function Login({ onLogin }: LoginProps) {
     setError('');
     setIsLoading(true);
     setTimeout(() => {
-      const success = onLogin(username, password);
-      if (!success) setError('Ungültiger Benutzername oder Passwort');
+      const ok = onLogin(username, password);
+      if (!ok) setError('Ungültiger Benutzername oder Passwort');
       setIsLoading(false);
-    }, 400);
+    }, 450);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0e14] p-4 relative overflow-hidden">
-      {/* Hintergrund-Effekte */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}
-      />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen flex bg-[#060a10] overflow-hidden">
+      {/* Left panel - hidden on mobile */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between p-10 relative">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+        />
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 mb-5 shadow-xl shadow-emerald-500/20">
-            <span className="text-white font-black text-xl tracking-tighter">KT</span>
+        {/* Animated mock dashboard */}
+        <div className="relative z-10 mt-16">
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {[
+              { label: 'COP Aktuell', value: '4.21', color: 'text-emerald-400', bg: 'border-emerald-500/20' },
+              { label: 'Vorlauftemp.', value: '48.3°C', color: 'text-orange-400', bg: 'border-orange-500/20' },
+              { label: 'Stromverbrauch', value: '5.8 kW', color: 'text-amber-400', bg: 'border-amber-500/20' },
+            ].map(c => (
+              <div key={c.label} className={`rounded-xl bg-[#0d1220] border ${c.bg} p-3`}>
+                <p className="text-[10px] text-slate-600 mb-1">{c.label}</p>
+                <p className={`font-mono text-lg font-bold ${c.color}`}>{c.value}</p>
+              </div>
+            ))}
           </div>
-          <h1 className="text-2xl font-bold text-white mb-1 tracking-tight">
-            {CUSTOMER.name}{' '}
-            <span className="text-emerald-400 font-normal">Heizungs-Monitoring</span>
-          </h1>
-          <p className="text-sm text-slate-500">
-            {CUSTOMER.address}
+
+          {/* Mock chart bars */}
+          <div className="rounded-2xl bg-[#0d1220] border border-[#1a2235] p-4 mb-3">
+            <p className="text-xs text-slate-500 mb-3">Temperaturverlauf 24h</p>
+            <div className="flex items-end gap-1 h-24">
+              {[42,45,46,43,41,44,47,48,45,46,44,43,45,48,49,47,46,45,44,46,48,47,46,45].map((v, i) => (
+                <div key={i} className="flex-1 rounded-sm transition-all"
+                  style={{ height: `${((v - 38) / 15) * 100}%`, background: `rgba(251,146,60,${0.3 + (i % 3) * 0.15})` }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-[#0d1220] border border-[#1a2235] p-3">
+              <p className="text-[10px] text-slate-600 mb-2">Pufferspeicher</p>
+              <div className="space-y-1.5">
+                {[{l:'Oben',v:52,c:'bg-orange-400'},{l:'Mitte',v:45,c:'bg-emerald-400'},{l:'Unten',v:38,c:'bg-sky-400'}].map(p => (
+                  <div key={p.l} className="flex items-center gap-2">
+                    <span className="text-[9px] text-slate-600 w-8">{p.l}</span>
+                    <div className="flex-1 h-1.5 bg-[#1a2235] rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${p.c} opacity-60`} style={{width:`${(p.v/65)*100}%`}} />
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono w-8 text-right">{p.v}°</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl bg-[#0d1220] border border-[#1a2235] p-3">
+              <p className="text-[10px] text-slate-600 mb-2">System-Status</p>
+              <div className="space-y-1.5">
+                {[{l:'MQTT',v:'Verbunden',c:'text-emerald-400'},{l:'Anlage',v:'Heizen',c:'text-orange-400'},{l:'Fehler',v:'Keine',c:'text-slate-500'}].map(s => (
+                  <div key={s.l} className="flex justify-between items-center">
+                    <span className="text-[10px] text-slate-600">{s.l}</span>
+                    <span className={`text-[10px] font-medium ${s.c}`}>{s.v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10">
+          <p className="text-slate-700 text-xs">Echtzeit-Monitoring · Wärmepumpenanlage Darmstadt</p>
+        </div>
+      </div>
+
+      {/* Right panel - login form */}
+      <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center p-6 sm:p-10 relative">
+        <div className="absolute inset-0 lg:border-l lg:border-[#1a2235]" />
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/4 rounded-full blur-[80px] pointer-events-none" />
+
+        <div className="w-full max-w-sm relative z-10">
+          {/* Logo */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <span className="text-white font-black text-sm">KT</span>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">{BRAND.name}</p>
+                <p className="text-xs text-slate-600">Heizungs-Monitoring</p>
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-1">Willkommen zurück</h1>
+            <p className="text-sm text-slate-500">{CUSTOMER.name} · {CUSTOMER.address.split(',')[0]}</p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-xs text-slate-400 font-medium">Benutzername</label>
+              <input
+                type="text" value={username} onChange={e => setUsername(e.target.value)}
+                placeholder="Dein Name"
+                className="w-full px-4 py-3 rounded-xl bg-[#0d1220] border border-[#1a2235] text-white placeholder:text-slate-700 text-sm focus:outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/10 transition-all"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs text-slate-400 font-medium">Passwort</label>
+              <input
+                type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 rounded-xl bg-[#0d1220] border border-[#1a2235] text-white placeholder:text-slate-700 text-sm focus:outline-none focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/10 transition-all"
+                required
+              />
+            </div>
+
+            <button
+              type="submit" disabled={isLoading}
+              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Anmeldung…
+                </>
+              ) : 'Anmelden'}
+            </button>
+          </form>
+
+          {/* Feature pills */}
+          <div className="flex items-center justify-center gap-3 mt-8">
+            {[
+              { icon: <Wifi className="w-3.5 h-3.5" />, label: 'Echtzeit' },
+              { icon: <BarChart3 className="w-3.5 h-3.5" />, label: 'Analysen' },
+              { icon: <Shield className="w-3.5 h-3.5" />, label: 'DSGVO' },
+            ].map(f => (
+              <div key={f.label} className="flex items-center gap-1.5 text-slate-600 text-xs">
+                {f.icon} {f.label}
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-[11px] text-slate-700 mt-4">
+            © 2026 {BRAND.fullName} · {BRAND.version}
           </p>
         </div>
-
-        <Card className="border-[#1e2736] bg-[#111620]/80 backdrop-blur-xl shadow-2xl">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-white text-lg">Anmelden</CardTitle>
-            <CardDescription className="text-slate-400">
-              Geben Sie Ihre Zugangsdaten ein
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive" className="bg-red-500/10 border-red-500/40">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-slate-300 text-sm">
-                  Benutzername
-                </Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Dein Name"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="bg-[#0a0e14] border-[#1e2736] text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-emerald-500/20"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-300 text-sm">
-                  Passwort
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="bg-[#0a0e14] border-[#1e2736] text-white placeholder:text-slate-600 focus:border-emerald-500/50 focus:ring-emerald-500/20"
-                  required
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-medium shadow-lg shadow-emerald-500/20"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Anmeldung...' : 'Anmelden'}
-              </Button>
-            </form>
-
-            {/* Zugangs-Hinweis */}
-            <div className="mt-5 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
-              <p className="text-xs text-slate-400 text-center leading-relaxed">
-                <span className="font-semibold text-emerald-400">Zugang:</span> Gib deinen Namen und das Projekt-Passwort ein.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Features */}
-        <div className="grid grid-cols-3 gap-4 mt-8">
-          {[
-            { icon: <Wifi className="w-5 h-5" />, label: 'Echtzeit-Daten' },
-            { icon: <BarChart3 className="w-5 h-5" />, label: '24/7 Monitoring' },
-            { icon: <Shield className="w-5 h-5" />, label: 'DSGVO konform' },
-          ].map((f) => (
-            <div key={f.label} className="text-center">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/8 text-emerald-400/60 mb-2">
-                {f.icon}
-              </div>
-              <p className="text-[11px] text-slate-500">{f.label}</p>
-            </div>
-          ))}
-        </div>
-
-        <p className="text-center text-[11px] text-slate-600 mt-6">
-          © 2026 {CUSTOMER.name} · {BRAND.version}
-        </p>
       </div>
     </div>
   );
